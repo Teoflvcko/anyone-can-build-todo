@@ -30,3 +30,12 @@ def todo_delete(request, pk):
     todo = get_object_or_404(Todo, pk=pk)
     todo.delete()
     return redirect("todo_list")
+
+
+# --- IMPOSTAZIONI LOGIN E SESSIONE 30 GIORNI ---
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
+
+# 30 giorni in secondi (30 giorni * 24 ore * 60 minuti * 60 secondi)
+SESSION_COOKIE_AGE = 2592000
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
