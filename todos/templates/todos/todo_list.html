@@ -3,116 +3,618 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>My Awesome To-Do List</title>
+    <title>To-Do List</title>
     <link rel="icon" href="data:,">
     <style>
-        body { 
-            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
-            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-            min-height: 100vh;
-            margin: 0; 
-            padding: 2rem; 
-            color: #333;
+        :root {
+            --bg-gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --primary: #ff6b6b;
+            --primary-hover: #ff5252;
+            --border-color: #e2e8f0;
+            --task-bg: #f8fafc;
+            --priority-high-bg: #fed7d7;
+            --priority-high-text: #c53030;
+            --priority-med-bg: #feebc8;
+            --priority-med-text: #c05621;
+            --priority-low-bg: #c6f6d5;
+            --priority-low-text: #22543d;
+            --badge-category-bg: #e0f7fa;
+            --badge-category-text: #00838f;
         }
+
+        [data-theme="dark"] {
+            --bg-gradient: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            --card-bg: #2d3748;
+            --text-main: #f7fafc;
+            --text-muted: #a0aec0;
+            --primary: #ff6b6b;
+            --primary-hover: #ff5252;
+            --border-color: #4a5568;
+            --task-bg: #1a202c;
+            --priority-high-bg: #742a2a;
+            --priority-high-text: #fed7d7;
+            --priority-med-bg: #7b341e;
+            --priority-med-text: #feebc8;
+            --priority-low-bg: #22543d;
+            --priority-low-text: #c6f6d5;
+            --badge-category-bg: #004d40;
+            --badge-category-text: #80deea;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem 1rem;
+            color: var(--text-main);
+            transition: background 0.3s;
+        }
+
         .container {
-            max-width: 40rem;
+            max-width: 48rem;
             margin: 0 auto;
-            background: white;
+            background: var(--card-bg);
             padding: 2rem;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: background 0.3s, color 0.3s;
         }
-        h1 { text-align: center; color: #ff6b6b; font-size: 2.5rem; margin-top: 0; }
-        .auth-links { text-align: right; margin-bottom: 1rem; font-size: 1.1rem; }
-        .auth-links a { margin-left: 10px; color: #ff6b6b; text-decoration: none; font-weight: bold; }
-        form.add { display: flex; gap: 0.5rem; margin-bottom: 2rem; }
-        form.add input { 
-            flex: 1; padding: 0.8rem; font-size: 1rem; 
-            border: 2px solid #ddd; border-radius: 10px; 
-            outline: none; transition: border-color 0.3s;
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid var(--border-color);
         }
-        form.add input:focus { border-color: #ff6b6b; }
-        form.add button { 
-            padding: 0.8rem 1.5rem; font-size: 1rem; 
-            background: #ff6b6b; color: white; border: none; 
-            border-radius: 10px; cursor: pointer; font-weight: bold;
-            transition: transform 0.1s, background 0.3s;
+
+        .auth-links {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
         }
-        form.add button:hover { background: #ff5252; transform: scale(1.05); }
-        ul { list-style: none; padding: 0; }
-        li { 
-            display: flex; align-items: center; gap: 0.8rem; 
-            padding: 1rem; margin-bottom: 0.8rem;
-            background: #fdfbfb; border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+
+        .auth-links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
         }
-        li.done { opacity: 0.6; }
-        li.done .title { text-decoration: line-through; color: #888; }
-        .title { flex: 1; font-size: 1.1rem; font-weight: 500;}
-        .category-tag { 
-            font-size: 0.75rem; background: #e0f7fa; color: #00838f; 
-            padding: 4px 8px; border-radius: 12px; margin-left: 10px; text-decoration: none !important; display: inline-block;
+
+        .auth-links a:hover {
+            text-decoration: underline;
         }
-        .btn-check, .btn-delete {
-            background: none; border: none; font-size: 1.5rem; cursor: pointer;
-            transition: transform 0.2s; padding: 0;
+
+        .theme-toggle-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--text-main);
         }
-        .btn-check:hover, .btn-delete:hover { transform: scale(1.2); }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            font-size: 2.2rem;
+            margin: 0 0 1rem 0;
+        }
+
+        /* Flash Messages */
+        .messages {
+            margin-bottom: 1.5rem;
+        }
+
+        .message {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Progress Bar & Stats */
+        .stats-panel {
+            background: var(--task-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stats-counts {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-item .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-item .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background: var(--border-color);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78, #38a169);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        /* Add Form */
+        .add-card {
+            background: var(--task-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .add-form-row {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.6rem;
+        }
+
+        .add-form-row input,
+        .add-form-row select,
+        .add-form-row textarea {
+            padding: 0.7rem;
+            font-size: 0.95rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+            background: var(--card-bg);
+            color: var(--text-main);
+        }
+
+        .add-form-row input:focus,
+        .add-form-row select:focus,
+        .add-form-row textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .input-title { flex: 2; min-width: 200px; }
+        .input-category { flex: 1; min-width: 120px; }
+        .input-priority { flex: 0.8; min-width: 100px; }
+        .input-due { flex: 1; min-width: 130px; }
+        .input-notes { width: 100%; resize: vertical; min-height: 40px; font-family: inherit; }
+
+        .btn-add {
+            padding: 0.7rem 1.4rem;
+            font-size: 0.95rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-add:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+        /* Filter & Controls Toolbar */
+        .controls-toolbar {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text-main);
+        }
+
+        .filter-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .status-tabs {
+            display: flex;
+            gap: 6px;
+        }
+
+        .tab-btn {
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .bulk-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .action-link, .btn-action {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .action-link:hover, .btn-action:hover {
+            color: var(--text-main);
+            border-color: var(--text-muted);
+        }
+
+        /* Task List */
+        ul.task-list { list-style: none; padding: 0; margin: 0; }
+
+        li.task-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            background: var(--task-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        li.task-item.done {
+            opacity: 0.65;
+        }
+
+        li.task-item.done .task-title {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .task-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .task-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .task-description {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            white-space: pre-wrap;
+        }
+
+        .task-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .badge {
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .badge-category {
+            background: var(--badge-category-bg);
+            color: var(--badge-category-text);
+        }
+
+        .badge-priority-high { background: var(--priority-high-bg); color: var(--priority-high-text); }
+        .badge-priority-med { background: var(--priority-med-bg); color: var(--priority-med-text); }
+        .badge-priority-low { background: var(--priority-low-bg); color: var(--priority-low-text); }
+
+        .badge-overdue {
+            background: #fed7d7;
+            color: #c53030;
+            font-weight: bold;
+        }
+
+        .badge-today {
+            background: #feebc8;
+            color: #c05621;
+            font-weight: bold;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+            line-height: 1;
+            transition: transform 0.1s;
+        }
+
+        .btn-icon:hover { transform: scale(1.15); }
+
+        .empty-placeholder {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+        }
+
+        .empty-icon { font-size: 3rem; margin-bottom: 0.5rem; }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- SEZIONE LOGIN IN ALTO -->
-        <div class="auth-links">
-            {% if user.is_authenticated %}
-                <span>Hello, {{ user.username }}! ✨</span>
-                <form method="post" action="{% url 'logout' %}" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" style="background:none; border:none; color:#ff6b6b; cursor:pointer; font-weight:bold; font-size:1.1rem; text-decoration:underline;">Logout</button>
-                </form>
-            {% else %}
-                <a href="{% url 'login' %}">Login</a>
-                <a href="{% url 'signup' %}">Sign Up</a>
-            {% endif %}
+        <!-- Header Bar -->
+        <div class="header-bar">
+            <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Theme">🌓 Theme</button>
+            <div class="auth-links">
+                {% if user.is_authenticated %}
+                    <span>Hello, <strong>{{ user.username }}</strong>!</span>
+                    <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-action">Logout</button>
+                    </form>
+                {% else %}
+                    <span>Guest Mode</span>
+                    <a href="{% url 'login' %}">Login</a>
+                    <a href="{% url 'signup' %}">Sign Up</a>
+                {% endif %}
+            </div>
         </div>
 
         <h1>📝 To-Do List</h1>
 
-        <!-- FORM PER AGGIUNGERE -->
-        <form class="add" method="post" action="{% url 'todo_add' %}">
-            {% csrf_token %}
-            <input name="title" aria-label="New to-do" placeholder="What needs doing?" maxlength="200" required autofocus>
-            <input name="category" aria-label="Category" placeholder="Category (e.g. Work)" maxlength="50" style="flex: 0.5;">
-            <button type="submit">Add 🚀</button>
-        </form>
+        <!-- Django Flash Messages -->
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
 
-        <!-- LISTA DELLE COSE DA FARE -->
-        <ul>
+        <!-- Visual Statistics & Progress Bar -->
+        <div class="stats-panel">
+            <div class="stats-counts">
+                <div class="stat-item">
+                    <div class="stat-value">{{ total_count }}</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ active_count }}</div>
+                    <div class="stat-label">Active</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ completed_count }}</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ progress_percent }}%</div>
+                    <div class="stat-label">Progress</div>
+                </div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: {{ progress_percent }}%;"></div>
+            </div>
+        </div>
+
+        <!-- Add Task Form -->
+        <div class="add-card">
+            <form method="post" action="{% url 'todo_add' %}">
+                {% csrf_token %}
+                <div class="add-form-row">
+                    <input name="title" class="input-title" placeholder="What needs doing?" maxlength="200" required autofocus>
+                    <input name="category" class="input-category" placeholder="Category (e.g. Work)" maxlength="50" list="categories-list">
+                    <datalist id="categories-list">
+                        {% for cat in categories %}
+                            <option value="{{ cat }}">
+                        {% endfor %}
+                    </datalist>
+                    <select name="priority" class="input-priority" aria-label="Priority">
+                        <option value="medium" selected>Priority: Med</option>
+                        <option value="high">Priority: High</option>
+                        <option value="low">Priority: Low</option>
+                    </select>
+                    <input type="date" name="due_date" class="input-due" aria-label="Due date">
+                    <button type="submit" class="btn-add">Add 🚀</button>
+                </div>
+                <div class="add-form-row">
+                    <textarea name="description" class="input-notes" placeholder="Optional notes or details..."></textarea>
+                </div>
+            </form>
+        </div>
+
+        <!-- Controls, Filter & Search Toolbar -->
+        <div class="controls-toolbar">
+            <form method="get" action="{% url 'todo_list' %}" class="search-row">
+                <input name="q" class="search-input" placeholder="Search tasks by keyword or category..." value="{{ current_query }}">
+                <input type="hidden" name="status" value="{{ current_status }}">
+                {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}">{% endif %}
+                {% if current_priority %}<input type="hidden" name="priority" value="{{ current_priority }}">{% endif %}
+                <button type="submit" class="btn-action">Search</button>
+                {% if current_query %}
+                    <a href="{% url 'todo_list' %}?status={{ current_status }}" class="btn-action">Clear</a>
+                {% endif %}
+            </form>
+
+            <div class="filter-row">
+                <!-- Status Tabs -->
+                <div class="status-tabs">
+                    <a href="?status=all{% if current_query %}&q={{ current_query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}" class="tab-btn {% if current_status == 'all' %}active{% endif %}">All</a>
+                    <a href="?status=active{% if current_query %}&q={{ current_query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}" class="tab-btn {% if current_status == 'active' %}active{% endif %}">Active</a>
+                    <a href="?status=completed{% if current_query %}&q={{ current_query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}" class="tab-btn {% if current_status == 'completed' %}active{% endif %}">Completed</a>
+                </div>
+
+                <!-- Bulk Actions & Exports -->
+                <div class="bulk-actions">
+                    <form method="post" action="{% url 'todo_mark_all' %}" style="margin:0; display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-action" title="Mark all active as completed">Mark All Done</button>
+                    </form>
+                    <form method="post" action="{% url 'todo_clear_completed' %}" style="margin:0; display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-action" title="Delete all completed tasks">Clear Completed</button>
+                    </form>
+                    <a href="{% url 'todo_export_json' %}" class="action-link" title="Export as JSON">⬇ JSON</a>
+                    <a href="{% url 'todo_export_csv' %}" class="action-link" title="Export as CSV">⬇ CSV</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task List -->
+        <ul class="task-list">
             {% for todo in todos %}
-                <li class="{% if todo.done %}done{% endif %}">
-                    <!-- Tasto Checkbox (Fatto/Da fare) -->
+                <li class="task-item {% if todo.done %}done{% endif %}">
+                    <!-- Checkbox Toggle -->
                     <form method="post" action="{% url 'todo_toggle' todo.pk %}" style="margin:0;">
                         {% csrf_token %}
-                        <button type="submit" class="btn-check" title="Toggle done">
+                        <button type="submit" class="btn-icon" title="Toggle completed">
                             {% if todo.done %}✅{% else %}⬜{% endif %}
                         </button>
                     </form>
 
-                    <span class="title">
-                        {{ todo.title }} 
-                        <span class="category-tag">{{ todo.category|default:"No category" }}</span>
-                    </span>
+                    <!-- Details -->
+                    <div class="task-content">
+                        <div class="task-title">{{ todo.title }}</div>
+                        {% if todo.description %}
+                            <div class="task-description">{{ todo.description }}</div>
+                        {% endif %}
+                        <div class="task-tags">
+                            {% if todo.category %}
+                                <span class="badge badge-category">📁 {{ todo.category }}</span>
+                            {% endif %}
 
-                    <!-- Tasto Elimina -->
+                            {% if todo.priority == 'high' %}
+                                <span class="badge badge-priority-high">🔥 High</span>
+                            {% elif todo.priority == 'medium' %}
+                                <span class="badge badge-priority-med">⚡ Med</span>
+                            {% elif todo.priority == 'low' %}
+                                <span class="badge badge-priority-low">🌱 Low</span>
+                            {% endif %}
+
+                            {% if todo.due_date %}
+                                {% if todo.is_overdue %}
+                                    <span class="badge badge-overdue">⚠️ Overdue ({{ todo.due_date|date:"M j" }})</span>
+                                {% elif todo.is_due_today %}
+                                    <span class="badge badge-today">⏰ Due Today</span>
+                                {% else %}
+                                    <span class="badge badge-category">📅 {{ todo.due_date|date:"M j" }}</span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Duplicate Action -->
+                    <form method="post" action="{% url 'todo_duplicate' todo.pk %}" style="margin:0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-icon" title="Duplicate task">📋</button>
+                    </form>
+
+                    <!-- Delete Action -->
                     <form method="post" action="{% url 'todo_delete' todo.pk %}" style="margin:0;">
                         {% csrf_token %}
-                        <button type="submit" class="btn-delete" title="Delete">🗑️</button>
+                        <button type="submit" class="btn-icon" title="Delete task">🗑️</button>
                     </form>
                 </li>
             {% empty %}
-                <li style="justify-content: center; color: #888; background: transparent; box-shadow: none;">Nothing to do yet. Add something above! 🎉</li>
+                <div class="empty-placeholder">
+                    <div class="empty-icon">🎉</div>
+                    <h3>No tasks found</h3>
+                    <p>Nothing to do yet. Add a new task above or adjust your search filters.</p>
+                </div>
             {% endfor %}
         </ul>
     </div>
+
+    <!-- Dark/Light Theme Script -->
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const currentTheme = localStorage.getItem('todo_theme') || 'light';
+        if (currentTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const newTheme = isDark ? 'light' : 'dark';
+            if (newTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+            localStorage.setItem('todo_theme', newTheme);
+        });
+    </script>
 </body>
 </html>
