@@ -39,3 +39,19 @@ LOGOUT_REDIRECT_URL = "/"
 # 30 giorni in secondi (30 giorni * 24 ore * 60 minuti * 60 secondi)
 SESSION_COOKIE_AGE = 2592000
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
+from django.shortcuts import render, redirect
+
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('/')
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/signup.html', {'form': form})
