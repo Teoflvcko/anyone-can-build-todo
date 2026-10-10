@@ -1,6 +1,11 @@
+import json
+from datetime import timedelta
+
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from .models import Todo
 
@@ -22,6 +27,8 @@ class TodoTests(TestCase):
                 "priority": "high",
                 "due_date": "2026-10-15",
                 "description": "Apples, Milk, Bread",
+                "estimated_minutes": "45",
+                "is_pinned": "on",
             },
         )
         todo = Todo.objects.get()
@@ -30,6 +37,8 @@ class TodoTests(TestCase):
         self.assertEqual(todo.priority, "high")
         self.assertEqual(str(todo.due_date), "2026-10-15")
         self.assertEqual(todo.description, "Apples, Milk, Bread")
+        self.assertEqual(todo.estimated_minutes, 45)
+        self.assertTrue(todo.is_pinned)
 
     def test_empty_title_is_not_added(self):
         self.client.post(reverse("todo_add"), {"title": "   "})
@@ -54,13 +63,68 @@ class TodoTests(TestCase):
             title="Design landing page",
             category="Work",
             priority="high",
+            estimated_minutes=60,
+            is_pinned=True,
         )
         self.client.post(reverse("todo_duplicate", args=[todo.pk]))
         self.assertEqual(Todo.objects.count(), 2)
         duplicated = Todo.objects.get(title="Design landing page (Copy)")
         self.assertEqual(duplicated.category, "Work")
         self.assertEqual(duplicated.priority, "high")
+        self.assertEqual(duplicated.estimated_minutes, 60)
+        self.assertTrue(duplicated.is_pinned)
         self.assertFalse(duplicated.done)
+
+    def test_pin_toggle(self):
+        todo = Todo.objects.create(title="Important milestone", is_pinned=False)
+        self.client.post(reverse("todo_pin", args=[todo.pk]))
+        todo.refresh_from_db()
+        self.assertTrue(todo.is_pinned)
+
+        self.client.post(reverse("todo_pin", args=[todo.pk]))
+        todo.refresh_from_db()
+        self.assertFalse(todo.is_pinned)
+
+    def test_edit_task(self):
+        todo = Todo.objects.create(title="Old title", priority="low")
+        self.client.post(
+            reverse("todo_edit", args=[todo.pk]),
+            {
+                "title": "Refined title",
+                "category": "Design",
+                "priority": "high",
+                "due_date": "2026-11-01",
+                "description": "Updated specs",
+                "estimated_minutes": "90",
+                "is_pinned": "on",
+            },
+        )
+        todo.refresh_from_db()
+        self.assertEqual(todo.title, "Refined title")
+        self.assertEqual(todo.category, "Design")
+        self.assertEqual(todo.priority, "high")
+        self.assertEqual(str(todo.due_date), "2026-11-01")
+        self.assertEqual(todo.description, "Updated specs")
+        self.assertEqual(todo.estimated_minutes, 90)
+        self.assertTrue(todo.is_pinned)
+
+    def test_archive_toggle(self):
+        todo = Todo.objects.create(title="Old finished project", is_archived=False)
+        self.client.post(reverse("todo_archive", args=[todo.pk]))
+        todo.refresh_from_db()
+        self.assertTrue(todo.is_archived)
+
+        # By default archived task should not appear in main task list
+        res = self.client.get(reverse("todo_list"))
+        self.assertNotContains(
+            res, '<span class="task-title">Old finished project</span>'
+        )
+
+        # But it should appear in archived view
+        res_archived = self.client.get(reverse("todo_list") + "?filter=archived")
+        self.assertContains(
+            res_archived, '<span class="task-title">Old finished project</span>'
+        )
 
     def test_status_filtering(self):
         Todo.objects.create(title="Pending task", done=False)
@@ -81,6 +145,19 @@ class TodoTests(TestCase):
         res = self.client.get(reverse("todo_list") + "?q=Python")
         self.assertContains(res, "Learn Python")
         self.assertNotContains(res, "Wash dishes")
+
+    def test_smart_filters_today_and_overdue(self):
+        today = timezone.localdate()
+        yesterday = today - timedelta(days=1)
+
+        Todo.objects.create(title="Task for Today", due_date=today)
+        Todo.objects.create(title="Overdue Task", due_date=yesterday, done=False)
+
+        res_today = self.client.get(reverse("todo_list") + "?filter=today")
+        self.assertContains(res_today, "Task for Today")
+
+        res_overdue = self.client.get(reverse("todo_list") + "?filter=overdue")
+        self.assertContains(res_overdue, "Overdue Task")
 
     def test_bulk_clear_completed(self):
         Todo.objects.create(title="Active 1", done=False)
@@ -112,13 +189,54 @@ class TodoTests(TestCase):
         self.assertEqual(res["Content-Type"], "text/csv")
         self.assertIn("Export CSV item", res.content.decode("utf-8"))
 
+    def test_export_ical(self):
+        today = timezone.localdate()
+        Todo.objects.create(title="Calendar Sync Task", due_date=today)
+
+        res = self.client.get(reverse("todo_export_ical"))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res["Content-Type"], "text/calendar")
+        content = res.content.decode("utf-8")
+        self.assertIn("BEGIN:VCALENDAR", content)
+        self.assertIn("SUMMARY:Calendar Sync Task", content)
+
+    def test_import_json(self):
+        tasks_data = [
+            {
+                "title": "Imported Task 1",
+                "category": "Cloud",
+                "priority": "high",
+                "estimated_minutes": 45,
+            },
+            {
+                "title": "Imported Task 2",
+                "category": "Dev",
+                "priority": "low",
+            },
+        ]
+        json_file = SimpleUploadedFile(
+            "tasks.json",
+            json.dumps(tasks_data).encode("utf-8"),
+            content_type="application/json",
+        )
+
+        res = self.client.post(
+            reverse("todo_import_json"),
+            {"json_file": json_file},
+            follow=True,
+        )
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(Todo.objects.filter(title="Imported Task 1").exists())
+        self.assertTrue(Todo.objects.filter(title="Imported Task 2").exists())
+
     def test_api_todos_endpoint(self):
-        Todo.objects.create(title="API task")
+        Todo.objects.create(title="API task", estimated_minutes=30)
         res = self.client.get(reverse("api_todos"))
         self.assertEqual(res.status_code, 200)
         json_data = res.json()
         self.assertEqual(len(json_data["todos"]), 1)
         self.assertEqual(json_data["todos"][0]["title"], "API task")
+        self.assertEqual(json_data["todos"][0]["estimated_minutes"], 30)
 
     def test_user_task_isolation(self):
         user_a = User.objects.create_user(username="alice", password="password123")

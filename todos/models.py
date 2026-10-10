@@ -26,11 +26,15 @@ class Todo(models.Model):
         default="medium",
     )
     due_date = models.DateField(null=True, blank=True)
+    estimated_minutes = models.PositiveIntegerField(default=0, blank=True)
+    is_pinned = models.BooleanField(default=False)
+    is_archived = models.BooleanField(default=False)
     done = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["-created_at"]
+        ordering = ["-is_pinned", "-created_at"]
 
     def __str__(self):
         return self.title
@@ -46,3 +50,14 @@ class Todo(models.Model):
         if self.due_date and not self.done:
             return self.due_date == timezone.localdate()
         return False
+
+    @property
+    def formatted_duration(self):
+        """Format estimated minutes into human-readable duration."""
+        if not self.estimated_minutes:
+            return ""
+        if self.estimated_minutes < 60:
+            return f"{self.estimated_minutes}m"
+        hours = self.estimated_minutes // 60
+        mins = self.estimated_minutes % 60
+        return f"{hours}h {mins}m" if mins else f"{hours}h"
