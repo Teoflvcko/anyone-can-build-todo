@@ -264,3 +264,97 @@ class TodoTests(TestCase):
         )
         self.assertEqual(post_res.status_code, 302)
         self.assertTrue(User.objects.filter(username="newuser").exists())
+
+    def test_subtask_lifecycle(self):
+        todo = Todo.objects.create(title="Parent Project")
+        # Add subtask
+        self.client.post(reverse("subtask_add", args=[todo.pk]), {"title": "Step 1"})
+        self.assertEqual(todo.subtasks.count(), 1)
+        subtask = todo.subtasks.first()
+        self.assertEqual(subtask.title, "Step 1")
+        self.assertFalse(subtask.done)
+
+        # Toggle subtask
+        self.client.post(reverse("subtask_toggle", args=[subtask.pk]))
+        subtask.refresh_from_db()
+        self.assertTrue(subtask.done)
+
+        # Delete subtask
+        self.client.post(reverse("subtask_delete", args=[subtask.pk]))
+        self.assertEqual(todo.subtasks.count(), 0)
+
+    def test_kanban_status_update(self):
+        todo = Todo.objects.create(title="Sprint item", status="todo")
+        self.client.post(
+            reverse("todo_update_status", args=[todo.pk]),
+            {"status": "in_progress"},
+        )
+        todo.refresh_from_db()
+        self.assertEqual(todo.status, "in_progress")
+        self.assertFalse(todo.done)
+
+        self.client.post(
+            reverse("todo_update_status", args=[todo.pk]),
+            {"status": "done"},
+        )
+        todo.refresh_from_db()
+        self.assertEqual(todo.status, "done")
+        self.assertTrue(todo.done)
+
+    def test_task_sharing(self):
+        owner = User.objects.create_user(username="owner", password="password123")
+        collaborator = User.objects.create_user(
+            username="collab", password="password123"
+        )
+        todo = Todo.objects.create(user=owner, title="Joint Mission")
+
+        self.client.force_login(owner)
+        self.client.post(
+            reverse("todo_share", args=[todo.pk]),
+            {"username": "collab"},
+        )
+        self.assertTrue(todo.collaborators.filter(username="collab").exists())
+
+        # Collaborator should see it in their workspace
+        self.client.force_login(collaborator)
+        res = self.client.get(reverse("todo_list"))
+        self.assertContains(res, "Joint Mission")
+
+    def test_collaborative_events(self):
+        organizer = User.objects.create_user(username="host", password="password123")
+        participant = User.objects.create_user(username="guest", password="password123")
+        self.client.force_login(organizer)
+
+        # Create event
+        self.client.post(
+            reverse("event_create"),
+            {
+                "title": "Team Hackathon",
+                "event_date": "2026-11-20",
+                "description": "Building cool apps",
+            },
+        )
+        from .models import CollaborationEvent
+
+        event = CollaborationEvent.objects.get(title="Team Hackathon")
+        self.assertEqual(str(event.event_date), "2026-11-20")
+
+        # Join event as participant
+        self.client.force_login(participant)
+        self.client.post(reverse("event_join", args=[event.pk]))
+        self.assertTrue(event.participants.filter(username="guest").exists())
+
+    def test_social_activity_post(self):
+        user = User.objects.create_user(username="socialite", password="password123")
+        self.client.force_login(user)
+        self.client.post(
+            reverse("social_post"),
+            {"message": "Hello community! Excited to build together."},
+        )
+        from .models import SocialActivity
+
+        self.assertTrue(
+            SocialActivity.objects.filter(
+                message="Hello community! Excited to build together."
+            ).exists()
+        )

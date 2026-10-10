@@ -3,7 +3,7 @@ import json
 from datetime import datetime, timedelta
 
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import get_user_model, login
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Q
 from django.http import Http404, HttpResponse, JsonResponse
@@ -11,13 +11,17 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .models import Todo
+from .models import CollaborationEvent, SocialActivity, SubTask, Todo
+
+User = get_user_model()
 
 
 def _get_user_todos(request, include_archived=False):
-    """Return todos filtered by the current user or guest tasks."""
+    """Return todos filtered by the current user, shared collaborations, or guest tasks."""
     if request.user.is_authenticated:
-        qs = Todo.objects.filter(user=request.user)
+        qs = Todo.objects.filter(
+            Q(user=request.user) | Q(collaborators=request.user)
+        ).distinct()
     else:
         qs = Todo.objects.filter(user__isnull=True)
 
@@ -27,6 +31,7 @@ def _get_user_todos(request, include_archived=False):
 
 
 def todo_list(request):
+    active_view = request.GET.get("view", "list").strip()
     filter_preset = request.GET.get("filter", "").strip()
     status_filter = request.GET.get("status", "all").strip()
     is_archived_view = filter_preset == "archived" or status_filter == "archived"
@@ -122,8 +127,20 @@ def todo_list(request):
         }
     )
 
+    # Kanban Lanes
+    kanban_todo = all_user_todos.filter(status="todo", done=False)
+    kanban_in_progress = all_user_todos.filter(status="in_progress", done=False)
+    kanban_done = all_user_todos.filter(Q(status="done") | Q(done=True))
+
+    # Social & Collaborative Events
+    social_activities = SocialActivity.objects.select_related("user")[:25]
+    collaborative_events = CollaborationEvent.objects.prefetch_related(
+        "participants"
+    ).select_related("organizer")[:25]
+
     context = {
         "todos": todos,
+        "active_view": active_view,
         "total_count": total_count,
         "completed_count": completed_count,
         "active_count": active_count,
@@ -141,6 +158,11 @@ def todo_list(request):
         "current_filter": filter_preset,
         "is_archived_view": is_archived_view,
         "today_str": today.strftime("%Y-%m-%d"),
+        "kanban_todo": kanban_todo,
+        "kanban_in_progress": kanban_in_progress,
+        "kanban_done": kanban_done,
+        "social_activities": social_activities,
+        "collaborative_events": collaborative_events,
     }
     return render(request, "todos/todo_list.html", context)
 
@@ -182,6 +204,11 @@ def todo_add(request):
             estimated_minutes=estimated_minutes,
             is_pinned=is_pinned,
         )
+        if request.user.is_authenticated:
+            SocialActivity.objects.create(
+                user=request.user,
+                message=f'created a new task: "{title}" 🚀',
+            )
         messages.success(request, f'Task "{title}" created successfully!')
     else:
         messages.error(request, "Task title cannot be empty.")
@@ -192,7 +219,11 @@ def todo_add(request):
 @require_POST
 def todo_edit(request, pk):
     todo = get_object_or_404(Todo, pk=pk)
-    if todo.user and todo.user != request.user:
+    if (
+        todo.user
+        and todo.user != request.user
+        and not todo.collaborators.filter(pk=request.user.pk).exists()
+    ):
         raise Http404("Todo not found")
 
     title = request.POST.get("title", "").strip()
@@ -262,14 +293,203 @@ def todo_archive(request, pk):
 @require_POST
 def todo_toggle(request, pk):
     todo = get_object_or_404(Todo, pk=pk)
-    if todo.user and todo.user != request.user:
+    if (
+        todo.user
+        and todo.user != request.user
+        and not todo.collaborators.filter(pk=request.user.pk).exists()
+    ):
         raise Http404("Todo not found")
 
     todo.done = not todo.done
+    if todo.done:
+        todo.status = "done"
+        if request.user.is_authenticated:
+            SocialActivity.objects.create(
+                user=request.user,
+                message=f'completed the task: "{todo.title}"! ✅',
+            )
+    else:
+        todo.status = "todo"
     todo.save()
+
     status_msg = "completed" if todo.done else "active"
     messages.success(request, f'Marked "{todo.title}" as {status_msg}.')
     return redirect("todo_list")
+
+
+@require_POST
+def todo_update_status(request, pk):
+    """Update Kanban lane status (todo, in_progress, done)."""
+    todo = get_object_or_404(Todo, pk=pk)
+    if (
+        todo.user
+        and todo.user != request.user
+        and not todo.collaborators.filter(pk=request.user.pk).exists()
+    ):
+        raise Http404("Todo not found")
+
+    new_status = request.POST.get("status", "todo")
+    if new_status in ["todo", "in_progress", "done"]:
+        todo.status = new_status
+        todo.done = new_status == "done"
+        todo.save()
+        messages.success(request, f'Moved "{todo.title}" to {new_status.title()}!')
+
+    return redirect(request.META.get("HTTP_REFERER", "todo_list"))
+
+
+@require_POST
+def todo_share(request, pk):
+    """Share a task with another user by username."""
+    todo = get_object_or_404(Todo, pk=pk)
+    if todo.user and todo.user != request.user:
+        raise Http404("Todo not found")
+
+    target_username = request.POST.get("username", "").strip()
+    if not target_username:
+        messages.error(request, "Please specify a username to invite.")
+        return redirect("todo_list")
+
+    target_user = User.objects.filter(username=target_username).first()
+    if not target_user:
+        messages.error(request, f'User "{target_username}" was not found.')
+        return redirect("todo_list")
+
+    if target_user == request.user:
+        messages.warning(request, "You already own this task.")
+        return redirect("todo_list")
+
+    todo.collaborators.add(target_user)
+    SocialActivity.objects.create(
+        user=request.user,
+        message=f'invited @{target_user.username} to collaborate on "{todo.title}" 👥',
+    )
+    messages.success(request, f"Task shared with @{target_user.username} successfully!")
+    return redirect("todo_list")
+
+
+@require_POST
+def subtask_add(request, pk):
+    """Add a subtask to an existing task."""
+    todo = get_object_or_404(Todo, pk=pk)
+    if (
+        todo.user
+        and todo.user != request.user
+        and not todo.collaborators.filter(pk=request.user.pk).exists()
+    ):
+        raise Http404("Todo not found")
+
+    title = request.POST.get("title", "").strip()
+    if title:
+        SubTask.objects.create(todo=todo, title=title)
+        messages.success(request, f'Added subtask "{title}".')
+    return redirect("todo_list")
+
+
+@require_POST
+def subtask_toggle(request, pk):
+    """Toggle completion status of a subtask."""
+    subtask = get_object_or_404(SubTask, pk=pk)
+    todo = subtask.todo
+    if (
+        todo.user
+        and todo.user != request.user
+        and not todo.collaborators.filter(pk=request.user.pk).exists()
+    ):
+        raise Http404("Subtask not found")
+
+    subtask.done = not subtask.done
+    subtask.save()
+    return redirect("todo_list")
+
+
+@require_POST
+def subtask_delete(request, pk):
+    """Delete a subtask."""
+    subtask = get_object_or_404(SubTask, pk=pk)
+    todo = subtask.todo
+    if (
+        todo.user
+        and todo.user != request.user
+        and not todo.collaborators.filter(pk=request.user.pk).exists()
+    ):
+        raise Http404("Subtask not found")
+
+    subtask.delete()
+    messages.success(request, "Subtask removed.")
+    return redirect("todo_list")
+
+
+@require_POST
+def event_create(request):
+    """Create a collaborative team event."""
+    if not request.user.is_authenticated:
+        messages.error(request, "Please log in to create collaboration events.")
+        return redirect("login")
+
+    title = request.POST.get("title", "").strip()
+    date_str = request.POST.get("event_date", "").strip()
+    description = request.POST.get("description", "").strip()
+
+    if not title or not date_str:
+        messages.error(request, "Event title and date are required.")
+        return redirect("/?view=events")
+
+    try:
+        event_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        messages.error(request, "Invalid event date format.")
+        return redirect("/?view=events")
+
+    event = CollaborationEvent.objects.create(
+        organizer=request.user,
+        title=title,
+        description=description,
+        event_date=event_date,
+    )
+    event.participants.add(request.user)
+
+    SocialActivity.objects.create(
+        user=request.user,
+        message=f'scheduled a collaborative event: "{title}" on {event_date} 📅',
+    )
+    messages.success(request, f'Event "{title}" scheduled!')
+    return redirect("/?view=events")
+
+
+@require_POST
+def event_join(request, pk):
+    """Join or leave a collaborative event."""
+    if not request.user.is_authenticated:
+        messages.error(request, "Please log in to join events.")
+        return redirect("login")
+
+    event = get_object_or_404(CollaborationEvent, pk=pk)
+    if event.participants.filter(pk=request.user.pk).exists():
+        event.participants.remove(request.user)
+        messages.success(request, f'Left event "{event.title}".')
+    else:
+        event.participants.add(request.user)
+        SocialActivity.objects.create(
+            user=request.user,
+            message=f'joined the collaborative event "{event.title}"! 🤝',
+        )
+        messages.success(request, f'Joined event "{event.title}"!')
+    return redirect("/?view=events")
+
+
+@require_POST
+def social_post(request):
+    """Post an update to the Social Hub feed."""
+    if not request.user.is_authenticated:
+        messages.error(request, "Please log in to post in the social area.")
+        return redirect("login")
+
+    message = request.POST.get("message", "").strip()
+    if message:
+        SocialActivity.objects.create(user=request.user, message=message)
+        messages.success(request, "Update posted to Social Hub!")
+    return redirect("/?view=social")
 
 
 @require_POST
@@ -290,7 +510,7 @@ def todo_duplicate(request, pk):
     if todo.user and todo.user != request.user:
         raise Http404("Todo not found")
 
-    Todo.objects.create(
+    new_todo = Todo.objects.create(
         user=todo.user,
         title=f"{todo.title} (Copy)",
         category=todo.category,
@@ -301,6 +521,10 @@ def todo_duplicate(request, pk):
         is_pinned=todo.is_pinned,
         done=False,
     )
+    # Duplicate subtasks as well
+    for st in todo.subtasks.all():
+        SubTask.objects.create(todo=new_todo, title=st.title, done=False)
+
     messages.success(request, f'Duplicated "{todo.title}".')
     return redirect("todo_list")
 
@@ -318,7 +542,7 @@ def todo_clear_completed(request):
 def todo_mark_all(request):
     todos = _get_user_todos(request).filter(done=False)
     count = todos.count()
-    todos.update(done=True)
+    todos.update(done=True, status="done")
     messages.success(request, f"Marked {count} task(s) as completed.")
     return redirect("todo_list")
 
@@ -332,11 +556,15 @@ def todo_export_json(request):
             "description": t.description,
             "category": t.category,
             "priority": t.priority,
+            "status": t.status,
             "due_date": str(t.due_date) if t.due_date else None,
             "estimated_minutes": t.estimated_minutes,
             "is_pinned": t.is_pinned,
             "is_archived": t.is_archived,
             "done": t.done,
+            "subtasks": [
+                {"title": st.title, "done": st.done} for st in t.subtasks.all()
+            ],
             "created_at": t.created_at.isoformat(),
             "updated_at": t.updated_at.isoformat(),
         }
@@ -362,6 +590,7 @@ def todo_export_csv(request):
             "Title",
             "Category",
             "Priority",
+            "Status",
             "Due Date",
             "Est Minutes",
             "Pinned",
@@ -377,6 +606,7 @@ def todo_export_csv(request):
                 t.title,
                 t.category,
                 t.priority,
+                t.status,
                 t.due_date or "",
                 t.estimated_minutes,
                 "Yes" if t.is_pinned else "No",
@@ -460,7 +690,7 @@ def todo_import_json(request):
             except (ValueError, TypeError):
                 est = 0
 
-            Todo.objects.create(
+            new_todo = Todo.objects.create(
                 user=user,
                 title=title,
                 description=str(item.get("description", "")),
@@ -470,7 +700,18 @@ def todo_import_json(request):
                 estimated_minutes=est,
                 is_pinned=bool(item.get("is_pinned", False)),
                 done=bool(item.get("done", False)),
+                status=item.get("status", "done" if item.get("done") else "todo"),
             )
+            subtasks_data = item.get("subtasks", [])
+            if isinstance(subtasks_data, list):
+                for st in subtasks_data:
+                    st_title = str(st.get("title", "")).strip()
+                    if st_title:
+                        SubTask.objects.create(
+                            todo=new_todo,
+                            title=st_title,
+                            done=bool(st.get("done", False)),
+                        )
             imported_count += 1
 
         messages.success(request, f"Successfully imported {imported_count} task(s)!")
@@ -489,10 +730,13 @@ def api_todos(request):
             "description": t.description,
             "category": t.category,
             "priority": t.priority,
+            "status": t.status,
             "due_date": str(t.due_date) if t.due_date else None,
             "estimated_minutes": t.estimated_minutes,
             "is_pinned": t.is_pinned,
             "done": t.done,
+            "subtasks_count": t.total_subtasks_count,
+            "completed_subtasks": t.completed_subtasks_count,
             "created_at": t.created_at.isoformat(),
             "updated_at": t.updated_at.isoformat(),
         }
@@ -507,7 +751,13 @@ def signup(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, f"Welcome to your To-Do list, {user.username}!")
+            SocialActivity.objects.create(
+                user=user,
+                message="just joined the platform! 👋",
+            )
+            messages.success(
+                request, f"Welcome to your To-Do workspace, {user.username}!"
+            )
             return redirect("todo_list")
     else:
         form = UserCreationForm()
