@@ -293,6 +293,142 @@
             color: var(--text-muted);
         }
 
+        /* Bubble Dropdown with Transparent Frosted Glass Borders */
+        .bubble-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .bubble-btn {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 999px;
+            color: var(--text-muted);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            line-height: 1;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+            padding: 0;
+        }
+
+        [data-theme="dark"] .bubble-btn {
+            background: rgba(30, 41, 59, 0.6);
+            border-color: rgba(255, 255, 255, 0.12);
+            color: var(--text-muted);
+        }
+
+        .bubble-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: scale(1.08);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.28);
+        }
+
+        .bubble-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 8px);
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            border-radius: 20px;
+            box-shadow: 0 16px 35px -5px rgba(0, 0, 0, 0.12), 0 6px 15px -3px rgba(0, 0, 0, 0.06);
+            z-index: 100;
+            min-width: 175px;
+            padding: 7px;
+            animation: bubblePop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        [data-theme="dark"] .bubble-menu {
+            background: rgba(17, 24, 39, 0.88);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 16px 35px -5px rgba(0, 0, 0, 0.6);
+        }
+
+        @keyframes bubblePop {
+            from {
+                opacity: 0;
+                transform: translateY(-8px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .bubble-dropdown.active .bubble-menu {
+            display: block;
+        }
+
+        .bubble-item {
+            width: 100%;
+            background: transparent;
+            border: none;
+            text-align: left;
+            padding: 8px 12px;
+            font-size: 0.84rem;
+            color: var(--text-main);
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.15s ease;
+            text-decoration: none;
+        }
+
+        .bubble-item:hover {
+            background: rgba(37, 99, 235, 0.08);
+            color: var(--primary);
+            transform: translateX(2px);
+        }
+
+        [data-theme="dark"] .bubble-item:hover {
+            background: rgba(59, 130, 246, 0.15);
+        }
+
+        .bubble-item.danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--priority-high);
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.18);
+            max-width: 32rem;
+            width: 100%;
+            padding: 1.75rem;
+        }
+
         /* Responsive */
         @media (max-width: 900px) {
             body { flex-direction: column; }
@@ -626,19 +762,39 @@
                             </div>
                         </div>
 
-                        <!-- Action Form Buttons -->
-                        <div style="display:flex; gap:6px; align-items:center;">
-                            <!-- Share Form -->
-                            <form method="post" action="{% url 'todo_share' todo.pk %}" style="margin:0; display:inline;" onsubmit="const u=prompt('Enter username to share with:'); if(!u) return false; this.username.value=u;">
-                                {% csrf_token %}
-                                <input type="hidden" name="username" value="">
-                                <button type="submit" class="btn-ui" title="Share with user" style="padding:4px 8px; font-size:0.8rem;">👥 Share</button>
-                            </form>
-                            <!-- Delete -->
-                            <form method="post" action="{% url 'todo_delete' todo.pk %}" style="margin:0;">
-                                {% csrf_token %}
-                                <button type="submit" class="btn-ui" title="Delete" style="padding:4px 8px; font-size:0.8rem;">🗑️</button>
-                            </form>
+                        <!-- Bubble Dropdown Menu -->
+                        <div class="bubble-dropdown">
+                            <button type="button" class="bubble-btn" onclick="toggleBubbleDropdown(this)" title="Task Actions">⋯</button>
+                            <div class="bubble-menu">
+                                <button type="button" class="bubble-item" onclick="openEditModal({{ todo.id }}, '{{ todo.title|escapejs }}', '{{ todo.category|escapejs }}', '{{ todo.priority }}', '{{ todo.due_date|date:"Y-m-d"|default:"" }}', '{{ todo.estimated_minutes|default:0 }}', {{ todo.is_pinned|yesno:"true,false" }}, '{{ todo.description|escapejs }}')">
+                                    ✏️ Edit
+                                </button>
+                                <form method="post" action="{% url 'todo_pin' todo.pk %}" style="margin:0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="bubble-item">
+                                        {% if todo.is_pinned %}📍 Unpin{% else %}📌 Pin to Top{% endif %}
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'todo_duplicate' todo.pk %}" style="margin:0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="bubble-item">📋 Duplicate</button>
+                                </form>
+                                <form method="post" action="{% url 'todo_share' todo.pk %}" style="margin:0;" onsubmit="const u=prompt('Enter username to share with:'); if(!u) return false; this.username.value=u;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="username" value="">
+                                    <button type="submit" class="bubble-item">👥 Share with User</button>
+                                </form>
+                                <form method="post" action="{% url 'todo_archive' todo.pk %}" style="margin:0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="bubble-item">
+                                        {% if todo.is_archived %}📂 Restore{% else %}📦 Archive{% endif %}
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'todo_delete' todo.pk %}" style="margin:0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="bubble-item danger">🗑️ Delete</button>
+                                </form>
+                            </div>
                         </div>
                     </li>
                 {% empty %}
@@ -652,7 +808,63 @@
         {% endif %}
     </main>
 
-    <!-- Theme and Pomodoro Script -->
+    <!-- In-Place Edit Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+                <h3 style="margin:0; font-size:1.15rem; font-weight:700;">✏️ Edit Task</h3>
+                <button type="button" class="btn-ui" onclick="closeEditModal()" style="border-radius:999px; width:30px; height:30px; padding:0; justify-content:center;">✕</button>
+            </div>
+            <form id="editForm" method="post" action="">
+                {% csrf_token %}
+                <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Title</label>
+                        <input type="text" name="title" id="editTitle" required style="width:100%; padding:8px 12px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem;">
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+                        <div>
+                            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Category</label>
+                            <input type="text" name="category" id="editCategory" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem;">
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Priority</label>
+                            <select name="priority" id="editPriority" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem;">
+                                <option value="low">🌱 Low</option>
+                                <option value="medium">⚡ Medium</option>
+                                <option value="high">🔥 High</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+                        <div>
+                            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Due Date</label>
+                            <input type="date" name="due_date" id="editDueDate" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem;">
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Est. Minutes</label>
+                            <input type="number" name="estimated_minutes" id="editMinutes" min="0" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem;">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Description / Notes</label>
+                        <textarea name="description" id="editDescription" style="width:100%; min-height:60px; padding:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem;"></textarea>
+                    </div>
+                    <div>
+                        <label style="font-size:0.85rem; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                            <input type="checkbox" name="is_pinned" id="editPinned"> 📌 Pin to Top
+                        </label>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:0.5rem;">
+                        <button type="button" class="btn-ui" onclick="closeEditModal()">Cancel</button>
+                        <button type="submit" class="btn-ui btn-primary">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Theme, Dropdown, and Pomodoro Script -->
     <script>
         const themeBtn = document.getElementById('themeBtn');
         const savedTheme = localStorage.getItem('taskflow_theme') || 'light';
@@ -664,6 +876,40 @@
             else document.documentElement.removeAttribute('data-theme');
             localStorage.setItem('taskflow_theme', next);
         });
+
+        // Bubble Dropdown Actions
+        function toggleBubbleDropdown(btn) {
+            const dropdown = btn.closest('.bubble-dropdown');
+            document.querySelectorAll('.bubble-dropdown').forEach(d => {
+                if (d !== dropdown) d.classList.remove('active');
+            });
+            dropdown.classList.toggle('active');
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.bubble-dropdown')) {
+                document.querySelectorAll('.bubble-dropdown').forEach(d => d.classList.remove('active'));
+            }
+        });
+
+        // Edit Modal
+        const editModal = document.getElementById('editModal');
+        const editForm = document.getElementById('editForm');
+        function openEditModal(id, title, category, priority, dueDate, minutes, isPinned, description) {
+            editForm.action = `/${id}/edit/`;
+            document.getElementById('editTitle').value = title;
+            document.getElementById('editCategory').value = category;
+            document.getElementById('editPriority').value = priority;
+            document.getElementById('editDueDate').value = dueDate;
+            document.getElementById('editMinutes').value = minutes;
+            document.getElementById('editPinned').checked = isPinned;
+            document.getElementById('editDescription').value = description;
+            editModal.classList.add('active');
+        }
+
+        function closeEditModal() {
+            editModal.classList.remove('active');
+        }
 
         // Pomodoro Timer Engine
         let pomoMinutes = 25;
