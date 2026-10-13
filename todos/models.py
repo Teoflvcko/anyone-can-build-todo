@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
@@ -14,6 +16,19 @@ class Todo(models.Model):
         ("todo", "To Do"),
         ("in_progress", "In Progress"),
         ("done", "Done"),
+    ]
+
+    RECURRENCE_CHOICES = [
+        ("none", "None"),
+        ("daily", "Daily"),
+        ("weekly", "Weekly"),
+        ("monthly", "Monthly"),
+    ]
+
+    ENERGY_CHOICES = [
+        ("low", "Low Energy ☕"),
+        ("medium", "Medium ⚡"),
+        ("high", "Deep Work 🧠"),
     ]
 
     user = models.ForeignKey(
@@ -41,10 +56,22 @@ class Todo(models.Model):
         choices=STATUS_CHOICES,
         default="todo",
     )
+    recurrence = models.CharField(
+        max_length=20,
+        choices=RECURRENCE_CHOICES,
+        default="none",
+    )
+    energy_level = models.CharField(
+        max_length=20,
+        choices=ENERGY_CHOICES,
+        default="medium",
+    )
     due_date = models.DateField(null=True, blank=True)
     estimated_minutes = models.PositiveIntegerField(default=0, blank=True)
     is_pinned = models.BooleanField(default=False)
+    is_favorite = models.BooleanField(default=False)
     is_archived = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
     done = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -68,6 +95,12 @@ class Todo(models.Model):
         return False
 
     @property
+    def is_due_tomorrow(self):
+        if self.due_date and not self.done:
+            return self.due_date == (timezone.localdate() + timedelta(days=1))
+        return False
+
+    @property
     def formatted_duration(self):
         """Format estimated minutes into human-readable duration."""
         if not self.estimated_minutes:
@@ -85,6 +118,13 @@ class Todo(models.Model):
     @property
     def total_subtasks_count(self):
         return self.subtasks.count()
+
+    @property
+    def subtasks_progress_percent(self):
+        total = self.total_subtasks_count
+        if total == 0:
+            return 100 if self.done else 0
+        return int((self.completed_subtasks_count / total) * 100)
 
 
 class SubTask(models.Model):

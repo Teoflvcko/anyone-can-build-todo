@@ -442,14 +442,20 @@
     <aside class="app-sidebar">
         <div class="brand-logo">
             <div class="brand-badge">✓</div>
-            <span>TaskFlow Pro</span>
+            <span>{{ t.brand|default:"TaskFlow Pro" }}</span>
+        </div>
+        <div style="display:flex; gap:6px; margin-bottom:1.5rem; padding:0 0.5rem;">
+            <a href="{% url 'set_language' 'en' %}" class="btn-ui {% if lang_code == 'en' %}btn-primary{% endif %}" style="padding:4px 10px; font-size:0.75rem; border-radius:999px; text-decoration:none;">🇬🇧 EN</a>
+            <a href="{% url 'set_language' 'it' %}" class="btn-ui {% if lang_code == 'it' %}btn-primary{% endif %}" style="padding:4px 10px; font-size:0.75rem; border-radius:999px; text-decoration:none;">🇮🇹 IT</a>
         </div>
         <nav class="sidebar-nav">
-            <a href="?view=list" class="nav-item {% if active_view == 'list' %}active{% endif %}">📋 My Tasks</a>
-            <a href="?view=kanban" class="nav-item {% if active_view == 'kanban' %}active{% endif %}">📊 Kanban Board</a>
-            <a href="?view=pomodoro" class="nav-item {% if active_view == 'pomodoro' %}active{% endif %}">🍅 Focus Timer</a>
-            <a href="?view=social" class="nav-item {% if active_view == 'social' %}active{% endif %}">👥 Social Hub</a>
-            <a href="?view=events" class="nav-item {% if active_view == 'events' %}active{% endif %}">📅 Collab Events</a>
+            <a href="?view=list" class="nav-item {% if active_view == 'list' %}active{% endif %}">📋 {{ t.my_tasks|default:"My Tasks" }}</a>
+            <a href="?view=kanban" class="nav-item {% if active_view == 'kanban' %}active{% endif %}">📊 {{ t.kanban|default:"Kanban Board" }}</a>
+            <a href="?view=matrix" class="nav-item {% if active_view == 'matrix' %}active{% endif %}">🎯 {{ t.eisenhower|default:"Eisenhower Matrix" }}</a>
+            <a href="?view=pomodoro" class="nav-item {% if active_view == 'pomodoro' %}active{% endif %}">🍅 {{ t.focus_timer|default:"Focus Timer" }}</a>
+            <a href="?view=trash" class="nav-item {% if active_view == 'trash' %}active{% endif %}">🗑️ {{ t.trash|default:"Trash Bin" }}</a>
+            <a href="?view=social" class="nav-item {% if active_view == 'social' %}active{% endif %}">👥 {{ t.social|default:"Social Hub" }}</a>
+            <a href="?view=events" class="nav-item {% if active_view == 'events' %}active{% endif %}">📅 {{ t.collab_events|default:"Collab Events" }}</a>
         </nav>
         <div class="sidebar-footer">
             <button class="btn-ui" id="themeBtn" style="width:100%; justify-content:center;">🌓 Theme</button>
@@ -661,14 +667,173 @@
                 {% endfor %}
             </div>
 
+        {% elif active_view == 'matrix' %}
+            <!-- EISENHOWER MATRIX VIEW -->
+            <div class="main-header">
+                <div>
+                    <h1 style="margin:0; font-size:1.6rem;">🎯 {{ t.eisenhower|default:"Eisenhower Matrix" }}</h1>
+                    <p style="margin:4px 0 0; color:var(--text-muted); font-size:0.9rem;">Prioritize tasks based on urgency and importance.</p>
+                </div>
+                <a href="?view=list" class="btn-ui">← Back to List</a>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem;">
+                <!-- Q1: Urgent & Important -->
+                <div class="panel-card" style="border-top:4px solid var(--priority-high);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                        <h3 style="margin:0; font-size:0.95rem; color:var(--priority-high);">{{ t.urgent_important }}</h3>
+                        <span class="badge-pill">{{ matrix_q1.count }}</span>
+                    </div>
+                    <ul class="task-list">
+                        {% for todo in matrix_q1 %}
+                            <li class="task-row priority-high" style="padding:0.75rem 1rem;">
+                                <form method="post" action="{% url 'todo_toggle' todo.pk %}" style="margin:0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-ui" style="padding:2px 8px; font-size:0.75rem;">✓ Done</button>
+                                </form>
+                                <div style="flex:1;">
+                                    <span class="task-title" style="font-size:0.9rem; font-weight:600;">{{ todo.title }}</span>
+                                    {% if todo.due_date %}<span style="font-size:0.75rem; color:var(--priority-high); margin-left:6px;">📅 {{ todo.due_date|date:"M j" }}</span>{% endif %}
+                                </div>
+                            </li>
+                        {% empty %}
+                            <p style="color:var(--text-muted); font-size:0.85rem; margin:0;">No tasks in this quadrant.</p>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Q2: Important, Not Urgent -->
+                <div class="panel-card" style="border-top:4px solid var(--primary);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                        <h3 style="margin:0; font-size:0.95rem; color:var(--primary);">{{ t.not_urgent_important }}</h3>
+                        <span class="badge-pill">{{ matrix_q2.count }}</span>
+                    </div>
+                    <ul class="task-list">
+                        {% for todo in matrix_q2 %}
+                            <li class="task-row priority-medium" style="padding:0.75rem 1rem;">
+                                <form method="post" action="{% url 'todo_toggle' todo.pk %}" style="margin:0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-ui" style="padding:2px 8px; font-size:0.75rem;">✓ Done</button>
+                                </form>
+                                <div style="flex:1;">
+                                    <span class="task-title" style="font-size:0.9rem; font-weight:600;">{{ todo.title }}</span>
+                                    {% if todo.due_date %}<span style="font-size:0.75rem; color:var(--text-muted); margin-left:6px;">📅 {{ todo.due_date|date:"M j" }}</span>{% endif %}
+                                </div>
+                            </li>
+                        {% empty %}
+                            <p style="color:var(--text-muted); font-size:0.85rem; margin:0;">No tasks in this quadrant.</p>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Q3: Urgent, Not Important -->
+                <div class="panel-card" style="border-top:4px solid var(--priority-med);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                        <h3 style="margin:0; font-size:0.95rem; color:var(--priority-med);">{{ t.urgent_not_important }}</h3>
+                        <span class="badge-pill">{{ matrix_q3.count }}</span>
+                    </div>
+                    <ul class="task-list">
+                        {% for todo in matrix_q3 %}
+                            <li class="task-row priority-medium" style="padding:0.75rem 1rem;">
+                                <form method="post" action="{% url 'todo_toggle' todo.pk %}" style="margin:0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-ui" style="padding:2px 8px; font-size:0.75rem;">✓ Done</button>
+                                </form>
+                                <div style="flex:1;">
+                                    <span class="task-title" style="font-size:0.9rem; font-weight:600;">{{ todo.title }}</span>
+                                    {% if todo.due_date %}<span style="font-size:0.75rem; color:var(--text-muted); margin-left:6px;">📅 {{ todo.due_date|date:"M j" }}</span>{% endif %}
+                                </div>
+                            </li>
+                        {% empty %}
+                            <p style="color:var(--text-muted); font-size:0.85rem; margin:0;">No tasks in this quadrant.</p>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Q4: Neither (Eliminate) -->
+                <div class="panel-card" style="border-top:4px solid var(--text-muted);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                        <h3 style="margin:0; font-size:0.95rem; color:var(--text-muted);">{{ t.not_urgent_not_important }}</h3>
+                        <span class="badge-pill">{{ matrix_q4.count }}</span>
+                    </div>
+                    <ul class="task-list">
+                        {% for todo in matrix_q4 %}
+                            <li class="task-row priority-low" style="padding:0.75rem 1rem;">
+                                <form method="post" action="{% url 'todo_toggle' todo.pk %}" style="margin:0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-ui" style="padding:2px 8px; font-size:0.75rem;">✓ Done</button>
+                                </form>
+                                <div style="flex:1;">
+                                    <span class="task-title" style="font-size:0.9rem; font-weight:600;">{{ todo.title }}</span>
+                                    {% if todo.due_date %}<span style="font-size:0.75rem; color:var(--text-muted); margin-left:6px;">📅 {{ todo.due_date|date:"M j" }}</span>{% endif %}
+                                </div>
+                            </li>
+                        {% empty %}
+                            <p style="color:var(--text-muted); font-size:0.85rem; margin:0;">No tasks in this quadrant.</p>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+        {% elif active_view == 'trash' %}
+            <!-- TRASH BIN VIEW -->
+            <div class="main-header">
+                <div>
+                    <h1 style="margin:0; font-size:1.6rem;">🗑️ {{ t.trash|default:"Trash Bin" }}</h1>
+                    <p style="margin:4px 0 0; color:var(--text-muted); font-size:0.9rem;">Soft-deleted tasks. Restore them or permanently clear.</p>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <a href="?view=list" class="btn-ui">← Back to List</a>
+                    {% if todos %}
+                        <form method="post" action="{% url 'todo_empty_trash' %}" style="margin:0;" onsubmit="return confirm('Empty entire trash bin permanently?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-ui" style="color:var(--priority-high); border-color:var(--priority-high);">⚠️ {{ t.empty_trash|default:"Empty Trash" }}</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <ul class="task-list">
+                {% for todo in todos %}
+                    <li class="task-row" style="opacity:0.85;">
+                        <div style="flex:1;">
+                            <span class="task-title" style="text-decoration:line-through; font-weight:600;">{{ todo.title }}</span>
+                            {% if todo.category %}<span class="badge-pill" style="margin-left:8px;">📁 {{ todo.category }}</span>{% endif %}
+                            <div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">Deleted from workspace</div>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <form method="post" action="{% url 'todo_restore' todo.pk %}" style="margin:0;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-ui">♻️ {{ t.restore|default:"Restore" }}</button>
+                            </form>
+                            <form method="post" action="{% url 'todo_delete' todo.pk %}" style="margin:0;" onsubmit="return confirm('Permanently delete this task?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-ui" style="color:var(--priority-high);">✕ {{ t.delete|default:"Delete" }}</button>
+                            </form>
+                        </div>
+                    </li>
+                {% empty %}
+                    <div class="panel-card" style="text-align:center; padding:3rem; color:var(--text-muted);">
+                        <div style="font-size:2.5rem; margin-bottom:8px;">✨</div>
+                        <h3>Trash is empty</h3>
+                        <p style="margin:0;">No deleted tasks in your bin.</p>
+                    </div>
+                {% endfor %}
+            </ul>
+
         {% else %}
             <!-- DEFAULT MY TASKS VIEW -->
             <div class="main-header">
                 <div>
-                    <h1 style="margin:0; font-size:1.6rem;">📋 My Tasks & Workspace</h1>
+                    <h1 style="margin:0; font-size:1.6rem;">📋 {{ t.my_tasks|default:"My Tasks" }}</h1>
                     <p style="margin:4px 0 0; color:var(--text-muted); font-size:0.9rem;">Track, organize, and execute your daily objectives.</p>
                 </div>
-                <div style="display:flex; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <!-- Gamification XP Badge -->
+                    <div style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.12)); border:1px solid rgba(139,92,246,0.25); padding:6px 12px; border-radius:999px; font-size:0.82rem; font-weight:600; color:var(--text-main);">
+                        <span>🏆 {{ t.xp_level|default:"Level" }} {{ user_level }} · {{ level_tier }}</span>
+                        <span style="color:var(--primary); font-size:0.78rem;">({{ user_xp }} XP)</span>
+                    </div>
                     <a href="{% url 'todo_export_ical' %}" class="btn-ui" title="Export as iCal feed">📅 iCal</a>
                     <a href="{% url 'todo_export_json' %}" class="btn-ui" title="Export JSON backup">⬇ JSON</a>
                 </div>
@@ -677,12 +842,12 @@
             <!-- Metrics Card -->
             <div class="panel-card" style="padding:1.25rem;">
                 <div class="metrics-row">
-                    <div><div class="metric-val hi">{{ total_count }}</div><div class="metric-lbl">Total</div></div>
-                    <div><div class="metric-val">{{ active_count }}</div><div class="metric-lbl">Pending</div></div>
-                    <div><div class="metric-val">{{ completed_count }}</div><div class="metric-lbl">Completed</div></div>
-                    <div><div class="metric-val">{{ pinned_count }}</div><div class="metric-lbl">Pinned 📌</div></div>
-                    <div><div class="metric-val" style="color:var(--priority-high);">{{ overdue_count }}</div><div class="metric-lbl">Overdue</div></div>
-                    <div><div class="metric-val">{{ formatted_workload }}</div><div class="metric-lbl">Workload</div></div>
+                    <div><div class="metric-val hi">{{ total_count }}</div><div class="metric-lbl">{{ t.total|default:"Total" }}</div></div>
+                    <div><div class="metric-val">{{ active_count }}</div><div class="metric-lbl">{{ t.pending|default:"Pending" }}</div></div>
+                    <div><div class="metric-val">{{ completed_count }}</div><div class="metric-lbl">{{ t.completed|default:"Completed" }}</div></div>
+                    <div><div class="metric-val">{{ pinned_count }}</div><div class="metric-lbl">{{ t.pinned|default:"Pinned" }} 📌</div></div>
+                    <div><div class="metric-val" style="color:var(--priority-high);">{{ overdue_count }}</div><div class="metric-lbl">{{ t.overdue|default:"Overdue" }}</div></div>
+                    <div><div class="metric-val">{{ formatted_workload }}</div><div class="metric-lbl">{{ t.workload|default:"Workload" }}</div></div>
                 </div>
                 <div style="height:6px; background:var(--border-color); border-radius:999px; overflow:hidden;">
                     <div style="width:{{ progress_percent }}%; height:100%; background:linear-gradient(90deg, #3b82f6, #10b981);"></div>
@@ -693,9 +858,9 @@
             <div class="panel-card">
                 <form method="post" action="{% url 'todo_add' %}">
                     {% csrf_token %}
-                    <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr auto; gap:8px; margin-bottom:8px;">
-                        <input name="title" placeholder="What needs doing?" required autofocus style="padding:8px 12px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main);">
-                        <input name="category" placeholder="Category" list="categories-list" style="padding:8px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main);">
+                    <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr auto; gap:8px; margin-bottom:8px;">
+                        <input name="title" placeholder="{{ t.what_needs_doing|default:'What needs doing?' }}" required autofocus style="padding:8px 12px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main);">
+                        <input name="category" placeholder="{{ t.category|default:'Category' }}" list="categories-list" style="padding:8px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main);">
                         <datalist id="categories-list">
                             {% for c in categories %}<option value="{{ c }}">{% endfor %}
                         </datalist>
@@ -704,14 +869,70 @@
                             <option value="high">🔥 High</option>
                             <option value="low">🌱 Low</option>
                         </select>
+                        <select name="energy_level" style="padding:8px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main);">
+                            <option value="low">🌱 Low Energy</option>
+                            <option value="medium" selected>⚡ Med Energy</option>
+                            <option value="high">🔥 High Energy</option>
+                        </select>
                         <input type="date" name="due_date" style="padding:8px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main);">
-                        <button type="submit" class="btn-ui btn-primary">Add Task</button>
+                        <button type="submit" class="btn-ui btn-primary">{{ t.add_task|default:"Add Task" }}</button>
                     </div>
                     <div style="display:flex; gap:12px; align-items:center;">
-                        <input type="number" name="estimated_minutes" placeholder="Est. min (e.g. 30)" min="0" style="width:130px; padding:6px 10px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main);">
-                        <label style="font-size:0.85rem; cursor:pointer;"><input type="checkbox" name="is_pinned"> 📌 Pin to Top</label>
+                        <select name="recurrence" style="padding:6px 10px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main); font-size:0.85rem;">
+                            <option value="none" selected>🔁 Once</option>
+                            <option value="daily">🔁 Repeat Daily</option>
+                            <option value="weekly">🔁 Repeat Weekly</option>
+                            <option value="monthly">🔁 Repeat Monthly</option>
+                        </select>
+                        <input type="number" name="estimated_minutes" placeholder="{{ t.est_min|default:'Est. min' }} (e.g. 30)" min="0" style="width:140px; padding:6px 10px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main); font-size:0.85rem;">
+                        <label style="font-size:0.85rem; cursor:pointer;"><input type="checkbox" name="is_pinned"> 📌 {{ t.pin_to_top|default:"Pin to Top" }}</label>
                     </div>
                 </form>
+            </div>
+
+            <!-- Filter & Search Toolbar -->
+            <div class="panel-card" style="padding:0.85rem 1rem; margin-bottom:1rem;">
+                <form method="get" action="" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                    <input type="hidden" name="view" value="{{ active_view }}">
+                    <input type="text" name="q" value="{{ current_query }}" placeholder="🔍 Search tasks..." style="flex:1; min-width:180px; padding:6px 12px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.85rem;">
+
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <a href="?view=list" class="badge-pill" style="text-decoration:none; padding:5px 10px; cursor:pointer; {% if not current_filter and current_status == 'all' %}background:var(--primary); color:white; border-color:var(--primary);{% endif %}">All</a>
+                        <a href="?view=list&filter=today" class="badge-pill" style="text-decoration:none; padding:5px 10px; cursor:pointer; {% if current_filter == 'today' %}background:var(--primary); color:white; border-color:var(--primary);{% endif %}">📅 Today</a>
+                        <a href="?view=list&filter=upcoming" class="badge-pill" style="text-decoration:none; padding:5px 10px; cursor:pointer; {% if current_filter == 'upcoming' %}background:var(--primary); color:white; border-color:var(--primary);{% endif %}">🔮 Upcoming</a>
+                        <a href="?view=list&filter=overdue" class="badge-pill" style="text-decoration:none; padding:5px 10px; cursor:pointer; {% if current_filter == 'overdue' %}background:var(--primary); color:white; border-color:var(--primary);{% endif %}">⚠️ Overdue</a>
+                        <a href="?view=list&filter=pinned" class="badge-pill" style="text-decoration:none; padding:5px 10px; cursor:pointer; {% if current_filter == 'pinned' %}background:var(--primary); color:white; border-color:var(--primary);{% endif %}">📌 Pinned</a>
+                        <a href="?view=list&filter=favorite" class="badge-pill" style="text-decoration:none; padding:5px 10px; cursor:pointer; {% if current_filter == 'favorite' %}background:var(--primary); color:white; border-color:var(--primary);{% endif %}">★ Starred</a>
+                        <a href="?view=list&filter=archived" class="badge-pill" style="text-decoration:none; padding:5px 10px; cursor:pointer; {% if is_archived_view %}background:var(--primary); color:white; border-color:var(--primary);{% endif %}">📦 Archived</a>
+                    </div>
+
+                    <select name="sort" onchange="this.form.submit()" style="padding:6px 10px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.85rem;">
+                        <option value="default" {% if current_sort == 'default' %}selected{% endif %}>Sort: Default</option>
+                        <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Sort: Newest</option>
+                        <option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>Sort: Oldest</option>
+                        <option value="due_date" {% if current_sort == 'due_date' %}selected{% endif %}>Sort: Due Date</option>
+                        <option value="priority" {% if current_sort == 'priority' %}selected{% endif %}>Sort: Priority</option>
+                        <option value="workload" {% if current_sort == 'workload' %}selected{% endif %}>Sort: Workload</option>
+                    </select>
+                </form>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.75rem; padding-top:0.5rem; border-top:1px solid var(--border-color); font-size:0.82rem;">
+                    <div style="display:flex; gap:8px;">
+                        <a href="?view=list&status=all" style="color:var(--text-main); text-decoration:none; font-weight:{% if current_status == 'all' %}700{% else %}400{% endif %};">All Status</a>
+                        <a href="?view=list&status=active" style="color:var(--text-main); text-decoration:none; font-weight:{% if current_status == 'active' %}700{% else %}400{% endif %};">Active</a>
+                        <a href="?view=list&status=completed" style="color:var(--text-main); text-decoration:none; font-weight:{% if current_status == 'completed' %}700{% else %}400{% endif %};">Completed</a>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <form method="post" action="{% url 'todo_mark_all' %}" style="margin:0;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-ui" style="padding:3px 8px; font-size:0.78rem;">✓ Mark All Done</button>
+                        </form>
+                        <form method="post" action="{% url 'todo_clear_completed' %}" style="margin:0;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-ui" style="padding:3px 8px; font-size:0.78rem; color:var(--priority-high);">Clear Done</button>
+                        </form>
+                    </div>
+                </div>
             </div>
 
             <!-- Task List Stack -->
@@ -724,14 +945,24 @@
                                 {% if todo.done %}✓{% endif %}
                             </button>
                         </form>
+                        <form method="post" action="{% url 'todo_favorite' todo.pk %}" style="margin:0;">
+                            {% csrf_token %}
+                            <button type="submit" style="background:none; border:none; cursor:pointer; font-size:1.15rem; color:{% if todo.is_favorite %}#eab308{% else %}var(--text-muted){% endif %}; padding:0 2px;" title="{% if todo.is_favorite %}Unstar{% else %}Star as favorite{% endif %}">
+                                {% if todo.is_favorite %}★{% else %}☆{% endif %}
+                            </button>
+                        </form>
                         <div style="flex:1;">
                             <span class="task-title">{{ todo.title }}</span>
                             {% if todo.description %}<div style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">{{ todo.description }}</div>{% endif %}
                             <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
-                                {% if todo.is_pinned %}<span class="badge-pill" style="background:#fef08a; color:#854d0e;">📌 Pinned</span>{% endif %}
+                                {% if todo.is_favorite %}<span class="badge-pill" style="background:#fef9c3; color:#a16207;">★ Starred</span>{% endif %}
+                                {% if todo.is_pinned %}<span class="badge-pill" style="background:#fef08a; color:#854d0e;">📌 {{ t.pinned|default:"Pinned" }}</span>{% endif %}
                                 {% if todo.category %}<span class="badge-pill">📁 {{ todo.category }}</span>{% endif %}
                                 {% if todo.estimated_minutes %}<span class="badge-pill">⏱️ {{ todo.formatted_duration }}</span>{% endif %}
                                 {% if todo.due_date %}<span class="badge-pill">📅 {{ todo.due_date|date:"M j" }}</span>{% endif %}
+                                {% if todo.recurrence != 'none' %}<span class="badge-pill">🔁 {{ todo.recurrence|title }}</span>{% endif %}
+                                {% if todo.energy_level %}<span class="badge-pill">⚡ {{ todo.energy_level|title }}</span>{% endif %}
+                                {% if todo.total_subtasks_count > 0 %}<span class="badge-pill">☑ {{ todo.subtasks_progress_percent }}%</span>{% endif %}
                                 {% if todo.collaborators.exists %}
                                     <span class="badge-pill" style="background:#e0e7ff; color:#3730a3;">👥 Shared ({{ todo.collaborators.count }})</span>
                                 {% endif %}
@@ -766,13 +997,19 @@
                         <div class="bubble-dropdown">
                             <button type="button" class="bubble-btn" onclick="toggleBubbleDropdown(this)" title="Task Actions">⋯</button>
                             <div class="bubble-menu">
-                                <button type="button" class="bubble-item" onclick="openEditModal({{ todo.id }}, '{{ todo.title|escapejs }}', '{{ todo.category|escapejs }}', '{{ todo.priority }}', '{{ todo.due_date|date:"Y-m-d"|default:"" }}', '{{ todo.estimated_minutes|default:0 }}', {{ todo.is_pinned|yesno:"true,false" }}, '{{ todo.description|escapejs }}')">
-                                    ✏️ Edit
+                                <button type="button" class="bubble-item" onclick="openEditModal({{ todo.id }}, '{{ todo.title|escapejs }}', '{{ todo.category|escapejs }}', '{{ todo.priority }}', '{{ todo.energy_level }}', '{{ todo.recurrence }}', '{{ todo.due_date|date:"Y-m-d"|default:"" }}', '{{ todo.estimated_minutes|default:0 }}', {{ todo.is_pinned|yesno:"true,false" }}, '{{ todo.description|escapejs }}')">
+                                    ✏️ {{ t.edit|default:"Edit" }}
                                 </button>
+                                <form method="post" action="{% url 'todo_favorite' todo.pk %}" style="margin:0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="bubble-item">
+                                        {% if todo.is_favorite %}★ Unstar{% else %}☆ Star Favorite{% endif %}
+                                    </button>
+                                </form>
                                 <form method="post" action="{% url 'todo_pin' todo.pk %}" style="margin:0;">
                                     {% csrf_token %}
                                     <button type="submit" class="bubble-item">
-                                        {% if todo.is_pinned %}📍 Unpin{% else %}📌 Pin to Top{% endif %}
+                                        {% if todo.is_pinned %}📍 Unpin{% else %}📌 {{ t.pin_to_top|default:"Pin to Top" }}{% endif %}
                                     </button>
                                 </form>
                                 <form method="post" action="{% url 'todo_duplicate' todo.pk %}" style="margin:0;">
@@ -782,17 +1019,21 @@
                                 <form method="post" action="{% url 'todo_share' todo.pk %}" style="margin:0;" onsubmit="const u=prompt('Enter username to share with:'); if(!u) return false; this.username.value=u;">
                                     {% csrf_token %}
                                     <input type="hidden" name="username" value="">
-                                    <button type="submit" class="bubble-item">👥 Share with User</button>
+                                    <button type="submit" class="bubble-item">👥 {{ t.share|default:"Share" }}</button>
                                 </form>
                                 <form method="post" action="{% url 'todo_archive' todo.pk %}" style="margin:0;">
                                     {% csrf_token %}
                                     <button type="submit" class="bubble-item">
-                                        {% if todo.is_archived %}📂 Restore{% else %}📦 Archive{% endif %}
+                                        {% if todo.is_archived %}📂 Restore{% else %}📦 {{ t.archive|default:"Archive" }}{% endif %}
                                     </button>
+                                </form>
+                                <form method="post" action="{% url 'todo_trash' todo.pk %}" style="margin:0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="bubble-item">🗑️ Move to Trash</button>
                                 </form>
                                 <form method="post" action="{% url 'todo_delete' todo.pk %}" style="margin:0;">
                                     {% csrf_token %}
-                                    <button type="submit" class="bubble-item danger">🗑️ Delete</button>
+                                    <button type="submit" class="bubble-item danger">✕ {{ t.delete|default:"Delete" }}</button>
                                 </form>
                             </div>
                         </div>
@@ -833,6 +1074,25 @@
                                 <option value="low">🌱 Low</option>
                                 <option value="medium">⚡ Medium</option>
                                 <option value="high">🔥 High</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+                        <div>
+                            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Energy Level</label>
+                            <select name="energy_level" id="editEnergy" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem;">
+                                <option value="low">🌱 Low</option>
+                                <option value="medium">⚡ Medium</option>
+                                <option value="high">🔥 High</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Recurrence</label>
+                            <select name="recurrence" id="editRecurrence" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem;">
+                                <option value="none">🔁 None</option>
+                                <option value="daily">🔁 Daily</option>
+                                <option value="weekly">🔁 Weekly</option>
+                                <option value="monthly">🔁 Monthly</option>
                             </select>
                         </div>
                     </div>
@@ -895,11 +1155,13 @@
         // Edit Modal
         const editModal = document.getElementById('editModal');
         const editForm = document.getElementById('editForm');
-        function openEditModal(id, title, category, priority, dueDate, minutes, isPinned, description) {
+        function openEditModal(id, title, category, priority, energy, recurrence, dueDate, minutes, isPinned, description) {
             editForm.action = `/${id}/edit/`;
             document.getElementById('editTitle').value = title;
             document.getElementById('editCategory').value = category;
             document.getElementById('editPriority').value = priority;
+            if (document.getElementById('editEnergy')) document.getElementById('editEnergy').value = energy || 'medium';
+            if (document.getElementById('editRecurrence')) document.getElementById('editRecurrence').value = recurrence || 'none';
             document.getElementById('editDueDate').value = dueDate;
             document.getElementById('editMinutes').value = minutes;
             document.getElementById('editPinned').checked = isPinned;

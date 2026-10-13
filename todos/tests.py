@@ -358,3 +358,91 @@ class TodoTests(TestCase):
                 message="Hello community! Excited to build together."
             ).exists()
         )
+
+    def test_set_language_view(self):
+        self.client.get(reverse("set_language", args=["it"]))
+        self.assertEqual(self.client.session.get("django_language"), "it")
+        res_page = self.client.get(reverse("todo_list"))
+        self.assertContains(res_page, "I Miei Compiti")
+
+        self.client.get(reverse("set_language", args=["en"]))
+        self.assertEqual(self.client.session.get("django_language"), "en")
+        res_page_en = self.client.get(reverse("todo_list"))
+        self.assertContains(res_page_en, "My Tasks")
+
+    def test_todo_favorite(self):
+        todo = Todo.objects.create(title="VIP Task", is_favorite=False)
+        self.client.post(reverse("todo_favorite", args=[todo.pk]))
+        todo.refresh_from_db()
+        self.assertTrue(todo.is_favorite)
+
+        self.client.post(reverse("todo_favorite", args=[todo.pk]))
+        todo.refresh_from_db()
+        self.assertFalse(todo.is_favorite)
+
+    def test_todo_trash_and_restore(self):
+        todo = Todo.objects.create(title="Obsolete Task")
+        self.client.post(reverse("todo_trash", args=[todo.pk]))
+        todo.refresh_from_db()
+        self.assertTrue(todo.is_deleted)
+
+        # Trashed task should not appear in regular list view
+        res = self.client.get(reverse("todo_list"))
+        self.assertNotContains(res, '<span class="task-title">Obsolete Task</span>')
+
+        # But it should appear in trash view
+        res_trash = self.client.get(reverse("todo_list") + "?view=trash")
+        self.assertContains(res_trash, "Obsolete Task")
+
+        # Restore task
+        self.client.post(reverse("todo_restore", args=[todo.pk]))
+        todo.refresh_from_db()
+        self.assertFalse(todo.is_deleted)
+
+    def test_todo_empty_trash(self):
+        Todo.objects.create(title="Discarded Forever", is_deleted=True)
+        self.assertEqual(Todo.objects.filter(is_deleted=True).count(), 1)
+        self.client.post(reverse("todo_empty_trash"))
+        self.assertEqual(Todo.objects.filter(is_deleted=True).count(), 0)
+
+    def test_recurring_task_completion(self):
+        today = timezone.localdate()
+        todo = Todo.objects.create(
+            title="Daily Standup",
+            recurrence="daily",
+            due_date=today,
+            done=False,
+        )
+        self.client.post(reverse("todo_toggle", args=[todo.pk]))
+        todo.refresh_from_db()
+        self.assertTrue(todo.done)
+
+        # Next recurring task should be created with due date tomorrow
+        next_todo = Todo.objects.get(title="Daily Standup", done=False)
+        self.assertEqual(next_todo.recurrence, "daily")
+        self.assertEqual(next_todo.due_date, today + timedelta(days=1))
+
+    def test_eisenhower_matrix_view(self):
+        today = timezone.localdate()
+        Todo.objects.create(
+            title="Crisis Fire Drill",
+            priority="high",
+            due_date=today,
+            done=False,
+        )
+        res = self.client.get(reverse("todo_list") + "?view=matrix")
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, "Crisis Fire Drill")
+
+    def test_energy_level_and_recurrence_creation(self):
+        self.client.post(
+            reverse("todo_add"),
+            {
+                "title": "Low energy review",
+                "energy_level": "low",
+                "recurrence": "weekly",
+            },
+        )
+        todo = Todo.objects.get(title="Low energy review")
+        self.assertEqual(todo.energy_level, "low")
+        self.assertEqual(todo.recurrence, "weekly")

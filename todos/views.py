@@ -15,9 +15,80 @@ from .models import CollaborationEvent, SocialActivity, SubTask, Todo
 
 User = get_user_model()
 
+TRANSLATIONS = {
+    "en": {
+        "brand": "TaskFlow Pro",
+        "my_tasks": "My Tasks",
+        "kanban": "Kanban Board",
+        "eisenhower": "Eisenhower Matrix",
+        "focus_timer": "Focus Timer",
+        "trash": "Trash Bin",
+        "social": "Social Hub",
+        "collab_events": "Collab Events",
+        "total": "Total",
+        "pending": "Pending",
+        "completed": "Completed",
+        "pinned": "Pinned",
+        "overdue": "Overdue",
+        "workload": "Workload",
+        "xp_level": "Level",
+        "add_task": "Add Task",
+        "what_needs_doing": "What needs doing?",
+        "category": "Category",
+        "priority": "Priority",
+        "due_date": "Due date",
+        "est_min": "Est. min",
+        "pin_to_top": "Pin to Top",
+        "share": "Share",
+        "delete": "Delete",
+        "edit": "Edit",
+        "archive": "Archive",
+        "restore": "Restore",
+        "empty_trash": "Empty Trash",
+        "urgent_important": "🔥 Urgent & Important (Do First)",
+        "not_urgent_important": "📅 Important, Not Urgent (Schedule)",
+        "urgent_not_important": "⚡ Urgent, Not Important (Delegate)",
+        "not_urgent_not_important": "🌱 Neither (Eliminate)",
+    },
+    "it": {
+        "brand": "TaskFlow Pro",
+        "my_tasks": "I Miei Compiti",
+        "kanban": "Tabellone Kanban",
+        "eisenhower": "Matrice Eisenhower",
+        "focus_timer": "Timer Concentrazione",
+        "trash": "Cestino",
+        "social": "Area Social",
+        "collab_events": "Eventi Condivisi",
+        "total": "Totale",
+        "pending": "In Sospeso",
+        "completed": "Completati",
+        "pinned": "In Evidenza",
+        "overdue": "Scaduti",
+        "workload": "Carico di Lavoro",
+        "xp_level": "Livello",
+        "add_task": "Aggiungi Compito",
+        "what_needs_doing": "Cosa c'è da fare?",
+        "category": "Categoria",
+        "priority": "Priorità",
+        "due_date": "Scadenza",
+        "est_min": "Min. stimati",
+        "pin_to_top": "Fissa in Alto",
+        "share": "Condividi",
+        "delete": "Elimina",
+        "edit": "Modifica",
+        "archive": "Archivia",
+        "restore": "Ripristina",
+        "empty_trash": "Svuota Cestino",
+        "urgent_important": "🔥 Urgente e Importante (Fai Subito)",
+        "not_urgent_important": "📅 Importante, Non Urgente (Pianifica)",
+        "urgent_not_important": "⚡ Urgente, Non Importante (Delega)",
+        "not_urgent_not_important": "🌱 Né Urgente né Importante (Elimina)",
+    },
+}
 
-def _get_user_todos(request, include_archived=False):
-    """Return todos filtered by the current user, shared collaborations, or guest tasks."""
+
+def _get_user_todos(request, include_archived=False, include_deleted=False):
+    """Return todos filtered by the current user or guest tasks."""
     if request.user.is_authenticated:
         qs = Todo.objects.filter(
             Q(user=request.user) | Q(collaborators=request.user)
@@ -25,19 +96,44 @@ def _get_user_todos(request, include_archived=False):
     else:
         qs = Todo.objects.filter(user__isnull=True)
 
+    if include_deleted:
+        return qs.filter(is_deleted=True)
+    qs = qs.filter(is_deleted=False)
+
     if not include_archived:
         qs = qs.filter(is_archived=False)
     return qs
 
 
+def set_language_view(request, lang_code):
+    """Switch language between English ('en') and Italian ('it')."""
+    if lang_code in ["en", "it"]:
+        request.session["django_language"] = lang_code
+        messages.success(
+            request,
+            "Language changed to English!"
+            if lang_code == "en"
+            else "Lingua cambiata in Italiano!",
+        )
+    return redirect(request.META.get("HTTP_REFERER", "todo_list"))
+
+
 def todo_list(request):
+    lang_code = request.session.get("django_language", "en")
+    t = TRANSLATIONS.get(lang_code, TRANSLATIONS["en"])
+
     active_view = request.GET.get("view", "list").strip()
     filter_preset = request.GET.get("filter", "").strip()
     status_filter = request.GET.get("status", "all").strip()
     is_archived_view = filter_preset == "archived" or status_filter == "archived"
+    is_trash_view = active_view == "trash"
 
     # Base queryset for current user
-    all_user_todos = _get_user_todos(request, include_archived=is_archived_view)
+    all_user_todos = _get_user_todos(
+        request,
+        include_archived=is_archived_view,
+        include_deleted=is_trash_view,
+    )
     if is_archived_view:
         all_user_todos = all_user_todos.filter(is_archived=True)
 
@@ -54,6 +150,8 @@ def todo_list(request):
         todos = todos.filter(due_date__lt=today, done=False)
     elif filter_preset == "pinned":
         todos = todos.filter(is_pinned=True)
+    elif filter_preset == "favorite":
+        todos = todos.filter(is_favorite=True)
 
     # Search query
     query = request.GET.get("q", "").strip()
@@ -118,6 +216,19 @@ def todo_list(request):
     else:
         formatted_workload = "0m"
 
+    # Gamification XP & Level
+    user_xp = completed_count * 15
+    user_level = 1 + (user_xp // 60)
+    level_tier = (
+        "Master 👑"
+        if user_level >= 4
+        else (
+            "Pro 🌟"
+            if user_level >= 3
+            else ("Achiever ⚡" if user_level >= 2 else "Novice 🌱")
+        )
+    )
+
     # Distinct categories for auto-complete
     categories = sorted(
         {
@@ -132,6 +243,31 @@ def todo_list(request):
     kanban_in_progress = all_user_todos.filter(status="in_progress", done=False)
     kanban_done = all_user_todos.filter(Q(status="done") | Q(done=True))
 
+    # Eisenhower Matrix Quadrants (Active Tasks)
+    matrix_active = all_user_todos.filter(done=False)
+    three_days_out = today + timedelta(days=3)
+    # Quadrant 1: Urgent & Important (High Priority + Due within 3 days or Overdue)
+    matrix_q1 = matrix_active.filter(
+        priority="high",
+        due_date__lte=three_days_out,
+    )
+    # Quadrant 2: Important, Not Urgent (High/Medium Priority + Due later or no due date)
+    matrix_q2 = matrix_active.filter(
+        Q(priority="high", due_date__gt=three_days_out)
+        | Q(priority="high", due_date__isnull=True)
+        | Q(priority="medium", due_date__gt=three_days_out)
+        | Q(priority="medium", due_date__isnull=True)
+    )
+    # Quadrant 3: Urgent, Not Important (Medium/Low Priority + Due within 3 days)
+    matrix_q3 = matrix_active.filter(
+        Q(priority__in=["medium", "low"]),
+        due_date__lte=three_days_out,
+    ).exclude(pk__in=matrix_q1.values_list("pk", flat=True))
+    # Quadrant 4: Neither (Low Priority, no tight deadline)
+    matrix_q4 = matrix_active.filter(
+        priority="low",
+    ).exclude(pk__in=matrix_q3.values_list("pk", flat=True))
+
     # Social & Collaborative Events
     social_activities = SocialActivity.objects.select_related("user")[:25]
     collaborative_events = CollaborationEvent.objects.prefetch_related(
@@ -141,6 +277,8 @@ def todo_list(request):
     context = {
         "todos": todos,
         "active_view": active_view,
+        "lang_code": lang_code,
+        "t": t,
         "total_count": total_count,
         "completed_count": completed_count,
         "active_count": active_count,
@@ -149,6 +287,9 @@ def todo_list(request):
         "overdue_count": overdue_count,
         "today_count": today_count,
         "formatted_workload": formatted_workload,
+        "user_xp": user_xp,
+        "user_level": user_level,
+        "level_tier": level_tier,
         "categories": categories,
         "current_query": query,
         "current_status": status_filter,
@@ -157,10 +298,15 @@ def todo_list(request):
         "current_sort": sort_by,
         "current_filter": filter_preset,
         "is_archived_view": is_archived_view,
+        "is_trash_view": is_trash_view,
         "today_str": today.strftime("%Y-%m-%d"),
         "kanban_todo": kanban_todo,
         "kanban_in_progress": kanban_in_progress,
         "kanban_done": kanban_done,
+        "matrix_q1": matrix_q1,
+        "matrix_q2": matrix_q2,
+        "matrix_q3": matrix_q3,
+        "matrix_q4": matrix_q4,
         "social_activities": social_activities,
         "collaborative_events": collaborative_events,
     }
@@ -172,6 +318,8 @@ def todo_add(request):
     title = request.POST.get("title", "").strip()
     category = request.POST.get("category", "").strip()
     priority = request.POST.get("priority", "medium").strip()
+    energy_level = request.POST.get("energy_level", "medium").strip()
+    recurrence = request.POST.get("recurrence", "none").strip()
     due_date_str = request.POST.get("due_date", "").strip()
     description = request.POST.get("description", "").strip()
     estimated_minutes_str = request.POST.get("estimated_minutes", "0").strip()
@@ -179,6 +327,10 @@ def todo_add(request):
 
     if priority not in ["low", "medium", "high"]:
         priority = "medium"
+    if energy_level not in ["low", "medium", "high"]:
+        energy_level = "medium"
+    if recurrence not in ["none", "daily", "weekly", "monthly"]:
+        recurrence = "none"
 
     due_date = None
     if due_date_str:
@@ -199,6 +351,8 @@ def todo_add(request):
             title=title,
             category=category,
             priority=priority,
+            energy_level=energy_level,
+            recurrence=recurrence,
             due_date=due_date,
             description=description,
             estimated_minutes=estimated_minutes,
@@ -233,6 +387,8 @@ def todo_edit(request, pk):
 
     category = request.POST.get("category", "").strip()
     priority = request.POST.get("priority", "medium").strip()
+    energy_level = request.POST.get("energy_level", "medium").strip()
+    recurrence = request.POST.get("recurrence", "none").strip()
     due_date_str = request.POST.get("due_date", "").strip()
     description = request.POST.get("description", "").strip()
     estimated_minutes_str = request.POST.get("estimated_minutes", "0").strip()
@@ -240,6 +396,10 @@ def todo_edit(request, pk):
 
     if priority in ["low", "medium", "high"]:
         todo.priority = priority
+    if energy_level in ["low", "medium", "high"]:
+        todo.energy_level = energy_level
+    if recurrence in ["none", "daily", "weekly", "monthly"]:
+        todo.recurrence = recurrence
 
     if due_date_str:
         try:
@@ -278,6 +438,20 @@ def todo_pin(request, pk):
 
 
 @require_POST
+def todo_favorite(request, pk):
+    """Toggle starred/favorite state of a task."""
+    todo = get_object_or_404(Todo, pk=pk)
+    if todo.user and todo.user != request.user:
+        raise Http404("Todo not found")
+
+    todo.is_favorite = not todo.is_favorite
+    todo.save()
+    status_msg = "starred as favorite ★" if todo.is_favorite else "unstarred"
+    messages.success(request, f'Task "{todo.title}" {status_msg}.')
+    return redirect("todo_list")
+
+
+@require_POST
 def todo_archive(request, pk):
     todo = get_object_or_404(Todo, pk=pk)
     if todo.user and todo.user != request.user:
@@ -288,6 +462,42 @@ def todo_archive(request, pk):
     status_msg = "archived" if todo.is_archived else "restored from archive"
     messages.success(request, f'Task "{todo.title}" {status_msg}.')
     return redirect("todo_list")
+
+
+@require_POST
+def todo_trash(request, pk):
+    """Move task to trash bin (soft-delete)."""
+    todo = get_object_or_404(Todo, pk=pk)
+    if todo.user and todo.user != request.user:
+        raise Http404("Todo not found")
+
+    todo.is_deleted = True
+    todo.save()
+    messages.success(request, f'Moved "{todo.title}" to Trash bin.')
+    return redirect("todo_list")
+
+
+@require_POST
+def todo_restore(request, pk):
+    """Restore task from trash bin."""
+    todo = get_object_or_404(Todo, pk=pk)
+    if todo.user and todo.user != request.user:
+        raise Http404("Todo not found")
+
+    todo.is_deleted = False
+    todo.save()
+    messages.success(request, f'Restored "{todo.title}" from Trash bin.')
+    return redirect("/?view=trash")
+
+
+@require_POST
+def todo_empty_trash(request):
+    """Permanently delete all tasks in trash for this user."""
+    trashed = _get_user_todos(request, include_deleted=True)
+    count = trashed.count()
+    trashed.delete()
+    messages.success(request, f"Permanently deleted {count} trashed task(s).")
+    return redirect("/?view=trash")
 
 
 @require_POST
@@ -307,6 +517,35 @@ def todo_toggle(request, pk):
             SocialActivity.objects.create(
                 user=request.user,
                 message=f'completed the task: "{todo.title}"! ✅',
+            )
+        # Recurring task automation: spawn next occurrence!
+        if todo.recurrence != "none":
+            next_due = None
+            if todo.due_date:
+                if todo.recurrence == "daily":
+                    next_due = todo.due_date + timedelta(days=1)
+                elif todo.recurrence == "weekly":
+                    next_due = todo.due_date + timedelta(days=7)
+                elif todo.recurrence == "monthly":
+                    next_due = todo.due_date + timedelta(days=30)
+
+            Todo.objects.create(
+                user=todo.user,
+                title=todo.title,
+                category=todo.category,
+                priority=todo.priority,
+                energy_level=todo.energy_level,
+                recurrence=todo.recurrence,
+                due_date=next_due,
+                description=todo.description,
+                estimated_minutes=todo.estimated_minutes,
+                is_pinned=todo.is_pinned,
+                done=False,
+                status="todo",
+            )
+            messages.info(
+                request,
+                f'Recurring task: next cycle of "{todo.title}" scheduled!',
             )
     else:
         todo.status = "todo"
@@ -515,13 +754,14 @@ def todo_duplicate(request, pk):
         title=f"{todo.title} (Copy)",
         category=todo.category,
         priority=todo.priority,
+        energy_level=todo.energy_level,
+        recurrence=todo.recurrence,
         due_date=todo.due_date,
         description=todo.description,
         estimated_minutes=todo.estimated_minutes,
         is_pinned=todo.is_pinned,
         done=False,
     )
-    # Duplicate subtasks as well
     for st in todo.subtasks.all():
         SubTask.objects.create(todo=new_todo, title=st.title, done=False)
 
@@ -557,6 +797,9 @@ def todo_export_json(request):
             "category": t.category,
             "priority": t.priority,
             "status": t.status,
+            "recurrence": t.recurrence,
+            "energy_level": t.energy_level,
+            "is_favorite": t.is_favorite,
             "due_date": str(t.due_date) if t.due_date else None,
             "estimated_minutes": t.estimated_minutes,
             "is_pinned": t.is_pinned,
@@ -591,6 +834,8 @@ def todo_export_csv(request):
             "Category",
             "Priority",
             "Status",
+            "Recurrence",
+            "Energy Level",
             "Due Date",
             "Est Minutes",
             "Pinned",
@@ -607,6 +852,8 @@ def todo_export_csv(request):
                 t.category,
                 t.priority,
                 t.status,
+                t.recurrence,
+                t.energy_level,
                 t.due_date or "",
                 t.estimated_minutes,
                 "Yes" if t.is_pinned else "No",
@@ -685,6 +932,14 @@ def todo_import_json(request):
             if priority not in ["low", "medium", "high"]:
                 priority = "medium"
 
+            energy_level = item.get("energy_level", "medium")
+            if energy_level not in ["low", "medium", "high"]:
+                energy_level = "medium"
+
+            recurrence = item.get("recurrence", "none")
+            if recurrence not in ["none", "daily", "weekly", "monthly"]:
+                recurrence = "none"
+
             try:
                 est = max(0, int(item.get("estimated_minutes", 0)))
             except (ValueError, TypeError):
@@ -696,9 +951,12 @@ def todo_import_json(request):
                 description=str(item.get("description", "")),
                 category=str(item.get("category", "")),
                 priority=priority,
+                energy_level=energy_level,
+                recurrence=recurrence,
                 due_date=due_date,
                 estimated_minutes=est,
                 is_pinned=bool(item.get("is_pinned", False)),
+                is_favorite=bool(item.get("is_favorite", False)),
                 done=bool(item.get("done", False)),
                 status=item.get("status", "done" if item.get("done") else "todo"),
             )
@@ -731,6 +989,9 @@ def api_todos(request):
             "category": t.category,
             "priority": t.priority,
             "status": t.status,
+            "recurrence": t.recurrence,
+            "energy_level": t.energy_level,
+            "is_favorite": t.is_favorite,
             "due_date": str(t.due_date) if t.due_date else None,
             "estimated_minutes": t.estimated_minutes,
             "is_pinned": t.is_pinned,
