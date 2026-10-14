@@ -66,6 +66,7 @@ class Todo(models.Model):
         choices=ENERGY_CHOICES,
         default="medium",
     )
+    tags = models.CharField(max_length=200, blank=True, default="")
     due_date = models.DateField(null=True, blank=True)
     estimated_minutes = models.PositiveIntegerField(default=0, blank=True)
     is_pinned = models.BooleanField(default=False)
@@ -81,6 +82,26 @@ class Todo(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def tag_list(self):
+        if not self.tags:
+            return []
+        return [t.strip().lstrip("#") for t in self.tags.split(",") if t.strip()]
+
+    @property
+    def relative_deadline_display(self):
+        if not self.due_date:
+            return ""
+        today = timezone.localdate()
+        diff = (self.due_date - today).days
+        if diff < 0:
+            return f"Overdue by {abs(diff)}d"
+        elif diff == 0:
+            return "Today"
+        elif diff == 1:
+            return "Tomorrow"
+        return f"In {diff}d"
 
     @property
     def is_overdue(self):
@@ -174,6 +195,45 @@ class SocialActivity(models.Model):
         related_name="activities",
     )
     message = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.username}: {self.message}"
+
+
+class TaskComment(models.Model):
+    todo = models.ForeignKey(
+        Todo,
+        on_delete=models.CASCADE,
+        related_name="comments",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="task_comments",
+    )
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"{self.user.username}: {self.text[:30]}"
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="notifications",
+    )
+    message = models.CharField(max_length=255)
+    link = models.CharField(max_length=255, blank=True, default="")
+    is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

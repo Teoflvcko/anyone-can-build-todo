@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import Todo
+from .models import Notification, TaskComment, Todo
 
 User = get_user_model()
 
@@ -446,3 +446,76 @@ class TodoTests(TestCase):
         todo = Todo.objects.get(title="Low energy review")
         self.assertEqual(todo.energy_level, "low")
         self.assertEqual(todo.recurrence, "weekly")
+
+    def test_calendar_view_loads_and_displays_deadlines(self):
+        today = timezone.localdate()
+        Todo.objects.create(
+            title="Calendar Milestone Task",
+            due_date=today,
+            priority="high",
+        )
+        res = self.client.get(reverse("todo_list") + "?view=calendar")
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, "Calendar Milestone Task")
+
+    def test_analytics_view_loads(self):
+        res = self.client.get(reverse("todo_list") + "?view=analytics")
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, "Completion Velocity")
+
+    def test_leaderboard_view_loads(self):
+        res = self.client.get(reverse("todo_list") + "?view=leaderboard")
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, "Leaderboard")
+
+    def test_task_comment_creation_and_notification(self):
+        alice = User.objects.create_user(username="alice", password="password123")
+        bob = User.objects.create_user(username="bob", password="password123")
+        todo = Todo.objects.create(title="Collaborative Spec", user=alice)
+        todo.collaborators.add(bob)
+
+        self.client.force_login(bob)
+        res = self.client.post(
+            reverse("task_comment_add", args=[todo.pk]),
+            {"text": "Feedback from Bob on this task."},
+        )
+        self.assertEqual(res.status_code, 302)
+        self.assertTrue(
+            TaskComment.objects.filter(
+                todo=todo,
+                user=bob,
+                text="Feedback from Bob on this task.",
+            ).exists()
+        )
+        # Notification created for Alice
+        self.assertTrue(
+            Notification.objects.filter(
+                user=alice,
+                message__contains="bob commented on",
+            ).exists()
+        )
+
+    def test_notification_clear(self):
+        alice = User.objects.create_user(username="alice_notif", password="password123")
+        Notification.objects.create(
+            user=alice,
+            message="You have a new update",
+            is_read=False,
+        )
+        self.client.force_login(alice)
+        res = self.client.post(reverse("notification_clear"))
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(
+            Notification.objects.filter(user=alice, is_read=False).count(), 0
+        )
+
+    def test_tags_filtering_and_list(self):
+        todo_tag = Todo.objects.create(
+            title="Backend Optimization",
+            tags="#backend, #database",
+        )
+        self.assertIn("backend", todo_tag.tag_list)
+        self.assertIn("database", todo_tag.tag_list)
+
+        res_tag = self.client.get(reverse("todo_list") + "?tag=backend")
+        self.assertContains(res_tag, "Backend Optimization")

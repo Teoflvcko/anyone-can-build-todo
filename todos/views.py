@@ -1,3 +1,4 @@
+import calendar
 import csv
 import json
 from datetime import datetime, timedelta
@@ -11,7 +12,14 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .models import CollaborationEvent, SocialActivity, SubTask, Todo
+from .models import (
+    CollaborationEvent,
+    Notification,
+    SocialActivity,
+    SubTask,
+    TaskComment,
+    Todo,
+)
 
 User = get_user_model()
 
@@ -20,11 +28,25 @@ TRANSLATIONS = {
         "brand": "TaskFlow Pro",
         "my_tasks": "My Tasks",
         "kanban": "Kanban Board",
+        "calendar": "Calendar",
         "eisenhower": "Eisenhower Matrix",
+        "analytics": "Analytics & Velocity",
+        "leaderboard": "Leaderboard",
         "focus_timer": "Focus Timer",
         "trash": "Trash Bin",
         "social": "Social Hub",
         "collab_events": "Collab Events",
+        "notifications": "Notifications",
+        "mark_all_read": "Mark All as Read",
+        "no_notifications": "No notifications yet",
+        "tags": "Tags",
+        "comments": "Comments",
+        "add_comment": "Write a comment...",
+        "shortcuts": "Shortcuts",
+        "quick_template": "Template",
+        "today_btn": "Today",
+        "prev": "Prev",
+        "next": "Next",
         "total": "Total",
         "pending": "Pending",
         "completed": "Completed",
@@ -54,11 +76,25 @@ TRANSLATIONS = {
         "brand": "TaskFlow Pro",
         "my_tasks": "I Miei Compiti",
         "kanban": "Tabellone Kanban",
+        "calendar": "Calendario",
         "eisenhower": "Matrice Eisenhower",
+        "analytics": "Analisi & Produttività",
+        "leaderboard": "Classifica Team",
         "focus_timer": "Timer Concentrazione",
         "trash": "Cestino",
         "social": "Area Social",
         "collab_events": "Eventi Condivisi",
+        "notifications": "Notifiche",
+        "mark_all_read": "Segna tutti come letti",
+        "no_notifications": "Nessuna notifica al momento",
+        "tags": "Tag",
+        "comments": "Commenti",
+        "add_comment": "Scrivi un commento...",
+        "shortcuts": "Scorciatoie",
+        "quick_template": "Modello",
+        "today_btn": "Oggi",
+        "prev": "Prec",
+        "next": "Succ",
         "total": "Totale",
         "pending": "In Sospeso",
         "completed": "Completati",
@@ -133,12 +169,37 @@ def todo_list(request):
         request,
         include_archived=is_archived_view,
         include_deleted=is_trash_view,
-    )
+    ).prefetch_related("subtasks", "comments__user", "collaborators")
     if is_archived_view:
         all_user_todos = all_user_todos.filter(is_archived=True)
 
     today = timezone.localdate()
     todos = all_user_todos
+
+    # Tag filter
+    tag_filter = request.GET.get("tag", "").strip().lstrip("#")
+    if tag_filter:
+        todos = todos.filter(tags__icontains=tag_filter)
+
+    # Collect distinct tags
+    all_tags = sorted(
+        {
+            t.strip().lstrip("#")
+            for raw in all_user_todos.values_list("tags", flat=True)
+            if raw
+            for t in raw.split(",")
+            if t.strip()
+        }
+    )
+
+    # In-App Notifications
+    unread_notifications_count = 0
+    user_notifications = []
+    if request.user.is_authenticated:
+        user_notifications = Notification.objects.filter(user=request.user)[:8]
+        unread_notifications_count = Notification.objects.filter(
+            user=request.user, is_read=False
+        ).count()
 
     # Smart Filter Presets
     if filter_preset == "today":
@@ -160,6 +221,7 @@ def todo_list(request):
             Q(title__icontains=query)
             | Q(category__icontains=query)
             | Q(description__icontains=query)
+            | Q(tags__icontains=query)
         )
 
     # Status filter: all, active, completed
@@ -268,6 +330,102 @@ def todo_list(request):
         priority="low",
     ).exclude(pk__in=matrix_q3.values_list("pk", flat=True))
 
+    # Interactive Calendar View computation
+    try:
+        cal_year = int(request.GET.get("year", today.year))
+        cal_month = int(request.GET.get("month", today.month))
+    except (ValueError, TypeError):
+        cal_year = today.year
+        cal_month = today.month
+
+    if cal_month < 1:
+        cal_month = 12
+        cal_year -= 1
+    elif cal_month > 12:
+        cal_month = 1
+        cal_year += 1
+
+    prev_year, prev_month = (
+        (cal_year - 1, 12) if cal_month == 1 else (cal_year, cal_month - 1)
+    )
+    next_year, next_month = (
+        (cal_year + 1, 1) if cal_month == 12 else (cal_year, cal_month + 1)
+    )
+    cal_month_title = datetime(cal_year, cal_month, 1).strftime("%B %Y")
+
+    cal_matrix = calendar.monthcalendar(cal_year, cal_month)
+    calendar_grid = []
+    for week in cal_matrix:
+        week_cells = []
+        for d in week:
+            if d == 0:
+                week_cells.append(
+                    {
+                        "day": 0,
+                        "date": "",
+                        "tasks": [],
+                        "events": [],
+                        "is_today": False,
+                    }
+                )
+            else:
+                c_date = datetime(cal_year, cal_month, d).date()
+                date_str = c_date.strftime("%Y-%m-%d")
+                day_tasks = all_user_todos.filter(due_date=c_date)
+                day_events = CollaborationEvent.objects.filter(event_date=c_date)
+                week_cells.append(
+                    {
+                        "day": d,
+                        "date": date_str,
+                        "tasks": list(day_tasks),
+                        "events": list(day_events),
+                        "is_today": c_date == today,
+                    }
+                )
+        calendar_grid.append(week_cells)
+
+    # Analytics View computation
+    weekdays_labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    weekday_counts = {w: 0 for w in weekdays_labels}
+    for t_item in all_user_todos.filter(done=True):
+        w_name = t_item.updated_at.strftime("%a")
+        if w_name in weekday_counts:
+            weekday_counts[w_name] += 1
+    max_wd = max(weekday_counts.values()) if any(weekday_counts.values()) else 1
+    analytics_weekdays = [
+        {
+            "day": w,
+            "count": weekday_counts[w],
+            "height": int((weekday_counts[w] / max_wd) * 100) if max_wd else 10,
+        }
+        for w in weekdays_labels
+    ]
+
+    cat_stats = []
+    for c in categories:
+        c_count = all_user_todos.filter(category=c).count()
+        if c_count > 0:
+            cat_stats.append({"category": c, "count": c_count})
+    cat_stats.sort(key=lambda x: x["count"], reverse=True)
+
+    # Leaderboard View computation
+    leaderboard_users = []
+    for u in User.objects.all():
+        u_completed = Todo.objects.filter(user=u, done=True).count()
+        u_xp = u_completed * 15
+        u_level = 1 + (u_xp // 60)
+        leaderboard_users.append(
+            {
+                "username": u.username,
+                "completed_count": u_completed,
+                "xp": u_xp,
+                "level": u_level,
+            }
+        )
+    leaderboard_users.sort(key=lambda x: (x["xp"], x["completed_count"]), reverse=True)
+    for idx, u_entry in enumerate(leaderboard_users, 1):
+        u_entry["rank"] = idx
+
     # Social & Collaborative Events
     social_activities = SocialActivity.objects.select_related("user")[:25]
     collaborative_events = CollaborationEvent.objects.prefetch_related(
@@ -291,6 +449,21 @@ def todo_list(request):
         "user_level": user_level,
         "level_tier": level_tier,
         "categories": categories,
+        "all_tags": all_tags,
+        "current_tag": tag_filter,
+        "cal_year": cal_year,
+        "cal_month": cal_month,
+        "prev_year": prev_year,
+        "prev_month": prev_month,
+        "next_year": next_year,
+        "next_month": next_month,
+        "cal_month_title": cal_month_title,
+        "calendar_grid": calendar_grid,
+        "analytics_weekdays": analytics_weekdays,
+        "cat_stats": cat_stats,
+        "leaderboard_users": leaderboard_users,
+        "user_notifications": user_notifications,
+        "unread_notifications_count": unread_notifications_count,
         "current_query": query,
         "current_status": status_filter,
         "current_category": category_filter,
@@ -317,6 +490,7 @@ def todo_list(request):
 def todo_add(request):
     title = request.POST.get("title", "").strip()
     category = request.POST.get("category", "").strip()
+    tags = request.POST.get("tags", "").strip()
     priority = request.POST.get("priority", "medium").strip()
     energy_level = request.POST.get("energy_level", "medium").strip()
     recurrence = request.POST.get("recurrence", "none").strip()
@@ -350,6 +524,7 @@ def todo_add(request):
             user=user,
             title=title,
             category=category,
+            tags=tags,
             priority=priority,
             energy_level=energy_level,
             recurrence=recurrence,
@@ -386,6 +561,7 @@ def todo_edit(request, pk):
         return redirect("todo_list")
 
     category = request.POST.get("category", "").strip()
+    tags = request.POST.get("tags", "").strip()
     priority = request.POST.get("priority", "medium").strip()
     energy_level = request.POST.get("energy_level", "medium").strip()
     recurrence = request.POST.get("recurrence", "none").strip()
@@ -416,6 +592,7 @@ def todo_edit(request, pk):
 
     todo.title = title
     todo.category = category
+    todo.tags = tags
     todo.description = description
     todo.is_pinned = is_pinned
     todo.save()
@@ -603,8 +780,47 @@ def todo_share(request, pk):
         user=request.user,
         message=f'invited @{target_user.username} to collaborate on "{todo.title}" 👥',
     )
+    Notification.objects.create(
+        user=target_user,
+        message=f'@{request.user.username} shared task "{todo.title}" with you! 👥',
+        link=f"/?view=list#task-{todo.id}",
+    )
     messages.success(request, f"Task shared with @{target_user.username} successfully!")
     return redirect("todo_list")
+
+
+@require_POST
+def task_comment_add(request, pk):
+    """Add a discussion comment to a task."""
+    todo = get_object_or_404(Todo, pk=pk)
+    if (
+        todo.user
+        and todo.user != request.user
+        and not todo.collaborators.filter(pk=request.user.pk).exists()
+    ):
+        raise Http404("Todo not found")
+
+    text = request.POST.get("text", "").strip()
+    if text and request.user.is_authenticated:
+        TaskComment.objects.create(todo=todo, user=request.user, text=text)
+        # Notify owner if commenter is not owner
+        if todo.user and todo.user != request.user:
+            Notification.objects.create(
+                user=todo.user,
+                message=f'@{request.user.username} commented on "{todo.title}" 💬',
+                link=f"/?view=list#task-{todo.id}",
+            )
+        messages.success(request, "Comment posted!")
+    return redirect(request.META.get("HTTP_REFERER", "todo_list"))
+
+
+@require_POST
+def notification_clear(request):
+    """Mark all notifications as read for current user."""
+    if request.user.is_authenticated:
+        Notification.objects.filter(user=request.user).update(is_read=True)
+        messages.success(request, "All notifications marked as read.")
+    return redirect(request.META.get("HTTP_REFERER", "todo_list"))
 
 
 @require_POST
@@ -992,12 +1208,14 @@ def api_todos(request):
             "recurrence": t.recurrence,
             "energy_level": t.energy_level,
             "is_favorite": t.is_favorite,
+            "tags": t.tags,
             "due_date": str(t.due_date) if t.due_date else None,
             "estimated_minutes": t.estimated_minutes,
             "is_pinned": t.is_pinned,
             "done": t.done,
             "subtasks_count": t.total_subtasks_count,
             "completed_subtasks": t.completed_subtasks_count,
+            "comments_count": t.comments.count(),
             "created_at": t.created_at.isoformat(),
             "updated_at": t.updated_at.isoformat(),
         }

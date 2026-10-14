@@ -429,15 +429,156 @@
             padding: 1.75rem;
         }
 
+        /* Interactive Calendar Grid */
+        .calendar-wrapper {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+        .calendar-grid-table {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            padding: 8px 0;
+        }
+        .calendar-cell {
+            min-height: 105px;
+            background: var(--bg-page);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+        .calendar-cell:hover {
+            border-color: var(--primary);
+            background: var(--card-bg);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .calendar-cell.today {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
+        }
+        .calendar-cell.empty {
+            background: transparent;
+            border: none;
+            cursor: default;
+        }
+        .calendar-date-badge {
+            font-size: 0.82rem;
+            font-weight: 700;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .calendar-cell.today .calendar-date-badge {
+            background: var(--primary);
+            color: white;
+        }
+        .calendar-task-pill {
+            font-size: 0.73rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-decoration: none;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .calendar-task-pill.priority-high { background: #fee2e2; color: #991b1b; }
+        .calendar-task-pill.priority-medium { background: #fef3c7; color: #92400e; }
+        .calendar-task-pill.priority-low { background: #dcfce7; color: #166534; }
+        .calendar-task-pill.done { text-decoration: line-through; opacity: 0.55; }
+
+        /* Analytics Bar Chart */
+        .chart-bars-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 160px;
+            padding-top: 20px;
+            border-bottom: 2px solid var(--border-color);
+            gap: 12px;
+        }
+        .chart-bar-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            justify-content: flex-end;
+        }
+        .chart-bar {
+            width: 100%;
+            max-width: 42px;
+            background: linear-gradient(180deg, #3b82f6, #60a5fa);
+            border-radius: 6px 6px 0 0;
+            transition: height 0.4s ease;
+        }
+        .chart-bar-val { font-size: 0.75rem; font-weight: 700; margin-bottom: 4px; }
+        .chart-bar-label { margin-top: 6px; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
+
+        /* Notification Dropdown */
+        .notif-dropdown { position: relative; display: inline-block; }
+        .notif-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 800;
+            border-radius: 999px;
+            padding: 1px 5px;
+            border: 2px solid var(--card-bg);
+        }
+        .notif-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 8px);
+            width: 290px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            box-shadow: 0 14px 30px rgba(0,0,0,0.15);
+            z-index: 150;
+            padding: 10px;
+        }
+        .notif-dropdown.active .notif-menu { display: block; }
+
+        /* Confetti Canvas */
+        #confettiCanvas { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
+
         /* Responsive */
         @media (max-width: 900px) {
             body { flex-direction: column; }
             .app-sidebar { width: 100%; }
             .kanban-grid { grid-template-columns: 1fr; }
+            .calendar-grid-table { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
+    <canvas id="confettiCanvas"></canvas>
+
     <!-- Sidebar Navigation -->
     <aside class="app-sidebar">
         <div class="brand-logo">
@@ -451,14 +592,21 @@
         <nav class="sidebar-nav">
             <a href="?view=list" class="nav-item {% if active_view == 'list' %}active{% endif %}">📋 {{ t.my_tasks|default:"My Tasks" }}</a>
             <a href="?view=kanban" class="nav-item {% if active_view == 'kanban' %}active{% endif %}">📊 {{ t.kanban|default:"Kanban Board" }}</a>
+            <a href="?view=calendar" class="nav-item {% if active_view == 'calendar' %}active{% endif %}">📅 {{ t.calendar|default:"Calendar" }}</a>
             <a href="?view=matrix" class="nav-item {% if active_view == 'matrix' %}active{% endif %}">🎯 {{ t.eisenhower|default:"Eisenhower Matrix" }}</a>
+            <a href="?view=analytics" class="nav-item {% if active_view == 'analytics' %}active{% endif %}">📈 {{ t.analytics|default:"Analytics" }}</a>
+            <a href="?view=leaderboard" class="nav-item {% if active_view == 'leaderboard' %}active{% endif %}">🏆 {{ t.leaderboard|default:"Leaderboard" }}</a>
             <a href="?view=pomodoro" class="nav-item {% if active_view == 'pomodoro' %}active{% endif %}">🍅 {{ t.focus_timer|default:"Focus Timer" }}</a>
             <a href="?view=trash" class="nav-item {% if active_view == 'trash' %}active{% endif %}">🗑️ {{ t.trash|default:"Trash Bin" }}</a>
             <a href="?view=social" class="nav-item {% if active_view == 'social' %}active{% endif %}">👥 {{ t.social|default:"Social Hub" }}</a>
             <a href="?view=events" class="nav-item {% if active_view == 'events' %}active{% endif %}">📅 {{ t.collab_events|default:"Collab Events" }}</a>
         </nav>
         <div class="sidebar-footer">
-            <button class="btn-ui" id="themeBtn" style="width:100%; justify-content:center;">🌓 Theme</button>
+            <div style="display:flex; gap:6px;">
+                <button class="btn-ui" id="themeBtn" style="flex:1; justify-content:center;">🌓 Theme</button>
+                <button class="btn-ui" id="soundToggleBtn" onclick="toggleSound()" style="padding:7px 10px;" title="Toggle Audio Chimes">🔊</button>
+                <button class="btn-ui" onclick="openShortcutsModal()" style="padding:7px 10px;" title="Keyboard Shortcuts">⌨️</button>
+            </div>
             {% if user.is_authenticated %}
                 <div style="font-size:0.85rem; color:#fff; text-align:center;">👤 {{ user.username }}</div>
                 <form method="post" action="{% url 'logout' %}" style="margin:0;">
@@ -486,20 +634,20 @@
             <div class="main-header">
                 <div>
                     <h1 style="margin:0; font-size:1.6rem;">📊 Kanban Workflow</h1>
-                    <p style="margin:4px 0 0; color:var(--text-muted); font-size:0.9rem;">Organize tasks across agile workflow lanes.</p>
+                    <p style="margin:4px 0 0; color:var(--text-muted); font-size:0.9rem;">Drag cards or use buttons to move tasks across agile lanes.</p>
                 </div>
                 <a href="?view=list" class="btn-ui">← Back to List</a>
             </div>
 
             <div class="kanban-grid">
                 <!-- Column: To Do -->
-                <div class="kanban-col">
+                <div class="kanban-col" ondragover="event.preventDefault(); this.style.borderColor='var(--primary)';" ondragleave="this.style.borderColor='var(--border-color)';" ondrop="kanbanDrop(event, 'todo')">
                     <div class="kanban-col-header">
                         <span>📝 To Do</span>
                         <span class="badge-pill">{{ kanban_todo.count }}</span>
                     </div>
                     {% for t in kanban_todo %}
-                        <div class="kanban-item">
+                        <div class="kanban-item" draggable="true" ondragstart="kanbanDragStart(event, {{ t.id }})" style="cursor:grab;">
                             <strong style="font-size:0.95rem;">{{ t.title }}</strong>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
                                 <span class="badge-pill">{{ t.priority|title }}</span>
@@ -516,13 +664,13 @@
                 </div>
 
                 <!-- Column: In Progress -->
-                <div class="kanban-col">
+                <div class="kanban-col" ondragover="event.preventDefault(); this.style.borderColor='var(--primary)';" ondragleave="this.style.borderColor='var(--border-color)';" ondrop="kanbanDrop(event, 'in_progress')">
                     <div class="kanban-col-header">
                         <span>⚡ In Progress</span>
                         <span class="badge-pill">{{ kanban_in_progress.count }}</span>
                     </div>
                     {% for t in kanban_in_progress %}
-                        <div class="kanban-item">
+                        <div class="kanban-item" draggable="true" ondragstart="kanbanDragStart(event, {{ t.id }})" style="cursor:grab;">
                             <strong style="font-size:0.95rem;">{{ t.title }}</strong>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
                                 <form method="post" action="{% url 'todo_update_status' t.pk %}" style="margin:0;">
@@ -543,13 +691,13 @@
                 </div>
 
                 <!-- Column: Completed -->
-                <div class="kanban-col">
+                <div class="kanban-col" ondragover="event.preventDefault(); this.style.borderColor='var(--primary)';" ondragleave="this.style.borderColor='var(--border-color)';" ondrop="kanbanDrop(event, 'done')">
                     <div class="kanban-col-header">
                         <span>✅ Completed</span>
                         <span class="badge-pill">{{ kanban_done.count }}</span>
                     </div>
                     {% for t in kanban_done %}
-                        <div class="kanban-item" style="opacity:0.7;">
+                        <div class="kanban-item" draggable="true" ondragstart="kanbanDragStart(event, {{ t.id }})" style="opacity:0.75; cursor:grab;">
                             <strong style="text-decoration:line-through; font-size:0.95rem;">{{ t.title }}</strong>
                             <div style="display:flex; justify-content:flex-end;">
                                 <form method="post" action="{% url 'todo_update_status' t.pk %}" style="margin:0;">
@@ -665,6 +813,60 @@
                 {% empty %}
                     <div class="panel-card" style="text-align:center; color:var(--text-muted);">No upcoming collaborative events. Schedule one above!</div>
                 {% endfor %}
+            </div>
+
+        {% elif active_view == 'calendar' %}
+            <!-- INTERACTIVE CALENDAR VIEW -->
+            <div class="main-header">
+                <div>
+                    <h1 style="margin:0; font-size:1.6rem;">📅 {{ t.calendar|default:"Interactive Calendar" }}</h1>
+                    <p style="margin:4px 0 0; color:var(--text-muted); font-size:0.9rem;">View deadlines, events, and schedule tasks across days and weeks.</p>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <a href="?view=calendar&year={{ prev_year }}&month={{ prev_month }}" class="btn-ui">◀ {{ t.prev|default:"Prev" }}</a>
+                    <span style="font-weight:700; font-size:1.05rem; min-width:140px; text-align:center;">{{ cal_month_title }}</span>
+                    <a href="?view=calendar&year={{ next_year }}&month={{ next_month }}" class="btn-ui">{{ t.next|default:"Next" }} ▶</a>
+                    <a href="?view=calendar" class="btn-ui btn-primary" style="margin-left:6px;">{{ t.today_btn|default:"Today" }}</a>
+                </div>
+            </div>
+
+            <div class="calendar-wrapper">
+                <div class="calendar-grid-table">
+                    <div class="calendar-day-header">Mon</div>
+                    <div class="calendar-day-header">Tue</div>
+                    <div class="calendar-day-header">Wed</div>
+                    <div class="calendar-day-header">Thu</div>
+                    <div class="calendar-day-header">Fri</div>
+                    <div class="calendar-day-header">Sat</div>
+                    <div class="calendar-day-header">Sun</div>
+
+                    {% for week in calendar_grid %}
+                        {% for cell in week %}
+                            {% if cell.day == 0 %}
+                                <div class="calendar-cell empty"></div>
+                            {% else %}
+                                <div class="calendar-cell {% if cell.is_today %}today{% endif %}" onclick="openAddModalForDate('{{ cell.date }}')">
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <span class="calendar-date-badge">{{ cell.day }}</span>
+                                        <span style="font-size:0.75rem; color:var(--text-muted);" title="Click day to add task">+</span>
+                                    </div>
+                                    <div style="display:flex; flex-direction:column; gap:2px; margin-top:4px;">
+                                        {% for t_cal in cell.tasks %}
+                                            <a href="javascript:void(0)" onclick="event.stopPropagation(); openEditModal({{ t_cal.id }}, '{{ t_cal.title|escapejs }}', '{{ t_cal.category|escapejs }}', '{{ t_cal.tags|escapejs }}', '{{ t_cal.priority }}', '{{ t_cal.energy_level }}', '{{ t_cal.recurrence }}', '{{ t_cal.due_date|date:"Y-m-d"|default:"" }}', '{{ t_cal.estimated_minutes|default:0 }}', {{ t_cal.is_pinned|yesno:"true,false" }}, '{{ t_cal.description|escapejs }}')" class="calendar-task-pill priority-{{ t_cal.priority }} {% if t_cal.done %}done{% endif %}" title="{{ t_cal.title }} ({{ t_cal.priority|title }})">
+                                                {% if t_cal.done %}✓{% else %}•{% endif %} {{ t_cal.title }}
+                                            </a>
+                                        {% endfor %}
+                                        {% for ev in cell.events %}
+                                            <span class="calendar-task-pill" style="background:#e0e7ff; color:#3730a3;" title="Team Event: {{ ev.title }}">
+                                                📅 {{ ev.title }}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                </div>
             </div>
 
         {% elif active_view == 'matrix' %}
@@ -819,7 +1021,95 @@
                         <p style="margin:0;">No deleted tasks in your bin.</p>
                     </div>
                 {% endfor %}
-            </ul>
+        {% elif active_view == 'analytics' %}
+            <!-- ANALYTICS DASHBOARD VIEW -->
+            <div class="main-header">
+                <div>
+                    <h1 style="margin:0; font-size:1.6rem;">📈 {{ t.analytics|default:"Analytics & Velocity" }}</h1>
+                    <p style="margin:4px 0 0; color:var(--text-muted); font-size:0.9rem;">Inspect task velocity, weekly completion rate, and workload distribution.</p>
+                </div>
+                <a href="?view=list" class="btn-ui">← Back to List</a>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem;">
+                <div class="panel-card">
+                    <h3 style="margin-top:0; font-size:1.1rem; display:flex; justify-content:space-between;">
+                        <span>📊 Weekly Completion Velocity</span>
+                        <span style="font-size:0.85rem; color:var(--primary); font-weight:600;">{{ completed_count }} tasks done</span>
+                    </h3>
+                    <div class="chart-bars-container">
+                        {% for bar in analytics_weekdays %}
+                            <div class="chart-bar-group">
+                                <span class="chart-bar-val">{{ bar.count }}</span>
+                                <div class="chart-bar" style="height: {{ bar.height }}%;"></div>
+                                <span class="chart-bar-label">{{ bar.day }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="panel-card">
+                    <h3 style="margin-top:0; font-size:1.1rem;">📁 Category Breakdown</h3>
+                    {% for c in cat_stats %}
+                        <div style="margin-bottom:0.75rem;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;">
+                                <span style="font-weight:600;">{{ c.category }}</span>
+                                <span style="color:var(--text-muted);">{{ c.count }} task(s)</span>
+                            </div>
+                            <div style="height:6px; background:var(--border-color); border-radius:999px; overflow:hidden;">
+                                <div style="height:100%; width:{% widthratio c.count total_count 100 %}%; background:linear-gradient(90deg, #3b82f6, #8b5cf6);"></div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p style="color:var(--text-muted); font-size:0.85rem;">No category data available yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+        {% elif active_view == 'leaderboard' %}
+            <!-- TEAM LEADERBOARD VIEW -->
+            <div class="main-header">
+                <div>
+                    <h1 style="margin:0; font-size:1.6rem;">🏆 {{ t.leaderboard|default:"Team Leaderboard" }}</h1>
+                    <p style="margin:4px 0 0; color:var(--text-muted); font-size:0.9rem;">Celebrate accomplishments, compare XP points, and climb the ranks.</p>
+                </div>
+                <a href="?view=list" class="btn-ui">← Back to List</a>
+            </div>
+
+            <div class="panel-card" style="padding:0; overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+                    <thead>
+                        <tr style="border-bottom:1px solid var(--border-color); text-align:left; color:var(--text-muted); font-size:0.8rem; text-transform:uppercase;">
+                            <th style="padding:1rem 1.25rem;">Rank</th>
+                            <th style="padding:1rem 1.25rem;">Member</th>
+                            <th style="padding:1rem 1.25rem;">Level Tier</th>
+                            <th style="padding:1rem 1.25rem; text-align:center;">Completed</th>
+                            <th style="padding:1rem 1.25rem; text-align:right;">Total XP</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mem in leaderboard_users %}
+                            <tr style="border-bottom:1px solid var(--border-color); {% if mem.username == user.username %}background:rgba(37,99,235,0.04); font-weight:600;{% endif %}">
+                                <td style="padding:1rem 1.25rem;">
+                                    {% if mem.rank == 1 %}🥇 1st{% elif mem.rank == 2 %}🥈 2nd{% elif mem.rank == 3 %}🥉 3rd{% else %}#{{ mem.rank }}{% endif %}
+                                </td>
+                                <td style="padding:1rem 1.25rem; display:flex; align-items:center; gap:8px;">
+                                    <div style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg, #3b82f6, #ec4899); color:white; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700;">
+                                        {{ mem.username|slice:":1"|upper }}
+                                    </div>
+                                    <span>@{{ mem.username }}</span>
+                                    {% if mem.username == user.username %}<span class="badge-pill" style="background:#dbeafe; color:#1e40af;">You</span>{% endif %}
+                                </td>
+                                <td style="padding:1rem 1.25rem;">Level {{ mem.level }}</td>
+                                <td style="padding:1rem 1.25rem; text-align:center;">{{ mem.completed_count }}</td>
+                                <td style="padding:1rem 1.25rem; text-align:right; font-weight:700; color:var(--primary);">{{ mem.xp }} XP</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="5" style="padding:2rem; text-align:center; color:var(--text-muted);">No members registered yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
         {% else %}
             <!-- DEFAULT MY TASKS VIEW -->
@@ -829,6 +1119,35 @@
                     <p style="margin:4px 0 0; color:var(--text-muted); font-size:0.9rem;">Track, organize, and execute your daily objectives.</p>
                 </div>
                 <div style="display:flex; align-items:center; gap:8px;">
+                    <!-- Notification Bell Dropdown -->
+                    <div class="notif-dropdown">
+                        <button type="button" class="btn-ui" onclick="toggleNotifDropdown(this)" title="Notifications" style="position:relative;">
+                            🔔
+                            {% if unread_notifications_count > 0 %}
+                                <span class="notif-badge">{{ unread_notifications_count }}</span>
+                            {% endif %}
+                        </button>
+                        <div class="notif-menu">
+                            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:6px; margin-bottom:6px;">
+                                <strong style="font-size:0.85rem;">{{ t.notifications|default:"Notifications" }}</strong>
+                                {% if unread_notifications_count > 0 %}
+                                    <form method="post" action="{% url 'notification_clear' %}" style="margin:0;">
+                                        {% csrf_token %}
+                                        <button type="submit" style="background:none; border:none; color:var(--primary); font-size:0.75rem; cursor:pointer;">{{ t.mark_all_read|default:"Clear All" }}</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                            {% for notif in user_notifications %}
+                                <div style="font-size:0.8rem; padding:6px 0; border-bottom:1px dashed var(--border-color); {% if not notif.is_read %}font-weight:600;{% endif %}">
+                                    {{ notif.message }}
+                                    <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">{{ notif.created_at|timesince }} ago</div>
+                                </div>
+                            {% empty %}
+                                <div style="font-size:0.8rem; color:var(--text-muted); text-align:center; padding:12px 0;">{{ t.no_notifications|default:"No notifications yet" }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
                     <!-- Gamification XP Badge -->
                     <div style="display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.12)); border:1px solid rgba(139,92,246,0.25); padding:6px 12px; border-radius:999px; font-size:0.82rem; font-weight:600; color:var(--text-main);">
                         <span>🏆 {{ t.xp_level|default:"Level" }} {{ user_level }} · {{ level_tier }}</span>
@@ -854,13 +1173,27 @@
                 </div>
             </div>
 
-            <!-- Add Task Form -->
+            <!-- Add Task Form with Templates, Voice & Tags -->
             <div class="panel-card">
                 <form method="post" action="{% url 'todo_add' %}">
                     {% csrf_token %}
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-size:0.85rem; font-weight:700; color:var(--text-main);">➕ {{ t.add_task|default:"Add Task" }}</span>
+                        <select onchange="applyTemplate(this.value); this.value='';" style="padding:4px 8px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main); font-size:0.78rem;">
+                            <option value="">⚡ {{ t.quick_template|default:"Templates" }}...</option>
+                            <option value="sprint">🏃 Sprint Planning</option>
+                            <option value="bug">🐛 Bug Resolution</option>
+                            <option value="meeting">🤝 Meeting Prep</option>
+                            <option value="launch">🚀 Product Launch</option>
+                        </select>
+                    </div>
+
                     <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr auto; gap:8px; margin-bottom:8px;">
-                        <input name="title" placeholder="{{ t.what_needs_doing|default:'What needs doing?' }}" required autofocus style="padding:8px 12px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main);">
-                        <input name="category" placeholder="{{ t.category|default:'Category' }}" list="categories-list" style="padding:8px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main);">
+                        <div style="display:flex; gap:4px; align-items:center;">
+                            <input name="title" id="taskTitleInput" placeholder="{{ t.what_needs_doing|default:'What needs doing?' }}" required autofocus style="flex:1; padding:8px 12px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main);">
+                            <button type="button" class="btn-ui" id="voiceMicBtn" onclick="startSpeechRecognition()" title="Voice Dictation" style="padding:8px 10px;">🎙️</button>
+                        </div>
+                        <input name="category" id="taskCategoryInput" placeholder="{{ t.category|default:'Category' }}" list="categories-list" style="padding:8px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main);">
                         <datalist id="categories-list">
                             {% for c in categories %}<option value="{{ c }}">{% endfor %}
                         </datalist>
@@ -874,17 +1207,18 @@
                             <option value="medium" selected>⚡ Med Energy</option>
                             <option value="high">🔥 High Energy</option>
                         </select>
-                        <input type="date" name="due_date" style="padding:8px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main);">
+                        <input type="date" name="due_date" id="taskDueDateInput" style="padding:8px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main);">
                         <button type="submit" class="btn-ui btn-primary">{{ t.add_task|default:"Add Task" }}</button>
                     </div>
-                    <div style="display:flex; gap:12px; align-items:center;">
+                    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                        <input name="tags" id="taskTagsInput" placeholder="Tags (e.g. #design, #bug)" style="flex:1; min-width:180px; padding:6px 10px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main); font-size:0.85rem;">
                         <select name="recurrence" style="padding:6px 10px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main); font-size:0.85rem;">
                             <option value="none" selected>🔁 Once</option>
                             <option value="daily">🔁 Repeat Daily</option>
                             <option value="weekly">🔁 Repeat Weekly</option>
                             <option value="monthly">🔁 Repeat Monthly</option>
                         </select>
-                        <input type="number" name="estimated_minutes" placeholder="{{ t.est_min|default:'Est. min' }} (e.g. 30)" min="0" style="width:140px; padding:6px 10px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main); font-size:0.85rem;">
+                        <input type="number" name="estimated_minutes" id="taskEstInput" placeholder="{{ t.est_min|default:'Est. min' }} (e.g. 30)" min="0" style="width:130px; padding:6px 10px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main); font-size:0.85rem;">
                         <label style="font-size:0.85rem; cursor:pointer;"><input type="checkbox" name="is_pinned"> 📌 {{ t.pin_to_top|default:"Pin to Top" }}</label>
                     </div>
                 </form>
@@ -894,10 +1228,10 @@
             <div class="panel-card" style="padding:0.85rem 1rem; margin-bottom:1rem;">
                 <form method="get" action="" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                     <input type="hidden" name="view" value="{{ active_view }}">
-                    <input type="text" name="q" value="{{ current_query }}" placeholder="🔍 Search tasks..." style="flex:1; min-width:180px; padding:6px 12px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.85rem;">
+                    <input type="text" name="q" id="globalSearchInput" value="{{ current_query }}" placeholder="🔍 Search tasks or #tags (Press / to focus)..." style="flex:1; min-width:180px; padding:6px 12px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.85rem;">
 
                     <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                        <a href="?view=list" class="badge-pill" style="text-decoration:none; padding:5px 10px; cursor:pointer; {% if not current_filter and current_status == 'all' %}background:var(--primary); color:white; border-color:var(--primary);{% endif %}">All</a>
+                        <a href="?view=list" class="badge-pill" style="text-decoration:none; padding:5px 10px; cursor:pointer; {% if not current_filter and current_status == 'all' and not current_tag %}background:var(--primary); color:white; border-color:var(--primary);{% endif %}">All</a>
                         <a href="?view=list&filter=today" class="badge-pill" style="text-decoration:none; padding:5px 10px; cursor:pointer; {% if current_filter == 'today' %}background:var(--primary); color:white; border-color:var(--primary);{% endif %}">📅 Today</a>
                         <a href="?view=list&filter=upcoming" class="badge-pill" style="text-decoration:none; padding:5px 10px; cursor:pointer; {% if current_filter == 'upcoming' %}background:var(--primary); color:white; border-color:var(--primary);{% endif %}">🔮 Upcoming</a>
                         <a href="?view=list&filter=overdue" class="badge-pill" style="text-decoration:none; padding:5px 10px; cursor:pointer; {% if current_filter == 'overdue' %}background:var(--primary); color:white; border-color:var(--primary);{% endif %}">⚠️ Overdue</a>
@@ -915,6 +1249,15 @@
                         <option value="workload" {% if current_sort == 'workload' %}selected{% endif %}>Sort: Workload</option>
                     </select>
                 </form>
+
+                {% if all_tags %}
+                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; align-items:center; border-top:1px dashed var(--border-color); padding-top:6px;">
+                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">🏷️ {{ t.tags|default:"Tags" }}:</span>
+                        {% for tag in all_tags %}
+                            <a href="?view=list&tag={{ tag }}" class="badge-pill" style="text-decoration:none; padding:3px 8px; {% if current_tag == tag %}background:var(--primary); color:white; border-color:var(--primary);{% endif %}">#{{ tag }}</a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
 
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.75rem; padding-top:0.5rem; border-top:1px solid var(--border-color); font-size:0.82rem;">
                     <div style="display:flex; gap:8px;">
@@ -941,7 +1284,7 @@
                     <li class="task-row priority-{{ todo.priority }} {% if todo.is_pinned %}pinned{% endif %} {% if todo.done %}done{% endif %}" id="task-{{ todo.id }}">
                         <form method="post" action="{% url 'todo_toggle' todo.pk %}" style="margin:0;">
                             {% csrf_token %}
-                            <button type="submit" style="width:20px; height:20px; border-radius:4px; border:2px solid var(--border-color); background:{% if todo.done %}#10b981{% else %}none{% endif %}; color:white; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;">
+                            <button type="submit" onclick="playChimeSound()" style="width:20px; height:20px; border-radius:4px; border:2px solid var(--border-color); background:{% if todo.done %}#10b981{% else %}none{% endif %}; color:white; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;">
                                 {% if todo.done %}✓{% endif %}
                             </button>
                         </form>
@@ -954,10 +1297,18 @@
                         <div style="flex:1;">
                             <span class="task-title">{{ todo.title }}</span>
                             {% if todo.description %}<div style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">{{ todo.description }}</div>{% endif %}
-                            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
+                            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; align-items:center;">
                                 {% if todo.is_favorite %}<span class="badge-pill" style="background:#fef9c3; color:#a16207;">★ Starred</span>{% endif %}
                                 {% if todo.is_pinned %}<span class="badge-pill" style="background:#fef08a; color:#854d0e;">📌 {{ t.pinned|default:"Pinned" }}</span>{% endif %}
                                 {% if todo.category %}<span class="badge-pill">📁 {{ todo.category }}</span>{% endif %}
+                                {% for tg in todo.tag_list %}
+                                    <a href="?view=list&tag={{ tg }}" class="badge-pill" style="background:rgba(59,130,246,0.08); color:var(--primary); text-decoration:none;">#{{ tg }}</a>
+                                {% endfor %}
+                                {% if todo.relative_deadline_display %}
+                                    <span class="badge-pill" style="{% if todo.is_overdue %}background:#fee2e2; color:#991b1b;{% elif todo.is_due_today %}background:#fef3c7; color:#92400e;{% endif %}">
+                                        ⏰ {{ todo.relative_deadline_display }}
+                                    </span>
+                                {% endif %}
                                 {% if todo.estimated_minutes %}<span class="badge-pill">⏱️ {{ todo.formatted_duration }}</span>{% endif %}
                                 {% if todo.due_date %}<span class="badge-pill">📅 {{ todo.due_date|date:"M j" }}</span>{% endif %}
                                 {% if todo.recurrence != 'none' %}<span class="badge-pill">🔁 {{ todo.recurrence|title }}</span>{% endif %}
@@ -966,6 +1317,35 @@
                                 {% if todo.collaborators.exists %}
                                     <span class="badge-pill" style="background:#e0e7ff; color:#3730a3;">👥 Shared ({{ todo.collaborators.count }})</span>
                                 {% endif %}
+                            </div>
+
+                            <!-- Comments Section Button & Drawer -->
+                            <div style="margin-top:8px;">
+                                <button type="button" class="btn-ui" onclick="toggleComments({{ todo.id }})" style="padding:2px 8px; font-size:0.75rem;">
+                                    💬 {{ t.comments|default:"Comments" }} ({{ todo.comments.count }})
+                                </button>
+                                <div id="comments-box-{{ todo.id }}" style="display:none; margin-top:8px; padding:8px; background:var(--bg-page); border-radius:8px; border:1px solid var(--border-color);">
+                                    <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:8px;">
+                                        {% for comment in todo.comments.all %}
+                                            <div style="font-size:0.8rem; background:var(--card-bg); padding:6px 10px; border-radius:6px; border:1px solid var(--border-color);">
+                                                <div style="display:flex; justify-content:space-between; color:var(--text-muted); font-size:0.7rem; margin-bottom:2px;">
+                                                    <strong>@{{ comment.user.username }}</strong>
+                                                    <span>{{ comment.created_at|timesince }} ago</span>
+                                                </div>
+                                                <div>{{ comment.text }}</div>
+                                            </div>
+                                        {% empty %}
+                                            <div style="font-size:0.75rem; color:var(--text-muted);">No comments yet. Start the conversation!</div>
+                                        {% endfor %}
+                                    </div>
+                                    {% if user.is_authenticated %}
+                                        <form method="post" action="{% url 'task_comment_add' todo.pk %}" style="display:flex; gap:6px;">
+                                            {% csrf_token %}
+                                            <input name="text" placeholder="{{ t.add_comment|default:'Write a comment...' }}" required style="flex:1; padding:4px 8px; font-size:0.8rem; border:1px solid var(--border-color); border-radius:4px; background:var(--card-bg); color:var(--text-main);">
+                                            <button type="submit" class="btn-ui btn-primary" style="padding:2px 8px; font-size:0.75rem;">Post</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
                             </div>
 
                             <!-- Subtasks Section -->
@@ -997,7 +1377,7 @@
                         <div class="bubble-dropdown">
                             <button type="button" class="bubble-btn" onclick="toggleBubbleDropdown(this)" title="Task Actions">⋯</button>
                             <div class="bubble-menu">
-                                <button type="button" class="bubble-item" onclick="openEditModal({{ todo.id }}, '{{ todo.title|escapejs }}', '{{ todo.category|escapejs }}', '{{ todo.priority }}', '{{ todo.energy_level }}', '{{ todo.recurrence }}', '{{ todo.due_date|date:"Y-m-d"|default:"" }}', '{{ todo.estimated_minutes|default:0 }}', {{ todo.is_pinned|yesno:"true,false" }}, '{{ todo.description|escapejs }}')">
+                                <button type="button" class="bubble-item" onclick="openEditModal({{ todo.id }}, '{{ todo.title|escapejs }}', '{{ todo.category|escapejs }}', '{{ todo.tags|escapejs }}', '{{ todo.priority }}', '{{ todo.energy_level }}', '{{ todo.recurrence }}', '{{ todo.due_date|date:"Y-m-d"|default:"" }}', '{{ todo.estimated_minutes|default:0 }}', {{ todo.is_pinned|yesno:"true,false" }}, '{{ todo.description|escapejs }}')">
                                     ✏️ {{ t.edit|default:"Edit" }}
                                 </button>
                                 <form method="post" action="{% url 'todo_favorite' todo.pk %}" style="margin:0;">
@@ -1096,6 +1476,10 @@
                             </select>
                         </div>
                     </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Tags</label>
+                        <input type="text" name="tags" id="editTags" placeholder="e.g. #work #urgent" style="width:100%; padding:8px 12px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem;">
+                    </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
                         <div>
                             <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Due Date</label>
@@ -1121,6 +1505,58 @@
                     </div>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="modal-overlay" id="shortcutsModal">
+        <div class="modal-card" style="max-width:440px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="margin:0; font-size:1.15rem; font-weight:700;">⌨️ Keyboard Shortcuts</h3>
+                <button type="button" class="btn-ui" onclick="closeShortcutsModal()" style="border-radius:999px; width:30px; height:30px; padding:0; justify-content:center;">✕</button>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px; font-size:0.88rem;">
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border-color);">
+                    <span>Focus new task input</span>
+                    <kbd style="padding:2px 8px; border:1px solid var(--border-color); border-radius:4px; background:var(--bg-page); font-weight:700;">N</kbd>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border-color);">
+                    <span>Focus search / filter</span>
+                    <kbd style="padding:2px 8px; border:1px solid var(--border-color); border-radius:4px; background:var(--bg-page); font-weight:700;">/</kbd>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border-color);">
+                    <span>Calendar view</span>
+                    <kbd style="padding:2px 8px; border:1px solid var(--border-color); border-radius:4px; background:var(--bg-page); font-weight:700;">C</kbd>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border-color);">
+                    <span>Kanban board view</span>
+                    <kbd style="padding:2px 8px; border:1px solid var(--border-color); border-radius:4px; background:var(--bg-page); font-weight:700;">K</kbd>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border-color);">
+                    <span>Eisenhower Matrix view</span>
+                    <kbd style="padding:2px 8px; border:1px solid var(--border-color); border-radius:4px; background:var(--bg-page); font-weight:700;">M</kbd>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border-color);">
+                    <span>Analytics velocity view</span>
+                    <kbd style="padding:2px 8px; border:1px solid var(--border-color); border-radius:4px; background:var(--bg-page); font-weight:700;">A</kbd>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border-color);">
+                    <span>Team Leaderboard view</span>
+                    <kbd style="padding:2px 8px; border:1px solid var(--border-color); border-radius:4px; background:var(--bg-page); font-weight:700;">L</kbd>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border-color);">
+                    <span>Focus Timer (Pomodoro)</span>
+                    <kbd style="padding:2px 8px; border:1px solid var(--border-color); border-radius:4px; background:var(--bg-page); font-weight:700;">P</kbd>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border-color);">
+                    <span>Toggle Theme (Dark / Light)</span>
+                    <kbd style="padding:2px 8px; border:1px solid var(--border-color); border-radius:4px; background:var(--bg-page); font-weight:700;">T</kbd>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0;">
+                    <span>Toggle this help dialog</span>
+                    <kbd style="padding:2px 8px; border:1px solid var(--border-color); border-radius:4px; background:var(--bg-page); font-weight:700;">?</kbd>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1155,10 +1591,11 @@
         // Edit Modal
         const editModal = document.getElementById('editModal');
         const editForm = document.getElementById('editForm');
-        function openEditModal(id, title, category, priority, energy, recurrence, dueDate, minutes, isPinned, description) {
+        function openEditModal(id, title, category, tags, priority, energy, recurrence, dueDate, minutes, isPinned, description) {
             editForm.action = `/${id}/edit/`;
             document.getElementById('editTitle').value = title;
             document.getElementById('editCategory').value = category;
+            if (document.getElementById('editTags')) document.getElementById('editTags').value = tags || '';
             document.getElementById('editPriority').value = priority;
             if (document.getElementById('editEnergy')) document.getElementById('editEnergy').value = energy || 'medium';
             if (document.getElementById('editRecurrence')) document.getElementById('editRecurrence').value = recurrence || 'none';
@@ -1172,6 +1609,311 @@
         function closeEditModal() {
             editModal.classList.remove('active');
         }
+
+        // Notification Center Dropdown
+        function toggleNotifDropdown(btn) {
+            const dropdown = btn.closest('.notif-dropdown');
+            if (dropdown) dropdown.classList.toggle('active');
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.notif-dropdown')) {
+                document.querySelectorAll('.notif-dropdown').forEach(d => d.classList.remove('active'));
+            }
+        });
+
+        // Comments Drawer Toggle
+        function toggleComments(todoId) {
+            const box = document.getElementById(`comments-box-${todoId}`);
+            if (box) {
+                box.style.display = (box.style.display === 'none' || box.style.display === '') ? 'block' : 'none';
+            }
+        }
+
+        // Calendar Day Quick Task Adding
+        function openAddModalForDate(dateStr) {
+            const dueDateInput = document.getElementById('taskDueDateInput');
+            if (dueDateInput) {
+                dueDateInput.value = dateStr;
+                const titleInput = document.getElementById('taskTitleInput');
+                if (titleInput) {
+                    titleInput.focus();
+                    titleInput.scrollIntoView({ behavior: 'smooth' });
+                }
+            } else {
+                const title = prompt('Add new task for ' + dateStr + ':');
+                if (title && title.trim()) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/add/';
+                    const csrf = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+                    form.innerHTML = `
+                        <input type="hidden" name="csrfmiddlewaretoken" value="${csrf}">
+                        <input type="hidden" name="title" value="${title.replace(/"/g, '&quot;')}">
+                        <input type="hidden" name="due_date" value="${dateStr}">
+                        <input type="hidden" name="priority" value="medium">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            }
+        }
+
+        // Kanban HTML5 Drag & Drop
+        let draggedTaskId = null;
+        function kanbanDragStart(e, id) {
+            draggedTaskId = id;
+            e.dataTransfer.setData('text/plain', id);
+        }
+
+        function kanbanDrop(e, status) {
+            e.preventDefault();
+            if (!draggedTaskId) return;
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/${draggedTaskId}/status/`;
+            const csrf = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+            form.innerHTML = `
+                <input type="hidden" name="csrfmiddlewaretoken" value="${csrf}">
+                <input type="hidden" name="status" value="${status}">
+            `;
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        // Web Audio Synthesizer Audio Feedback
+        let soundEnabled = localStorage.getItem('taskflow_sound') !== 'false';
+        function updateSoundButton() {
+            const btn = document.getElementById('soundToggleBtn');
+            if (btn) btn.innerText = soundEnabled ? '🔊' : '🔇';
+        }
+        updateSoundButton();
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            localStorage.setItem('taskflow_sound', soundEnabled);
+            updateSoundButton();
+            if (soundEnabled) playChimeSound();
+        }
+
+        function playChimeSound() {
+            if (!soundEnabled) return;
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.35);
+            } catch (err) {}
+        }
+
+        function playLevelUpSound() {
+            if (!soundEnabled) return;
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
+                    gain.gain.setValueAtTime(0.08, ctx.currentTime + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.08 + 0.25);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(ctx.currentTime + idx * 0.08);
+                    osc.stop(ctx.currentTime + idx * 0.08 + 0.25);
+                });
+            } catch (err) {}
+        }
+
+        // Particle Canvas Confetti Animation
+        function triggerConfetti() {
+            const canvas = document.getElementById('confettiCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+            const particles = [];
+            for (let i = 0; i < 70; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    r: Math.random() * 6 + 4,
+                    dx: (Math.random() - 0.5) * 16,
+                    dy: (Math.random() - 0.7) * 16,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.random() * 10,
+                    tiltAngle: Math.random() * Math.PI,
+                    tiltAngleInc: Math.random() * 0.07 + 0.05,
+                    opacity: 1
+                });
+            }
+
+            let animationFrame;
+            const startTime = Date.now();
+            function render() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                let alive = false;
+                particles.forEach(p => {
+                    p.x += p.dx;
+                    p.y += p.dy;
+                    p.dy += 0.4;
+                    p.tiltAngle += p.tiltAngleInc;
+                    p.tilt = Math.sin(p.tiltAngle) * 10;
+                    p.opacity -= 0.012;
+                    if (p.opacity > 0) {
+                        alive = true;
+                        ctx.beginPath();
+                        ctx.lineWidth = p.r;
+                        ctx.strokeStyle = p.color;
+                        ctx.globalAlpha = Math.max(0, p.opacity);
+                        ctx.moveTo(p.x + p.tilt, p.y);
+                        ctx.lineTo(p.x, p.y + p.tilt + p.r / 2);
+                        ctx.stroke();
+                        ctx.globalAlpha = 1;
+                    }
+                });
+                if (alive && Date.now() - startTime < 2500) {
+                    animationFrame = requestAnimationFrame(render);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    cancelAnimationFrame(animationFrame);
+                }
+            }
+            render();
+        }
+
+        // Voice Dictation
+        function startSpeechRecognition() {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRec) {
+                alert('Voice dictation is supported in Chrome, Edge, and Safari.');
+                return;
+            }
+            const recognition = new SpeechRec();
+            recognition.lang = '{{ lang_code }}' === 'it' ? 'it-IT' : 'en-US';
+            recognition.interimResults = false;
+            const micBtn = document.getElementById('voiceMicBtn');
+            if (micBtn) micBtn.innerText = '🔴';
+            recognition.onresult = (e) => {
+                const text = e.results[0][0].transcript;
+                const titleInput = document.getElementById('taskTitleInput');
+                if (titleInput) {
+                    titleInput.value = (titleInput.value ? titleInput.value + ' ' : '') + text;
+                }
+            };
+            recognition.onerror = () => { if (micBtn) micBtn.innerText = '🎙️'; };
+            recognition.onend = () => { if (micBtn) micBtn.innerText = '🎙️'; };
+            recognition.start();
+        }
+
+        // Quick Task Templates
+        function applyTemplate(tpl) {
+            const titleInput = document.getElementById('taskTitleInput');
+            const catInput = document.getElementById('taskCategoryInput');
+            const tagsInput = document.getElementById('taskTagsInput');
+            const estInput = document.getElementById('taskEstInput');
+            if (!titleInput) return;
+
+            if (tpl === 'sprint') {
+                titleInput.value = 'Sprint Planning: review backlog & user stories';
+                if (catInput) catInput.value = 'Dev';
+                if (tagsInput) tagsInput.value = '#sprint #agile';
+                if (estInput) estInput.value = 60;
+            } else if (tpl === 'bug') {
+                titleInput.value = 'Fix critical bug: inspect logs & reproduce';
+                if (catInput) catInput.value = 'Bugs';
+                if (tagsInput) tagsInput.value = '#urgent #bug';
+                if (estInput) estInput.value = 45;
+            } else if (tpl === 'meeting') {
+                titleInput.value = 'Team Sync: prepare agenda & action items';
+                if (catInput) catInput.value = 'Meetings';
+                if (tagsInput) tagsInput.value = '#meeting #team';
+                if (estInput) estInput.value = 30;
+            } else if (tpl === 'launch') {
+                titleInput.value = 'Product Release: run checks & publish release notes';
+                if (catInput) catInput.value = 'Release';
+                if (tagsInput) tagsInput.value = '#launch #ship';
+                if (estInput) estInput.value = 90;
+            }
+        }
+
+        // Shortcuts Modal
+        const shortcutsModal = document.getElementById('shortcutsModal');
+        function openShortcutsModal() {
+            if (shortcutsModal) shortcutsModal.classList.add('active');
+        }
+        function closeShortcutsModal() {
+            if (shortcutsModal) shortcutsModal.classList.remove('active');
+        }
+
+        // Global Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+                if (e.key === 'Escape') document.activeElement.blur();
+                return;
+            }
+
+            if (e.key === '?') {
+                e.preventDefault();
+                if (shortcutsModal) shortcutsModal.classList.toggle('active');
+            } else if (e.key === 'Escape') {
+                closeShortcutsModal();
+                closeEditModal();
+                document.querySelectorAll('.bubble-dropdown').forEach(d => d.classList.remove('active'));
+                document.querySelectorAll('.notif-dropdown').forEach(d => d.classList.remove('active'));
+            } else if (e.key === 'n' || e.key === 'N') {
+                const titleInput = document.getElementById('taskTitleInput');
+                if (titleInput) {
+                    e.preventDefault();
+                    titleInput.focus();
+                    titleInput.scrollIntoView({ behavior: 'smooth' });
+                }
+            } else if (e.key === '/') {
+                const searchInput = document.getElementById('globalSearchInput');
+                if (searchInput) {
+                    e.preventDefault();
+                    searchInput.focus();
+                }
+            } else if (e.key === 'c' || e.key === 'C') {
+                window.location.href = '?view=calendar';
+            } else if (e.key === 'k' || e.key === 'K') {
+                window.location.href = '?view=kanban';
+            } else if (e.key === 'm' || e.key === 'M') {
+                window.location.href = '?view=matrix';
+            } else if (e.key === 'a' || e.key === 'A') {
+                window.location.href = '?view=analytics';
+            } else if (e.key === 'l' || e.key === 'L') {
+                window.location.href = '?view=leaderboard';
+            } else if (e.key === 'p' || e.key === 'P') {
+                window.location.href = '?view=pomodoro';
+            } else if (e.key === 't' || e.key === 'T') {
+                const themeBtn = document.getElementById('themeBtn');
+                if (themeBtn) themeBtn.click();
+            }
+        });
+
+        // 100% completion celebration
+        {% if total_count > 0 and done_count == total_count %}
+        window.addEventListener('load', () => {
+            triggerConfetti();
+            playLevelUpSound();
+        });
+        {% endif %}
 
         // Pomodoro Timer Engine
         let pomoMinutes = 25;
