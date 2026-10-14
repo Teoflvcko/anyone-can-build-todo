@@ -519,3 +519,9 @@ class TodoTests(TestCase):
 
         res_tag = self.client.get(reverse("todo_list") + "?tag=backend")
         self.assertContains(res_tag, "Backend Optimization")
+
+    def test_welcome_page_loads(self):
+        res = self.client.get(reverse("welcome"))
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, "TaskFlow Quantum")
+        self.assertContains(res, "Start Application")

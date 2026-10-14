@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="{{ lang_code|default:'en' }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ t.brand|default:"TaskFlow Quantum" }} — Next-Gen Productivity Workspace</title>
+    <link rel="icon" href="data:,">
+    <style>
+        :root {
+            --bg-page: #080411;
+            --bg-gradient: radial-gradient(ellipse at 20% 0%, rgba(139, 92, 246, 0.22) 0%, transparent 60%),
+                           radial-gradient(ellipse at 80% 100%, rgba(168, 85, 247, 0.16) 0%, transparent 60%),
+                           #080411;
+            --card-bg: rgba(18, 11, 34, 0.75);
+            --card-border: rgba(168, 85, 247, 0.22);
+            --primary: #9333ea;
+            --primary-gradient: linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #c084fc 100%);
+            --primary-glow: 0 0 30px rgba(168, 85, 247, 0.5);
+            --text-main: #fbfaff;
+            --text-muted: #9d8ec2;
+            --accent-cyan: #38bdf8;
+            --accent-gold: #fbbf24;
+            --accent-emerald: #34d399;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+            background: var(--bg-gradient);
+            background-color: var(--bg-page);
+            background-attachment: fixed;
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Subtle Matrix Dot Grid */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(rgba(147, 51, 234, 0.14) 1px, transparent 1px);
+            background-size: 28px 28px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem 4rem;
+        }
+
+        /* Navigation Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0 2.5rem;
+            border-bottom: 1px solid rgba(168, 85, 247, 0.15);
+        }
+
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #ffffff;
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-icon-box {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.45);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .lang-pill {
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .lang-pill.active, .lang-pill:hover {
+            color: #ffffff;
+            background: rgba(147, 51, 234, 0.3);
+            border-color: #a855f7;
+        }
+
+        .btn-launch-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--primary-gradient);
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.88rem;
+            padding: 8px 18px;
+            border-radius: 999px;
+            box-shadow: 0 4px 18px rgba(168, 85, 247, 0.35);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-launch-header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(168, 85, 247, 0.55);
+        }
+
+        /* Hero Section */
+        .hero {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 3.5rem;
+            align-items: center;
+            padding: 4rem 0 5rem;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(147, 51, 234, 0.16);
+            border: 1px solid rgba(168, 85, 247, 0.35);
+            color: #d8b4fe;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 1.25rem;
+        }
+
+        .hero h1 {
+            font-size: 3.4rem;
+            font-weight: 900;
+            line-height: 1.12;
+            letter-spacing: -0.035em;
+            margin: 0 0 1.5rem;
+            background: linear-gradient(135deg, #ffffff 40%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p.lead {
+            font-size: 1.18rem;
+            color: var(--text-muted);
+            margin: 0 0 2.25rem;
+            max-width: 580px;
+            line-height: 1.7;
+        }
+
+        .hero-cta-group {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .btn-cta-main {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--primary-gradient);
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 1.1rem;
+            padding: 16px 36px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.45);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-cta-main:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(168, 85, 247, 0.65);
+        }
+
+        .btn-cta-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(168, 85, 247, 0.25);
+            color: #f1f0f7;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 15px 24px;
+            border-radius: 16px;
+            backdrop-filter: blur(8px);
+            transition: all 0.2s ease;
+        }
+
+        .btn-cta-secondary:hover {
+            background: rgba(147, 51, 234, 0.2);
+            border-color: #c084fc;
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        /* Hero Graphic Illustration */
+        .hero-illustration {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-glow-halo {
+            position: absolute;
+            width: 380px;
+            height: 380px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(147, 51, 234, 0.35) 0%, rgba(139, 92, 246, 0.05) 70%, transparent 100%);
+            filter: blur(35px);
+            z-index: 0;
+        }
+
+        .hero-svg-frame {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 440px;
+            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.6));
+            animation: levitate 6s ease-in-out infinite;
+        }
+
+        @keyframes levitate {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(0.8deg); }
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0 5rem;
+            padding: 1.75rem 2rem;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -0.03em;
+        }
+
+        .stat-val.accent {
+            background: linear-gradient(135deg, #a855f7, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-top: 4px;
+        }
+
+        /* Feature Cards Grid */
+        .section-header {
+            text-align: center;
+            margin-bottom: 3.5rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.3rem;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            margin: 0 0 0.75rem;
+            background: linear-gradient(135deg, #ffffff 50%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section-header p {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            max-width: 620px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.75rem;
+            margin-bottom: 5rem;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(12px);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.6), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(168, 85, 247, 0.45);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 25px rgba(147, 51, 234, 0.2);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon-bubble {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: rgba(147, 51, 234, 0.16);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+            font-size: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin: 0 0 0.6rem;
+            color: #ffffff;
+        }
+
+        .feature-card p {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* Banner CTA Bottom */
+        .bottom-cta-banner {
+            background: linear-gradient(135deg, rgba(30, 16, 56, 0.85), rgba(15, 8, 30, 0.95));
+            border: 1px solid rgba(168, 85, 247, 0.35);
+            border-radius: 28px;
+            padding: 3.5rem 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 40px rgba(147, 51, 234, 0.25);
+        }
+
+        .bottom-cta-banner h2 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin: 0 0 1rem;
+            color: #ffffff;
+        }
+
+        .bottom-cta-banner p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 580px;
+            margin: 0 auto 2rem;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(168, 85, 247, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .hero {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 2.5rem;
+                padding: 2rem 0;
+            }
+            .hero p.lead {
+                margin: 0 auto 2rem;
+            }
+            .hero-cta-group {
+                justify-content: center;
+            }
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+
+    <div class="container">
+        <!-- Navigation Header -->
+        <header>
+            <a href="{% url 'welcome' %}" class="brand-link">
+                <div class="brand-icon-box">
+                    <!-- SVG Geometric Prism Logo -->
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#ffffff" fill-opacity="0.9"/>
+                        <path d="M2 17L12 22L22 17" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 12L12 17L22 12" stroke="#e9d5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <span>{{ t.brand|default:"TaskFlow Quantum" }}</span>
+            </a>
+
+            <div class="header-actions">
+                <a href="{% url 'set_language' 'en' %}" class="lang-pill {% if lang_code == 'en' %}active{% endif %}">🇬🇧 EN</a>
+                <a href="{% url 'set_language' 'it' %}" class="lang-pill {% if lang_code == 'it' %}active{% endif %}">🇮🇹 IT</a>
+                {% if user.is_authenticated %}
+                    <span style="font-size:0.85rem; color:var(--text-muted); margin-right:4px;">@{{ user.username }}</span>
+                {% endif %}
+                <a href="{% url 'todo_list' %}" class="btn-launch-header">
+                    <span>{{ t.start_app|default:"Start Application" }}</span>
+                    <span>→</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div>
+                <div class="hero-badge">
+                    <span>✨</span>
+                    <span>{% if lang_code == 'it' %}La To-Do List Definitiva • 100 Features{% else %}The Ultimate To-Do Platform • 100 Features{% endif %}</span>
+                </div>
+                <h1>
+                    {% if lang_code == 'it' %}
+                        Organizza, Pianifica e Conquista i Tuoi Obiettivi.
+                    {% else %}
+                        Organize, Plan, and Conquer Your Best Work.
+                    {% endif %}
+                </h1>
+                <p class="lead">
+                    {% if lang_code == 'it' %}
+                        Benvenuto su <strong>TaskFlow</strong>! Non un semplice elenco di impegni, ma il tuo quartier generale moderno per la produttività: Kanban agile, calendario interattivo con scadenze, timer Pomodoro con audio feedback, matrice di Eisenhower, statistiche di velocità e collaborazione di team in tempo reale.
+                    {% else %}
+                        Welcome to <strong>TaskFlow</strong>! More than a basic to-do list, this is your next-gen productivity workspace: agile Kanban, interactive calendar with deadlines, Pomodoro focus timer with audio feedback, Eisenhower matrix, velocity analytics, and real-time team collaboration.
+                    {% endif %}
+                </p>
+                <div class="hero-cta-group">
+                    <a href="{% url 'todo_list' %}" class="btn-cta-main">
+                        <span>🚀</span>
+                        <span>{% if lang_code == 'it' %}Entra nell'Applicazione{% else %}Launch Application{% endif %}</span>
+                        <span>→</span>
+                    </a>
+                    <a href="{% url 'todo_list' %}?view=calendar" class="btn-cta-secondary">
+                        <span>📅</span>
+                        <span>{% if lang_code == 'it' %}Vedi Calendario{% else %}Interactive Calendar{% endif %}</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Custom Vector SVG Drawing: Levitation Hologram Interface -->
+            <div class="hero-illustration">
+                <div class="hero-glow-halo"></div>
+                <div class="hero-svg-frame">
+                    <svg viewBox="0 0 460 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="prismGrad" x1="50" y1="50" x2="400" y2="380" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#8b5cf6" stop-opacity="0.8"/>
+                                <stop offset="0.5" stop-color="#a855f7" stop-opacity="0.6"/>
+                                <stop offset="1" stop-color="#3b82f6" stop-opacity="0.9"/>
+                            </linearGradient>
+                            <linearGradient id="cardGrad" x1="0" y1="0" x2="320" y2="180" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#1e113a" stop-opacity="0.95"/>
+                                <stop offset="1" stop-color="#120924" stop-opacity="0.9"/>
+                            </linearGradient>
+                            <linearGradient id="accentGlow" x1="0" y1="0" x2="1" y2="1">
+                                <stop stop-color="#c084fc"/>
+                                <stop offset="1" stop-color="#38bdf8"/>
+                            </linearGradient>
+                            <filter id="shadowGlow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="10" result="blur"/>
+                                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                            </filter>
+                        </defs>
+
+                        <!-- Orbital Star Rings -->
+                        <ellipse cx="230" cy="210" rx="190" ry="85" stroke="rgba(168, 85, 247, 0.25)" stroke-width="1.5" stroke-dasharray="6 6"/>
+                        <ellipse cx="230" cy="210" rx="140" ry="160" stroke="rgba(139, 92, 246, 0.18)" stroke-width="1.5"/>
+
+                        <!-- Levitating Floating Holographic Main Card -->
+                        <rect x="70" y="80" width="320" height="230" rx="20" fill="url(#cardGrad)" stroke="rgba(168, 85, 247, 0.4)" stroke-width="2"/>
+
+                        <!-- Card Header Mockup -->
+                        <rect x="95" y="105" width="28" height="28" rx="8" fill="#8b5cf6"/>
+                        <path d="M103 119L107 123L115 113" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <rect x="135" y="112" width="120" height="12" rx="6" fill="#f8fafc" fill-opacity="0.9"/>
+                        <rect x="310" y="110" width="55" height="18" rx="9" fill="rgba(56, 189, 248, 0.2)" stroke="#38bdf8" stroke-width="1"/>
+
+                        <!-- Task Rows Mockup -->
+                        <g transform="translate(95, 150)">
+                            <rect x="0" y="0" width="270" height="38" rx="10" fill="rgba(255, 255, 255, 0.04)" stroke="rgba(168, 85, 247, 0.2)" stroke-width="1"/>
+                            <circle cx="18" cy="19" r="7" stroke="#34d399" stroke-width="2" fill="rgba(52, 211, 153, 0.2)"/>
+                            <path d="M15 19L17 21L21 16" stroke="#34d399" stroke-width="1.5" stroke-linecap="round"/>
+                            <rect x="36" y="14" width="110" height="9" rx="4" fill="#ffffff" fill-opacity="0.75"/>
+                            <rect x="200" y="11" width="55" height="16" rx="8" fill="rgba(244, 63, 94, 0.2)"/>
+                        </g>
+
+                        <g transform="translate(95, 198)">
+                            <rect x="0" y="0" width="270" height="38" rx="10" fill="rgba(255, 255, 255, 0.04)" stroke="rgba(168, 85, 247, 0.2)" stroke-width="1"/>
+                            <circle cx="18" cy="19" r="7" stroke="#a855f7" stroke-width="2"/>
+                            <rect x="36" y="14" width="140" height="9" rx="4" fill="#ffffff" fill-opacity="0.85"/>
+                            <rect x="210" y="11" width="45" height="16" rx="8" fill="rgba(251, 191, 36, 0.2)"/>
+                        </g>
+
+                        <g transform="translate(95, 246)">
+                            <rect x="0" y="0" width="270" height="38" rx="10" fill="rgba(255, 255, 255, 0.04)" stroke="rgba(168, 85, 247, 0.2)" stroke-width="1"/>
+                            <circle cx="18" cy="19" r="7" stroke="#a855f7" stroke-width="2"/>
+                            <rect x="36" y="14" width="90" height="9" rx="4" fill="#ffffff" fill-opacity="0.85"/>
+                            <rect x="195" y="11" width="60" height="16" rx="8" fill="rgba(139, 92, 246, 0.25)"/>
+                        </g>
+
+                        <!-- Satellite Floating Hologram Pill 1 (Calendar Deadline) -->
+                        <g transform="translate(290, 45)" filter="url(#shadowGlow)">
+                            <rect x="0" y="0" width="145" height="52" rx="14" fill="#1b1034" stroke="#a855f7" stroke-width="1.5"/>
+                            <text x="14" y="24" fill="#c084fc" font-size="11" font-weight="bold">📅 DEADLINE</text>
+                            <text x="14" y="40" fill="#ffffff" font-size="12" font-weight="600">Product Launch 🚀</text>
+                        </g>
+
+                        <!-- Satellite Floating Hologram Pill 2 (XP Level Up) -->
+                        <g transform="translate(25, 280)" filter="url(#shadowGlow)">
+                            <rect x="0" y="0" width="140" height="48" rx="14" fill="#1b1034" stroke="#38bdf8" stroke-width="1.5"/>
+                            <text x="14" y="22" fill="#38bdf8" font-size="10" font-weight="bold">🏆 LEVEL UP</text>
+                            <text x="14" y="38" fill="#ffffff" font-size="12" font-weight="600">+120 XP Focus</text>
+                        </g>
+
+                        <!-- Glowing Starburst Particles -->
+                        <circle cx="45" cy="130" r="3" fill="#c084fc"/>
+                        <circle cx="420" cy="180" r="2.5" fill="#38bdf8"/>
+                        <circle cx="210" cy="360" r="3.5" fill="#a855f7"/>
+                        <circle cx="390" cy="330" r="2" fill="#ffffff"/>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Counter Section -->
+        <section class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-val accent">100+</div>
+                <div class="stat-label">{% if lang_code == 'it' %}Funzionalità Attive{% else %}Features Built{% endif %}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val">{{ total_todos }}</div>
+                <div class="stat-label">{% if lang_code == 'it' %}Compiti Registrati{% else %}Tasks Created{% endif %}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val" style="color:#34d399;">{{ completed_todos }}</div>
+                <div class="stat-label">{% if lang_code == 'it' %}Traguardi Raggiunti{% else %}Goals Completed{% endif %}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val" style="color:#fbbf24;">⚡ 0 ms</div>
+                <div class="stat-label">{% if lang_code == 'it' %}Latenza SQLite Locale{% else %}Local SQLite Speed{% endif %}</div>
+            </div>
+        </section>
+
+        <!-- Features Showcase Section -->
+        <section>
+            <div class="section-header">
+                <h2>
+                    {% if lang_code == 'it' %}
+                        Un Ecosistema Completo per Ogni Tuo Flusso di Lavoro
+                    {% else %}
+                        A Complete Ecosystem for Every Workflow
+                    {% endif %}
+                </h2>
+                <p>
+                    {% if lang_code == 'it' %}
+                        Dimentica le app complicate o i semplici fogli di testo: TaskFlow unisce potenza tecnica, design professionale e reattività immediata.
+                    {% else %}
+                        No clunky software or plain text files: TaskFlow combines modern craftsmanship, deep focus tools, and lightning speed.
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="features-grid">
+                <!-- Feature 1: Smart Task Management -->
+                <div class="feature-card">
+                    <div class="feature-icon-bubble">📋</div>
+                    <h3>{% if lang_code == 'it' %}Gestione Compiti Avanzata{% else %}Smart Task Flow{% endif %}</h3>
+                    <p>
+                        {% if lang_code == 'it' %}
+                            Organizza i tuoi compiti con tag multipli (`#lavoro #urgente`), livelli di energia (bassa, media, alta), ricorrenza automatica giornaliera/settimanale e subtasks spuntabili.
+                        {% else %}
+                            Organize tasks with multi-tagging (`#work #urgent`), energy levels, automatic recurrence, checklists, and estimated minutes.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <!-- Feature 2: Interactive Calendar -->
+                <div class="feature-card">
+                    <div class="feature-icon-bubble">📅</div>
+                    <h3>{% if lang_code == 'it' %}Calendario Interattivo & Scadenze{% else %}Interactive Calendar & Deadlines{% endif %}</h3>
+                    <p>
+                        {% if lang_code == 'it' %}
+                            Mappa temporale completa del mese e della settimana con badge colorati per le date di scadenza. Clicca direttamente su qualsiasi giorno per aggiungere un impegno.
+                        {% else %}
+                            Full visual monthly grid with color-coded deadline badges. Click on any date cell to instantly schedule milestones.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <!-- Feature 3: Kanban Workflow -->
+                <div class="feature-card">
+                    <div class="feature-icon-bubble">📊</div>
+                    <h3>{% if lang_code == 'it' %}Kanban Board con Drag & Drop{% else %}Kanban Board & Drag & Drop{% endif %}</h3>
+                    <p>
+                        {% if lang_code == 'it' %}
+                            Sposta fluidamente le schede tra le colonne "Da Fare", "In Corso" e "Completato" grazie al trascinamento HTML5 nativo o con i pulsanti rapidi.
+                        {% else %}
+                            Drag cards effortlessly across agile lanes (To Do, In Progress, Done) with native HTML5 drag-and-drop feedback.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <!-- Feature 4: Eisenhower Matrix -->
+                <div class="feature-card">
+                    <div class="feature-icon-bubble">🎯</div>
+                    <h3>{% if lang_code == 'it' %}Matrice di Eisenhower{% else %}Eisenhower Matrix{% endif %}</h3>
+                    <p>
+                        {% if lang_code == 'it' %}
+                            Suddividi istantaneamente le attività nei 4 quadranti decisionali: Urgente & Importante (Fai Subito), Da Pianificare, Da Delegare, o Da Eliminare.
+                        {% else %}
+                            Prioritize high-impact work using the 4 urgent/important decision quadrants to eliminate cognitive clutter.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <!-- Feature 5: Focus Timer & Audio Synthesizer -->
+                <div class="feature-card">
+                    <div class="feature-icon-bubble">🍅</div>
+                    <h3>{% if lang_code == 'it' %}Focus Timer & Sintetizzatore Audio{% else %}Focus Timer & Web Audio Synth{% endif %}</h3>
+                    <p>
+                        {% if lang_code == 'it' %}
+                            Sessioni Pomodoro di 25 minuti con pause programmate, sintetizzatore Web Audio senza file esterni e celebrazione con coriandoli animati al 100%.
+                        {% else %}
+                            Deep work intervals with customizable Pomodoro timers, Web Audio synthesizer chime feedback, and particle canvas confetti.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <!-- Feature 6: Team Collaboration & Events -->
+                <div class="feature-card">
+                    <div class="feature-icon-bubble">👥</div>
+                    <h3>{% if lang_code == 'it' %}Hub Sociale & Sprint Condivisi{% else %}Social Hub & Shared Sprints{% endif %}</h3>
+                    <p>
+                        {% if lang_code == 'it' %}
+                            Condividi singoli compiti con i tuoi colleghi, pianifica eventi collaborativi con calendario e commenta direttamente sulle schede di lavoro.
+                        {% else %}
+                            Share tasks with teammates, join collaborative deadline sprints, write comments, and follow team achievements.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom CTA Banner -->
+        <section class="bottom-cta-banner">
+            <h2>
+                {% if lang_code == 'it' %}
+                    Pronto a Trasformare il Tuo Modo di Lavorare?
+                {% else %}
+                    Ready to Transform the Way You Work?
+                {% endif %}
+            </h2>
+            <p>
+                {% if lang_code == 'it' %}
+                    Nessun account obbligatorio per iniziare: entra subito nello spazio di lavoro e sperimenta la vera fluidità operativa.
+                {% else %}
+                    No mandatory sign up to explore: jump straight into your workspace and experience true productivity.
+                {% endif %}
+            </p>
+            <a href="{% url 'todo_list' %}" class="btn-cta-main" style="padding:18px 44px; font-size:1.15rem;">
+                <span>🚀</span>
+                <span>{% if lang_code == 'it' %}Inizia Subito — Entra nell'Applicazione{% else %}Start Application Now{% endif %}</span>
+                <span>→</span>
+            </a>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <div>
+                © 2026 {{ t.brand|default:"TaskFlow Quantum" }} • {% if lang_code == 'it' %}Costruito con Django, SQLite & Amore{% else %}Crafted with Django, SQLite & Care{% endif %}
+            </div>
+            <div style="display:flex; gap:16px;">
+                <a href="{% url 'todo_list' %}" style="color:var(--text-muted); text-decoration:none;">{% if lang_code == 'it' %}Vai all'App{% else %}Go to App{% endif %}</a>
+                <a href="{% url 'todo_list' %}?view=calendar" style="color:var(--text-muted); text-decoration:none;">{% if lang_code == 'it' %}Calendario{% else %}Calendar{% endif %}</a>
+                <a href="{% url 'todo_list' %}?view=kanban" style="color:var(--text-muted); text-decoration:none;">{% if lang_code == 'it' %}Kanban{% else %}Kanban{% endif %}</a>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

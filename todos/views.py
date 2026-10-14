@@ -9,6 +9,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Q
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -25,7 +26,9 @@ User = get_user_model()
 
 TRANSLATIONS = {
     "en": {
-        "brand": "TaskFlow Pro",
+        "brand": "TaskFlow Quantum",
+        "welcome_intro": "Welcome Page",
+        "start_app": "Start Application",
         "my_tasks": "My Tasks",
         "kanban": "Kanban Board",
         "calendar": "Calendar",
@@ -73,7 +76,9 @@ TRANSLATIONS = {
         "not_urgent_not_important": "🌱 Neither (Eliminate)",
     },
     "it": {
-        "brand": "TaskFlow Pro",
+        "brand": "TaskFlow Quantum",
+        "welcome_intro": "Pagina Iniziale",
+        "start_app": "Entra nell'Applicazione",
         "my_tasks": "I Miei Compiti",
         "kanban": "Tabellone Kanban",
         "calendar": "Calendario",
@@ -152,6 +157,24 @@ def set_language_view(request, lang_code):
             else "Lingua cambiata in Italiano!",
         )
     return redirect(request.META.get("HTTP_REFERER", "todo_list"))
+
+
+def welcome_page(request):
+    """Initial landing page introducing TaskFlow with start CTA."""
+    lang_code = request.session.get("django_language", "en")
+    t = TRANSLATIONS.get(lang_code, TRANSLATIONS["en"])
+    total_todos = Todo.objects.filter(is_deleted=False).count()
+    completed_todos = Todo.objects.filter(is_deleted=False, done=True).count()
+    return render(
+        request,
+        "todos/welcome.html",
+        {
+            "lang_code": lang_code,
+            "t": t,
+            "total_todos": total_todos,
+            "completed_todos": completed_todos,
+        },
+    )
 
 
 def todo_list(request):
@@ -664,7 +687,7 @@ def todo_restore(request, pk):
     todo.is_deleted = False
     todo.save()
     messages.success(request, f'Restored "{todo.title}" from Trash bin.')
-    return redirect("/?view=trash")
+    return redirect(f"{reverse('todo_list')}?view=trash")
 
 
 @require_POST
@@ -674,7 +697,7 @@ def todo_empty_trash(request):
     count = trashed.count()
     trashed.delete()
     messages.success(request, f"Permanently deleted {count} trashed task(s).")
-    return redirect("/?view=trash")
+    return redirect(f"{reverse('todo_list')}?view=trash")
 
 
 @require_POST
@@ -783,7 +806,7 @@ def todo_share(request, pk):
     Notification.objects.create(
         user=target_user,
         message=f'@{request.user.username} shared task "{todo.title}" with you! 👥',
-        link=f"/?view=list#task-{todo.id}",
+        link=f"{reverse('todo_list')}?view=list#task-{todo.id}",
     )
     messages.success(request, f"Task shared with @{target_user.username} successfully!")
     return redirect("todo_list")
@@ -808,7 +831,7 @@ def task_comment_add(request, pk):
             Notification.objects.create(
                 user=todo.user,
                 message=f'@{request.user.username} commented on "{todo.title}" 💬',
-                link=f"/?view=list#task-{todo.id}",
+                link=f"{reverse('todo_list')}?view=list#task-{todo.id}",
             )
         messages.success(request, "Comment posted!")
     return redirect(request.META.get("HTTP_REFERER", "todo_list"))
@@ -888,13 +911,13 @@ def event_create(request):
 
     if not title or not date_str:
         messages.error(request, "Event title and date are required.")
-        return redirect("/?view=events")
+        return redirect(f"{reverse('todo_list')}?view=events")
 
     try:
         event_date = datetime.strptime(date_str, "%Y-%m-%d").date()
     except ValueError:
         messages.error(request, "Invalid event date format.")
-        return redirect("/?view=events")
+        return redirect(f"{reverse('todo_list')}?view=events")
 
     event = CollaborationEvent.objects.create(
         organizer=request.user,
@@ -909,7 +932,7 @@ def event_create(request):
         message=f'scheduled a collaborative event: "{title}" on {event_date} 📅',
     )
     messages.success(request, f'Event "{title}" scheduled!')
-    return redirect("/?view=events")
+    return redirect(f"{reverse('todo_list')}?view=events")
 
 
 @require_POST
@@ -930,7 +953,7 @@ def event_join(request, pk):
             message=f'joined the collaborative event "{event.title}"! 🤝',
         )
         messages.success(request, f'Joined event "{event.title}"!')
-    return redirect("/?view=events")
+    return redirect(f"{reverse('todo_list')}?view=events")
 
 
 @require_POST
@@ -944,7 +967,7 @@ def social_post(request):
     if message:
         SocialActivity.objects.create(user=request.user, message=message)
         messages.success(request, "Update posted to Social Hub!")
-    return redirect("/?view=social")
+    return redirect(f"{reverse('todo_list')}?view=social")
 
 
 @require_POST
