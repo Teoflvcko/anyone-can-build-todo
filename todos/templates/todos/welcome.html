@@ -478,7 +478,7 @@
                         <button type="submit" class="lang-pill" style="cursor:pointer;" title="Esci dall'account">Esci</button>
                     </form>
                     <a href="{% url 'todo_list' %}" class="btn-launch-header">
-                        <span>{{ t.start_app|default:"Start Application" }}</span>
+                        <span>START</span>
                         <span>→</span>
                     </a>
                 {% else %}
@@ -487,7 +487,7 @@
                         <span>Registrati</span>
                     </a>
                     <a href="{% url 'todo_list' %}" class="btn-launch-header">
-                        <span>{{ t.start_app|default:"Start Application" }}</span>
+                        <span>START</span>
                         <span>→</span>
                     </a>
                 {% endif %}
@@ -516,9 +516,9 @@
                     {% endif %}
                 </p>
                 <div class="hero-cta-group">
-                    <a href="{% url 'todo_list' %}" class="btn-cta-main">
+                    <a href="{% url 'todo_list' %}" class="btn-cta-main" style="box-shadow: 0 0 25px rgba(168, 85, 247, 0.65);">
                         <span>🚀</span>
-                        <span>{% if lang_code == 'it' %}Entra nell'Applicazione{% else %}Launch Application{% endif %}</span>
+                        <span>START — {% if lang_code == 'it' %}Entra nell'Applicazione{% else %}Start Application{% endif %}</span>
                         <span>→</span>
                     </a>
                     <a href="{% url 'todo_list' %}?view=calendar" class="btn-cta-secondary">
@@ -749,9 +749,9 @@
                     No mandatory sign up to explore: jump straight into your workspace and experience true productivity.
                 {% endif %}
             </p>
-            <a href="{% url 'todo_list' %}" class="btn-cta-main" style="padding:18px 44px; font-size:1.15rem;">
+            <a href="{% url 'todo_list' %}" class="btn-cta-main" style="padding:18px 44px; font-size:1.15rem; box-shadow: 0 0 30px rgba(168, 85, 247, 0.7);">
                 <span>🚀</span>
-                <span>{% if lang_code == 'it' %}Inizia Subito — Entra nell'Applicazione{% else %}Start Application Now{% endif %}</span>
+                <span>START — {% if lang_code == 'it' %}Entra nell'Applicazione{% else %}Launch Application{% endif %}</span>
                 <span>→</span>
             </a>
         </section>

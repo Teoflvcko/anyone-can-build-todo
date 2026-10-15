@@ -1,114 +1,109 @@
-# To-do list
+# ⚡ TaskFlow Quantum — Next-Gen Productivity Workspace
 
-The most basic to-do list in Django: add a to-do, mark it done, delete it.
+> Una piattaforma completa di produttività personale, gamification e organizzazione sviluppata in **Python & Django**, con architettura moderna, design system cyberpunk scuro/viola e zero dipendenze esterne bloccanti.
 
-## Run it on your laptop
+---
 
-**1. Install uv, once.** uv installs Python and this project's packages for you.
+## 🌟 Panoramica del Progetto
 
-Mac:
+**TaskFlow Quantum** trasforma la classica To-Do list in un quartier generale per la gestione del tempo, del benessere e dei progetti. Il sistema accoglie l'utente con una **Landing Page introduttiva** dotata di pulsante **START** per entrare nell'applicazione, con supporto multilingua (Italiano / Inglese).
 
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
+---
 
-Windows (PowerShell):
+## 💎 Funzionalità Principali
 
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
+### 1. 📋 Gestione Compiti Avanzata (Task Management)
+- **Compiti e Sotto-Obiettivi (Subtasks):** Creazione task con priorità (*Low, Medium, High*), categorie, date di scadenza, tempo stimato in minuti e livelli energetici (*Deep Work, Medium, Low Energy*).
+- **Stati Dinamici:** *To Do*, *In Progress*, *Done*, con supporto per task preferiti, duplicazione e archiviazione.
+- **Scomposizione Intelligente AI:** Genera automaticamente 3 sotto-obiettivi pratici a partire dal titolo del compito.
 
-Close the terminal and open a new one, then check with `uv --version`.
+### 2. 📊 Viste Multiple di Lavoro
+- **📋 My Tasks:** visualizzazione a lista con filtri rapidi, ordinamento e ricerca.
+- **📅 Timeline Gantt:** pianificazione orizzontale a 14 giorni per visualizzare i carichi di lavoro e le sovrapposizioni.
+- **📊 Kanban Board:** bacheca visuale a colonne (*Da Fare*, *In Corso*, *Completati*).
+- **📆 Calendario Mensile Interattivo:** griglia completa del mese con evidenziazione dei giorni, delle scadenze e indicatore del giorno corrente.
+- **🎯 Matrice di Eisenhower:** categorizzazione automatica in 4 quadranti (*Urgente & Importante*, *Non Urgente ma Importante*, *Urgente non Importante*, *Né Urgente né Importante*).
+- **📈 Analytics & Statistiche:** grafici di completamento, tasso di produttività e metriche di velocità settimanale.
+- **🍅 Focus Timer Pomodoro:** timer integrato a intervalli di 25 minuti di lavoro e 5 minuti di pausa con suoni sintetizzati.
 
-**2. Get the code.**
+### 3. 🧠 Second Brain & Wiki della Conoscenza
+- Rete di note e documenti categorizzati con tag.
+- Grafo visuale delle connessioni (*Knowledge Graph*) animato in tempo reale su Canvas HTML5.
 
-```bash
-git clone https://github.com/kreativitea/anyone-can-build-todo.git
-cd anyone-can-build-todo
-```
+### 4. 💰 Finanze Personali & Budgeting
+- Tracciamento di entrate e uscite con categorie (*Cibo, Casa, Trasporti, Svago, Salute*).
+- Grafico interattivo a ciambella (*Donut Chart*) disegnato su Canvas con saldo del totale uscite.
+- Salvadanai per obiettivi di risparmio (*Savings Goals*) con barre di avanzamento percentuali.
 
-**3. Install the packages.** The first time, uv also downloads the right version of Python.
+### 5. 📖 Diario Personale & Tracciamento Umore
+- Pagine quotidiane di diario con riflessioni ed esercizio delle 3 cose per cui essere grati (*Gratitude Journal*).
+- Selettore meteo del giorno e stato d'animo (*Raggiante, Motivato, Calmo, Stanco, Stressato*).
 
-```bash
-uv sync
-```
+### 6. 🎮 Gamification RPG (Productivity RPG)
+- Profilo eroe con livelli, punti esperienza (XP) e monete d'oro guadagnate lavorando.
+- Statistiche di ruolo: *Disciplina, Creatività, Focus, Vitalità*.
+- **Bacheca Missioni Giornaliere (*Daily Quests*):** 3 sfide giornaliere con barre di avanzamento.
+- **🎁 Baule della Fortuna Giornaliero:** scrigno misterioso che accredita bonus di XP e monete una volta al giorno.
+- **Negozio delle Ricompense:** negozio per acquistare premi della vita reale (es. "Pizza con amici", "1 ora di gaming") con le monete guadagnate.
 
-**4. Create the database.** This makes a file called `db.sqlite3`.
+### 7. 🎧 Oasi Sonora & Studio del Respiro
+- **Mixer Web Audio dal vivo:** 5 canali sonori sintetizzati in tempo reale senza file pesanti (*Pioggia, Onde oceaniche, Camino, Caffetteria, Brezza del bosco*).
+- **Guida Box Breathing:** animazione a sfera orbitale per la respirazione quadrata (4s Inspira • 4s Trattieni • 4s Espira • 4s Trattieni).
 
-```bash
-uv run python manage.py migrate
-```
+### 8. 🤖 Risolutore di Problemi AI (Conversational Chatbot)
+- Chatbot integrato a fumetti con simulazione naturale di digitazione (`● ● ●`).
+- Diagnosi psicologica della causa profonda, strategia in 3 passi e compiti operativi inseribili nella to-do list con un clic.
 
-**5. Turn on the commit checks.** From now on, every `git commit` checks your code first.
+### 9. ⚡ Strumenti di Produttività Operativa
+- **📌 Post-it Rapido Flottante (*Floating Scratchpad*):** blocco note adesivo con salvataggio automatico continuo in `localStorage` e conversione con 1 clic in To-Do.
+- **🔍 Ricerca Globale Rapida Spotlight (`Cmd + K` / `Ctrl + K`):** barra di comando universale per cercare istantaneamente compiti, note o saltare alle sezioni.
+- **🔔 Notifiche Desktop Reali:** allarmi del browser basati su Web Notifications API per le scadenze vicine.
+- **📥 Centro Esportazione & Backup:** download in CSV (per Excel sia per Task che per Finanze), `.ics` (per Google Calendar e Apple Calendar), JSON completo e stampa PDF.
+- **🔐 Autenticazione & Privacy:** sistema di registrazione e accesso con gestione sicura di password e sessioni utente.
 
-```bash
-uv run pre-commit install
-```
+---
 
-**6. Start the server.**
+## 🛠️ Architettura e Struttura File
 
-```bash
-uv run python manage.py runserver
-```
-
-Open <http://127.0.0.1:8000/>. Press `Ctrl+C` in the terminal to stop the server.
-
-**7. Run the tests.**
-
-```bash
-uv run python manage.py test
-```
-
-You should see `Ran 5 tests` and `OK`.
-
-On a Mac, `make` does the same in fewer words: `make setup` is steps 3 to 5, `make run` is step 6,
-`make test` is step 7. `make help` lists the rest.
-
-## Checks
-
-| Command | What it does |
+| File | Responsabilità |
 |---|---|
-| `uv run ruff check` | Finds mistakes and bad habits in the Python code |
-| `uv run ruff format` | Rewrites the Python code in the standard style |
-| `uv run pre-commit run --all-files` | Runs every commit check on every file |
+| `config/settings.py` | Configurazione globale di Django, impostazioni di sicurezza, sessioni e internazionalizzazione. |
+| `config/urls.py` | Routing principale con supporto ad admin, auth (`/accounts/`, `/signup/`) e applicazione. |
+| `todos/models.py` | Modelli del database SQLite (`Todo`, `Project`, `Habit`, `Transaction`, `SavingsGoal`, `WikiPage`, `JournalEntry`, `MediaItem`, `UserProfileRPG`, `RpgReward`, `Notification`). |
+| `todos/urls.py` | Tutti gli endpoint e gli indirizzi dell'applicazione. |
+| `todos/views.py` | Logica applicativa, controlli di sicurezza, calcoli finanziari, algoritmi AI ed esportazioni dati. |
+| `todos/templates/todos/welcome.html` | Pagina iniziale di benvenuto con pulsante START, grafica cyberpunk e presentazione funzioni. |
+| `todos/templates/todos/todo_list.html` | Interfaccia principale del workspace con tutte le viste, pannelli e script interattivi. |
+| `todos/templates/registration/` | Pagine di Login e Registrazione (Signup) in stile scuro coordinato. |
+| `todos/tests.py` | Suite di 54 test unitari automatizzati. |
 
-The commit checks run Ruff, Django's own check, and a few checks on every file. If a check fails
-because it fixed a file for you, look at the change, `git add` the file, and commit again. GitHub
-runs the same checks and the tests on every push.
+---
 
-## How it is put together
+## 🚀 Istruzioni per Avviare il Progetto
 
-| File | What it does |
-|---|---|
-| `config/settings.py` | Settings for the whole project |
-| `config/urls.py` | Sends each address to the right app |
-| `todos/models.py` | The `Todo` table in the database |
-| `todos/urls.py` | The addresses of the to-do pages |
-| `todos/views.py` | What happens when each address is visited |
-| `todos/templates/todos/todo_list.html` | The page you see |
-| `todos/tests.py` | The tests |
-| `AGENTS.md` | Instructions for the AI assistant (Codex reads it; `CLAUDE.md` points Claude to it) |
+Il progetto utilizza **uv** per la gestione rapida e riproducibile delle dipendenze e di Python.
 
-## Put it on the internet
-
-A live server needs three environment variables. Never put their real values in the code.
-
-| Variable | Value |
-|---|---|
-| `DJANGO_SECRET_KEY` | A long random string. Make one with `uv run python -c "import secrets; print(secrets.token_urlsafe(50))"` |
-| `DJANGO_DEBUG` | `False` |
-| `DJANGO_ALLOWED_HOSTS` | The site's address without `https://`, for example `my-todo.onrender.com` |
-
-With `DJANGO_DEBUG` set to `False`, the site only works over HTTPS.
-
-Build command:
-
+### 1. Requisiti e Installazione
 ```bash
-pip install uv && uv sync --locked --no-dev && uv run --no-dev python manage.py collectstatic --no-input && uv run --no-dev python manage.py migrate
+# Installa le dipendenze e prepara il database
+make setup
 ```
+*(In alternativa: `uv sync && uv run python manage.py migrate`)*
 
-Start command:
-
+### 2. Avviare il Server Locale
 ```bash
-uv run --no-dev gunicorn config.wsgi
+make run
 ```
+Il sito si aprirà all'indirizzo **http://127.0.0.1:8000/** mostrando la pagina iniziale di benvenuto. Premendo il pulsante **START** si accede all'applicazione.
+
+### 3. Eseguire i Test
+```bash
+make test
+```
+Tutti i **54 test unitari** vengono eseguiti automaticamente verificando ogni singola funzionalità.
+
+### 4. Controlli di Qualità del Codice
+```bash
+make check
+```
+Esegue i linter Ruff, il controllo di formattazione del codice, i controlli pre-commit e l'intera suite di test.
