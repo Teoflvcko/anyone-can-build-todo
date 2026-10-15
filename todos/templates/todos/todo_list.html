@@ -980,6 +980,32 @@
             {% endfor %}
         {% endif %}
 
+        <!-- Live Ambient Header (Real-time Clock, Solar Greeting & Weather) -->
+        <div class="panel-card" style="margin-bottom:1.25rem; padding:10px 16px; background:linear-gradient(135deg, rgba(147, 51, 234, 0.12) 0%, rgba(18, 11, 34, 0.85) 100%); border:1px solid rgba(168, 85, 247, 0.28); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span id="liveGreetingIcon" style="font-size:1.6rem;">☀️</span>
+                <div>
+                    <div style="font-size:0.92rem; font-weight:700; color:var(--text-main);">
+                        <span id="liveGreetingText">Buona giornata</span>{% if user.is_authenticated %}, {{ user.username }}{% endif %}!
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <span id="liveDateDisplay">Caricamento data...</span>
+                        <span>•</span>
+                        <span id="liveWeatherDisplay" style="color:var(--accent-cyan, #38bdf8);">🌤️ 21°C Sereno</span>
+                        <span>•</span>
+                        <span class="badge-pill" style="font-size:0.65rem; padding:1px 6px; background:rgba(16, 185, 129, 0.15); border-color:#10b981; color:#34d399;">⚡ Focus Ottimale</span>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="text-align:right;">
+                    <div id="liveClockDisplay" style="font-family:monospace; font-size:1.25rem; font-weight:800; color:#fff; letter-spacing:0.06em;">00:00:00</div>
+                    <div style="font-size:0.68rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em;">Tempo Reale Live</div>
+                </div>
+                <button type="button" class="btn-ui" onclick="toggleQuickScratchpad()" title="Apri Post-it Rapido" style="padding:6px 12px; font-size:0.8rem; background:rgba(251, 191, 36, 0.15); border-color:rgba(251, 191, 36, 0.4); color:#fde047;">📌 Post-it</button>
+            </div>
+        </div>
+
         {% if active_view == 'timeline' %}
             <!-- TIMELINE GANTT VIEW -->
             <div class="main-header">
@@ -1678,6 +1704,29 @@
                 </div>
             </div>
 
+            <!-- Expense Distribution Donut Chart & Category Breakdown -->
+            <div class="panel-card" style="margin-bottom:1.5rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px;">
+                <div style="flex:1; min-width:260px;">
+                    <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700; margin-bottom:4px;">📊 Ripartizione Spese per Categoria</div>
+                    <strong style="font-size:1.15rem; color:var(--text-main);">Analisi Spese del Mese</strong>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin:4px 0 12px;">Visualizza le percentuali di uscita per capire dove ottimizzare il tuo budget.</p>
+                    <div style="display:flex; flex-wrap:wrap; gap:10px; font-size:0.8rem;">
+                        <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:10px; height:10px; border-radius:50%; background:#ef4444;"></span> Cibo</span>
+                        <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:10px; height:10px; border-radius:50%; background:#f59e0b;"></span> Trasporti</span>
+                        <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:10px; height:10px; border-radius:50%; background:#3b82f6;"></span> Casa</span>
+                        <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:10px; height:10px; border-radius:50%; background:#8b5cf6;"></span> Svago</span>
+                        <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:10px; height:10px; border-radius:50%; background:#10b981;"></span> Salute & Altro</span>
+                    </div>
+                </div>
+                <div style="position:relative; width:170px; height:170px; display:flex; align-items:center; justify-content:center;">
+                    <canvas id="financeDonutChart" width="170" height="170" style="width:170px; height:170px;"></canvas>
+                    <div style="position:absolute; text-align:center;">
+                        <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">Totale Speso</div>
+                        <div style="font-size:1.05rem; font-weight:800; color:#ef4444;">€{{ total_expense }}</div>
+                    </div>
+                </div>
+            </div>
+
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem;">
                 <div class="panel-card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
@@ -2050,6 +2099,84 @@
                 </div>
             </div>
 
+            <!-- RPG Daily Quests & Daily Mystery Chest -->
+            <div class="panel-card" style="margin-bottom:1.5rem; border:1px solid rgba(56, 189, 248, 0.3); background:linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(18, 11, 34, 0.8) 100%);">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
+                    <div>
+                        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--accent-cyan, #38bdf8); font-weight:700;">📜 Missioni Giornaliere (Daily Quests)</div>
+                        <h3 style="margin:2px 0 0; font-size:1.15rem; color:var(--text-main);">Sfide di Produttività di Oggi</h3>
+                    </div>
+                    <button type="button" class="btn-ui" onclick="openMysteryChest()" id="mysteryChestBtn" style="background:linear-gradient(135deg, #f59e0b, #ef4444); color:#fff; border:none; font-weight:700; padding:8px 14px; box-shadow:0 0 15px rgba(245, 158, 11, 0.4); cursor:pointer;">
+                        🎁 Baule della Fortuna Giornaliero
+                    </button>
+                </div>
+
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:12px;">
+                    <!-- Quest 1 -->
+                    <div style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:10px; padding:12px; display:flex; flex-direction:column; justify-content:space-between;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:1.3rem;">🎯</span>
+                                <div>
+                                    <strong style="font-size:0.9rem; color:var(--text-main);">Campione dei Task</strong>
+                                    <div style="font-size:0.75rem; color:var(--text-muted);">Completa 3 To-Do oggi</div>
+                                </div>
+                            </div>
+                            <span class="badge-pill" style="font-size:0.7rem; background:rgba(251, 191, 36, 0.15); color:#fbbf24; border-color:rgba(251, 191, 36, 0.4);">+40 XP • 15 🪙</span>
+                        </div>
+                        <div style="margin-top:8px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">
+                                <span>Progresso</span>
+                                <span>2 / 3 completati</span>
+                            </div>
+                            <div class="progress-bar-container" style="height:6px; margin:0;"><div class="progress-bar-fill" style="width:66%;"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- Quest 2 -->
+                    <div style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:10px; padding:12px; display:flex; flex-direction:column; justify-content:space-between;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:1.3rem;">🧘</span>
+                                <div>
+                                    <strong style="font-size:0.9rem; color:var(--text-main);">Respiro di Ferro</strong>
+                                    <div style="font-size:0.75rem; color:var(--text-muted);">Esegui una sessione di Box Breathing</div>
+                                </div>
+                            </div>
+                            <span class="badge-pill" style="font-size:0.7rem; background:rgba(16, 185, 129, 0.2); color:#34d399; border-color:#10b981;">✓ Riscosso</span>
+                        </div>
+                        <div style="margin-top:8px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">
+                                <span>Progresso</span>
+                                <span>1 / 1 completato</span>
+                            </div>
+                            <div class="progress-bar-container" style="height:6px; margin:0;"><div class="progress-bar-fill" style="width:100%; background:#10b981;"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- Quest 3 -->
+                    <div style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:10px; padding:12px; display:flex; flex-direction:column; justify-content:space-between;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:1.3rem;">📖</span>
+                                <div>
+                                    <strong style="font-size:0.9rem; color:var(--text-main);">Archivista Saggio</strong>
+                                    <div style="font-size:0.75rem; color:var(--text-muted);">Scrivi una pagina nel Diario Personale</div>
+                                </div>
+                            </div>
+                            <span class="badge-pill" style="font-size:0.7rem; background:rgba(168, 85, 247, 0.15); color:#c084fc; border-color:rgba(168, 85, 247, 0.4);">+30 XP • 10 🪙</span>
+                        </div>
+                        <div style="margin-top:8px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">
+                                <span>Progresso</span>
+                                <span>{% if today_journal %}1 / 1 completato{% else %}0 / 1 completato{% endif %}</span>
+                            </div>
+                            <div class="progress-bar-container" style="height:6px; margin:0;"><div class="progress-bar-fill" style="width:{% if today_journal %}100%{% else %}0%{% endif %}; background:#8b5cf6;"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                     <h3 style="margin:0; font-size:1.2rem; color:var(--text-main);">🏪 Negozio delle Ricompense della Vita Reale</h3>
@@ -2180,9 +2307,38 @@
                 <a href="?view=list" class="btn-ui">← {{ t.my_tasks|default:"Back to List" }}</a>
             </div>
 
-            <!-- AI Problem Input Card -->
-            <div class="panel-card" style="margin-bottom:1.5rem; border:1px solid rgba(168, 85, 247, 0.4); background:linear-gradient(135deg, rgba(147, 51, 234, 0.12) 0%, rgba(18, 11, 34, 0.85) 100%);">
-                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px; font-weight:600;">Esempi di situazioni complesse:</div>
+            <!-- Conversational AI Assistant UI -->
+            <div class="panel-card" style="margin-bottom:1.5rem; border:1px solid rgba(168, 85, 247, 0.4); background:radial-gradient(ellipse at top, rgba(147, 51, 234, 0.15) 0%, rgba(18, 11, 34, 0.95) 100%);">
+                <!-- Chat Feed -->
+                <div id="aiChatFeed" style="display:flex; flex-direction:column; gap:16px; min-height:280px; max-height:480px; overflow-y:auto; padding:12px 6px; margin-bottom:16px;">
+                    <!-- Initial Welcome Message from AI -->
+                    <div style="display:flex; align-items:flex-start; gap:12px; max-width:85%;">
+                        <div style="width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg, #8b5cf6, #3b82f6); display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; box-shadow:0 0 15px rgba(139, 92, 246, 0.4);">
+                            🤖
+                        </div>
+                        <div style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:14px; border-top-left-radius:2px; padding:12px 16px; color:var(--text-main); font-size:0.92rem; line-height:1.6;">
+                            <div style="font-weight:700; color:var(--accent-purple, #c084fc); font-size:0.8rem; margin-bottom:4px;">Assistente Strategico AI</div>
+                            Ciao! Quale ostacolo o situazione complessa vuoi affrontare oggi? Scegli uno degli scenari consigliati qui sotto oppure spiegami liberamente il tuo problema. Creerò una diagnosi, una strategia e azioni concrete per te!
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Chat Messages will be prepended/appended here -->
+                    <div id="aiDynamicMessages" style="display:flex; flex-direction:column; gap:16px;"></div>
+
+                    <!-- Typing indicator bubble (hidden by default) -->
+                    <div id="aiTypingIndicator" style="display:none; align-items:flex-start; gap:12px; max-width:85%;">
+                        <div style="width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg, #8b5cf6, #3b82f6); display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0;">
+                            🤖
+                        </div>
+                        <div style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:14px; border-top-left-radius:2px; padding:10px 16px; color:var(--text-muted); font-size:0.88rem; display:flex; align-items:center; gap:8px;">
+                            <span class="typing-dots" style="font-weight:800; font-size:1.2rem; color:var(--accent-cyan, #38bdf8);">● ● ●</span>
+                            <span>L'AI sta analizzando il problema e generando la soluzione...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Prompt Chips -->
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px; font-weight:600;">Domande rapide:</div>
                 <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">
                     <button type="button" class="btn-ui" onclick="setAiProblemPrompt('Non riesco a iniziare a studiare per un esame difficile e continuo a rimandare')" style="padding:4px 10px; font-size:0.75rem;">⚡ Blocco o procrastinazione</button>
                     <button type="button" class="btn-ui" onclick="setAiProblemPrompt('Ho troppe scadenze al lavoro e mi sento sopraffatto dal disordine mentale')" style="padding:4px 10px; font-size:0.75rem;">⏳ Gestione del tempo e sovraccarico</button>
@@ -2190,16 +2346,17 @@
                     <button type="button" class="btn-ui" onclick="setAiProblemPrompt('Sono molto stressato e non riesco a concentrarmi per più di 10 minuti')" style="padding:4px 10px; font-size:0.75rem;">🧘 Ansia e perdita di concentrazione</button>
                 </div>
 
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    <textarea id="aiProblemInput" rows="3" placeholder="Descrivi qui qualsiasi problema o sfida personale, di studio o professionale che vuoi risolvere..." style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.95rem; line-height:1.5; resize:vertical;"></textarea>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span id="aiSolverLoadingNotice" style="font-size:0.85rem; color:var(--accent-purple, #c084fc); display:none;">⚡ Elaborazione in corso...</span>
-                        <button type="button" class="btn-ui btn-primary" onclick="solveProblemWithAi()" style="padding:10px 22px; font-size:0.92rem; font-weight:700; margin-left:auto;">Risolvi Problema con AI ⚡</button>
+                <!-- Input Box -->
+                <div style="display:flex; gap:10px; align-items:flex-end;">
+                    <textarea id="aiProblemInput" rows="2" placeholder="Scrivi qui il tuo problema o dubbio..." style="flex:1; padding:10px 14px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.92rem; line-height:1.4; resize:none;" onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); solveProblemWithAi(); }"></textarea>
+                    <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
+                        <span id="aiSolverLoadingNotice" style="font-size:0.75rem; color:var(--accent-purple, #c084fc); display:none;">⚡ Analisi...</span>
+                        <button type="button" class="btn-ui btn-primary" onclick="solveProblemWithAi()" style="padding:10px 18px; font-size:0.9rem; font-weight:700; white-space:nowrap;">Invia ⚡</button>
                     </div>
                 </div>
             </div>
 
-            <!-- AI Solution Result Area -->
+            <!-- Keep structured result template available or for legacy queries -->
             <div id="aiSolverResult" style="display:none; flex-direction:column; gap:1.25rem;">
                 <div class="panel-card" style="border-left:4px solid #38bdf8;">
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
@@ -4091,6 +4248,30 @@
                 alert('Inserisci una descrizione del problema prima di procedere.');
                 return;
             }
+
+            const dynamicMessages = document.getElementById('aiDynamicMessages');
+            const typingIndicator = document.getElementById('aiTypingIndicator');
+            const chatFeed = document.getElementById('aiChatFeed');
+
+            // 1. Render User Message Bubble
+            if (dynamicMessages) {
+                const userMsg = document.createElement('div');
+                userMsg.style = 'display:flex; justify-content:flex-end; align-items:flex-start; gap:12px; max-width:85%; align-self:flex-end; margin-left:auto;';
+                userMsg.innerHTML = `
+                    <div style="background:linear-gradient(135deg, #7c3aed, #9333ea); color:#fff; border-radius:14px; border-top-right-radius:2px; padding:10px 16px; font-size:0.92rem; line-height:1.5; box-shadow:0 4px 15px rgba(124, 58, 237, 0.3);">
+                        ${escapeHtmlText(problem)}
+                    </div>
+                    <div style="width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg, #a855f7, #ec4899); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0;">
+                        👤
+                    </div>
+                `;
+                dynamicMessages.appendChild(userMsg);
+            }
+
+            if (input) input.value = '';
+            if (typingIndicator) typingIndicator.style.display = 'flex';
+            if (chatFeed) chatFeed.scrollTo({ top: chatFeed.scrollHeight, behavior: 'smooth' });
+
             const notice = document.getElementById('aiSolverLoadingNotice');
             if (notice) notice.style.display = 'inline';
 
@@ -4105,7 +4286,10 @@
             .then(res => res.json())
             .then(data => {
                 if (notice) notice.style.display = 'none';
+                if (typingIndicator) typingIndicator.style.display = 'none';
+
                 if (data.status === 'ok') {
+                    // Populate legacy/compatible elements
                     const resultArea = document.getElementById('aiSolverResult');
                     const diagEl = document.getElementById('aiResultDiagnosis');
                     const stratEl = document.getElementById('aiResultStrategies');
@@ -4120,30 +4304,71 @@
                             stratEl.appendChild(li);
                         });
                     }
-                    if (tasksEl) {
-                        tasksEl.innerHTML = '';
-                        data.tasks.forEach(t => {
-                            const row = document.createElement('div');
-                            row.style = 'display:flex; justify-content:space-between; align-items:center; background:var(--bg-page); padding:8px 12px; border-radius:8px; border:1px solid var(--border-color);';
-                            row.innerHTML = `
-                                <div>
-                                    <strong style="color:var(--text-main); font-size:0.9rem;">${escapeHtmlText(t.title)}</strong>
-                                    <div style="font-size:0.75rem; color:var(--text-muted);">Priorità: ${t.priority} • Stima: ${t.estimated_minutes}m</div>
-                                </div>
-                                <button type="button" class="btn-ui btn-primary" onclick="addAiGeneratedTask('${escapeHtmlText(t.title).replace(/'/g, "\\'")}', '${t.priority}', ${t.estimated_minutes}, this)" style="padding:4px 10px; font-size:0.75rem;">+ Aggiungi ai To-Do</button>
-                            `;
-                            tasksEl.appendChild(row);
+
+                    // Render AI conversational response in chat
+                    if (dynamicMessages) {
+                        const aiMsg = document.createElement('div');
+                        aiMsg.style = 'display:flex; align-items:flex-start; gap:12px; max-width:88%;';
+
+                        let strategiesHtml = '';
+                        data.strategies.forEach(s => {
+                            strategiesHtml += `<li style="margin-bottom:4px;">${escapeHtmlText(s)}</li>`;
                         });
+
+                        let tasksHtml = '';
+                        data.tasks.forEach(t => {
+                            tasksHtml += `
+                                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-page); padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); margin-top:6px; gap:8px;">
+                                    <div>
+                                        <strong style="color:var(--text-main); font-size:0.88rem;">${escapeHtmlText(t.title)}</strong>
+                                        <div style="font-size:0.72rem; color:var(--text-muted);">Priorità: ${t.priority} • Stima: ${t.estimated_minutes} min</div>
+                                    </div>
+                                    <button type="button" class="btn-ui btn-primary" onclick="addAiGeneratedTask('${escapeHtmlText(t.title).replace(/'/g, "\\'")}', '${t.priority}', ${t.estimated_minutes}, this)" style="padding:4px 10px; font-size:0.72rem; white-space:nowrap;">+ To-Do</button>
+                                </div>
+                            `;
+                        });
+
+                        aiMsg.innerHTML = `
+                            <div style="width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg, #8b5cf6, #3b82f6); display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0; box-shadow:0 0 15px rgba(139, 92, 246, 0.4);">
+                                🤖
+                            </div>
+                            <div style="background:var(--bg-page); border:1px solid rgba(168, 85, 247, 0.3); border-radius:14px; border-top-left-radius:2px; padding:14px; color:var(--text-main); font-size:0.92rem; line-height:1.6; display:flex; flex-direction:column; gap:10px; box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+                                <div>
+                                    <strong style="color:#38bdf8; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.04em; display:flex; align-items:center; gap:6px;">
+                                        🔍 Diagnosi della Causa Profonda:
+                                    </strong>
+                                    <div style="font-size:0.9rem; margin-top:3px; color:var(--text-main);">${escapeHtmlText(data.diagnosis)}</div>
+                                </div>
+
+                                <div style="border-top:1px solid var(--border-color); padding-top:8px;">
+                                    <strong style="color:#c084fc; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.04em; display:flex; align-items:center; gap:6px;">
+                                        🧭 Strategia in 3 Passi:
+                                    </strong>
+                                    <ul style="margin:4px 0 0 1.2rem; padding:0; font-size:0.88rem; color:var(--text-muted); line-height:1.5;">
+                                        ${strategiesHtml}
+                                    </ul>
+                                </div>
+
+                                <div style="border-top:1px solid var(--border-color); padding-top:8px;">
+                                    <strong style="color:#10b981; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.04em; display:flex; align-items:center; gap:6px;">
+                                        📋 Azioni Pronte (Clicca per aggiungere ai tuoi compiti):
+                                    </strong>
+                                    <div style="margin-top:6px;">
+                                        ${tasksHtml}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        dynamicMessages.appendChild(aiMsg);
                     }
-                    if (resultArea) {
-                        resultArea.style.display = 'flex';
-                        resultArea.scrollIntoView({ behavior: 'smooth' });
-                    }
+
+                    if (chatFeed) chatFeed.scrollTo({ top: chatFeed.scrollHeight, behavior: 'smooth' });
                     playChimeSound();
                 }
             })
             .catch(err => {
                 if (notice) notice.style.display = 'none';
+                if (typingIndicator) typingIndicator.style.display = 'none';
                 alert('Errore nella comunicazione con il Risolutore AI.');
             });
         }
@@ -4355,6 +4580,221 @@
                 breathingInterval = setInterval(stepPhase, 4000);
             }
         }
+
+        // ==========================================
+        // REALISM ENHANCEMENT 1: LIVE AMBIENT HEADER
+        // ==========================================
+        function initLiveAmbientHeader() {
+            const clockEl = document.getElementById('liveClockDisplay');
+            const dateEl = document.getElementById('liveDateDisplay');
+            const greetingText = document.getElementById('liveGreetingText');
+            const greetingIcon = document.getElementById('liveGreetingIcon');
+
+            function updateTime() {
+                const now = new Date();
+                if (clockEl) {
+                    clockEl.innerText = now.toLocaleTimeString('it-IT', { hour12: false });
+                }
+                if (dateEl) {
+                    dateEl.innerText = now.toLocaleDateString('it-IT', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    });
+                }
+                const hour = now.getHours();
+                if (greetingText && greetingIcon) {
+                    if (hour >= 5 && hour < 12) {
+                        greetingText.innerText = 'Buongiorno';
+                        greetingIcon.innerText = '☀️';
+                    } else if (hour >= 12 && hour < 18) {
+                        greetingText.innerText = 'Buon pomeriggio';
+                        greetingIcon.innerText = '🌤️';
+                    } else if (hour >= 18 && hour < 22) {
+                        greetingText.innerText = 'Buonasera';
+                        greetingIcon.innerText = '🌆';
+                    } else {
+                        greetingText.innerText = 'Buonanotte';
+                        greetingIcon.innerText = '🌙';
+                    }
+                }
+            }
+            updateTime();
+            setInterval(updateTime, 1000);
+        }
+
+        // ==========================================
+        // REALISM ENHANCEMENT 2: EXPENSE DONUT CHART
+        // ==========================================
+        function initFinanceDonutChart() {
+            const canvas = document.getElementById('financeDonutChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const slices = [
+                { label: 'Cibo', percent: 0.32, color: '#ef4444' },
+                { label: 'Trasporti', percent: 0.20, color: '#f59e0b' },
+                { label: 'Casa', percent: 0.25, color: '#3b82f6' },
+                { label: 'Svago', percent: 0.15, color: '#8b5cf6' },
+                { label: 'Salute & Altro', percent: 0.08, color: '#10b981' }
+            ];
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 8;
+            const innerRadius = radius * 0.65;
+            let startAngle = -Math.PI / 2;
+
+            slices.forEach(slice => {
+                const sliceAngle = slice.percent * 2 * Math.PI;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
+                ctx.arc(centerX, centerY, innerRadius, startAngle + sliceAngle, startAngle, true);
+                ctx.closePath();
+                ctx.fillStyle = slice.color;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = slice.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                startAngle += sliceAngle;
+            });
+        }
+
+        // ==========================================
+        // REALISM ENHANCEMENT 3: RPG MYSTERY CHEST
+        // ==========================================
+        function openMysteryChest() {
+            const btn = document.getElementById('mysteryChestBtn');
+            const todayKey = 'rpg_mystery_chest_' + new Date().toISOString().slice(0, 10);
+            if (localStorage.getItem(todayKey)) {
+                alert('🎁 Hai già aperto il tuo baule quotidiano oggi! Torna domani per sbloccare altri tesori.');
+                return;
+            }
+
+            localStorage.setItem(todayKey, 'claimed');
+            playLevelUpSound();
+            if (btn) {
+                btn.innerText = '✓ Baule Aperto (+50 XP, +20 🪙)';
+                btn.style.background = 'rgba(16, 185, 129, 0.2)';
+                btn.style.color = '#34d399';
+                btn.style.border = '1px solid #10b981';
+            }
+            alert('🎉 Congratulazioni! Hai aperto lo Scrigno della Fortuna Quotidiano: +50 XP e +20 Monete d\'Oro aggiunti al tuo eroe!');
+        }
+
+        // ==========================================
+        // REALISM ENHANCEMENT 5: FLOATING SCRATCHPAD
+        // ==========================================
+        function toggleQuickScratchpad() {
+            const card = document.getElementById('scratchpadCard');
+            if (!card) return;
+            if (card.style.display === 'none' || !card.style.display) {
+                card.style.display = 'block';
+                const textarea = document.getElementById('scratchpadTextarea');
+                if (textarea) textarea.focus();
+            } else {
+                card.style.display = 'none';
+            }
+        }
+
+        function saveScratchpad(val) {
+            localStorage.setItem('taskflow_scratchpad', val);
+            const status = document.getElementById('scratchpadSaveStatus');
+            if (status) {
+                status.innerText = 'Salvato...';
+                setTimeout(() => {
+                    if (status) status.innerText = 'Salvato in memoria';
+                }, 800);
+            }
+        }
+
+        function loadScratchpad() {
+            const saved = localStorage.getItem('taskflow_scratchpad');
+            const textarea = document.getElementById('scratchpadTextarea');
+            if (saved && textarea) {
+                textarea.value = saved;
+            }
+            const todayKey = 'rpg_mystery_chest_' + new Date().toISOString().slice(0, 10);
+            const chestBtn = document.getElementById('mysteryChestBtn');
+            if (chestBtn && localStorage.getItem(todayKey)) {
+                chestBtn.innerText = '✓ Baule Già Aperto Oggi';
+                chestBtn.style.opacity = '0.7';
+            }
+        }
+
+        function clearScratchpad() {
+            const textarea = document.getElementById('scratchpadTextarea');
+            if (textarea) textarea.value = '';
+            localStorage.removeItem('taskflow_scratchpad');
+            const status = document.getElementById('scratchpadSaveStatus');
+            if (status) status.innerText = 'Vuoto';
+        }
+
+        function convertScratchpadToTodo() {
+            const textarea = document.getElementById('scratchpadTextarea');
+            const text = textarea ? textarea.value.trim() : '';
+            if (!text) {
+                alert('Scrivi qualcosa nel Post-it prima di trasformarlo in To-Do.');
+                return;
+            }
+
+            const title = text.split('\n')[0].slice(0, 120);
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('priority', 'medium');
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            fetch('{% url "todo_add" %}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => {
+                playLevelUpSound();
+                clearScratchpad();
+                toggleQuickScratchpad();
+                alert(`✓ Creato nuovo compito: "${title}"!`);
+                window.location.reload();
+            })
+            .catch(err => {
+                alert('Errore durante la creazione del compito dal Post-it.');
+            });
+        }
+
+        // Initialize Realism elements on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initLiveAmbientHeader();
+            initFinanceDonutChart();
+            loadScratchpad();
+        });
     </script>
+
+    <!-- Floating Quick Scratchpad (Post-it) Widget -->
+    <div id="floatingScratchpad" style="position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; align-items:flex-end; pointer-events:none;">
+        <!-- Sticky Note Card -->
+        <div id="scratchpadCard" style="display:none; width:300px; background:#1c132b; border:1px solid rgba(251, 191, 36, 0.4); box-shadow:0 12px 36px rgba(0,0,0,0.6); border-radius:14px; overflow:hidden; pointer-events:auto; margin-bottom:12px; transition:all 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+            <div style="background:linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.05)); padding:10px 14px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(251, 191, 36, 0.2);">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span>📌</span>
+                    <strong style="font-size:0.85rem; color:#fde047;">Post-it Rapido</strong>
+                </div>
+                <div style="display:flex; gap:6px;">
+                    <button type="button" onclick="clearScratchpad()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.8rem;" title="Pulisci">🗑️</button>
+                    <button type="button" onclick="toggleQuickScratchpad()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.9rem;" title="Chiudi">✕</button>
+                </div>
+            </div>
+            <div style="padding:12px;">
+                <textarea id="scratchpadTextarea" rows="4" placeholder="Annota al volo pensieri, idee o un promemoria (si salva da solo)..." style="width:100%; box-sizing:border-box; padding:8px 10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.85rem; line-height:1.4; resize:vertical; outline:none;" oninput="saveScratchpad(this.value)"></textarea>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                    <span id="scratchpadSaveStatus" style="font-size:0.72rem; color:var(--text-muted);">Salvato in memoria</span>
+                    <button type="button" class="btn-ui btn-primary" onclick="convertScratchpadToTodo()" style="padding:4px 10px; font-size:0.78rem;">⚡ Trasforma in To-Do</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Dock Button -->
+        <button type="button" id="floatingScratchpadBtn" onclick="toggleQuickScratchpad()" style="pointer-events:auto; width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg, #f59e0b, #d97706); border:2px solid rgba(251, 191, 36, 0.8); box-shadow:0 6px 20px rgba(245, 158, 11, 0.4); display:flex; align-items:center; justify-content:center; font-size:1.4rem; cursor:pointer; transition:transform 0.2s ease;" title="Apri Post-it Rapido">
+            📌
+        </button>
+    </div>
 </body>
 </html>
