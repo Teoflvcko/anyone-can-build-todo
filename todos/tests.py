@@ -10,11 +10,18 @@ from django.utils import timezone
 from .models import (
     Habit,
     HabitLog,
+    JournalEntry,
+    MediaItem,
     Notification,
     Project,
+    RpgReward,
+    SavingsGoal,
     SubTask,
     TaskComment,
     Todo,
+    Transaction,
+    UserProfileRPG,
+    WikiPage,
 )
 
 User = get_user_model()
@@ -640,3 +647,210 @@ class TodoTests(TestCase):
         res_habits = self.client.get(reverse("todo_list") + "?view=habits")
         self.assertEqual(res_habits.status_code, 200)
         self.assertContains(res_habits, "Habits &amp; Streaks")
+
+    def test_wiki_page_crud(self):
+        # Create wiki page
+        self.client.post(
+            reverse("wiki_add"),
+            {
+                "title": "Architettura Software",
+                "category": "Ingegneria",
+                "tags": "python, django, backend",
+                "content": "Linee guida per la progettazione del codice.",
+            },
+        )
+        page = WikiPage.objects.filter(title="Architettura Software").first()
+        self.assertIsNotNone(page)
+        self.assertEqual(page.category, "Ingegneria")
+        self.assertIn("django", page.tag_list())
+
+        # Edit wiki page
+        self.client.post(
+            reverse("wiki_edit", args=[page.pk]),
+            {
+                "title": "Architettura Software V2",
+                "category": "Ingegneria",
+                "tags": "python, django, microservices",
+                "content": "Nuove note aggiornate.",
+            },
+        )
+        page.refresh_from_db()
+        self.assertEqual(page.title, "Architettura Software V2")
+
+        # Delete wiki page
+        self.client.post(reverse("wiki_delete", args=[page.pk]))
+        self.assertEqual(WikiPage.objects.filter(pk=page.pk).count(), 0)
+
+    def test_finance_and_savings_crud(self):
+        # Add transaction
+        self.client.post(
+            reverse("transaction_add"),
+            {
+                "title": "Spesa Settimanale",
+                "amount": "65.50",
+                "transaction_type": "expense",
+                "category": "Cibo",
+                "notes": "Frutta e verdura",
+            },
+        )
+        tx = Transaction.objects.filter(title="Spesa Settimanale").first()
+        self.assertIsNotNone(tx)
+        self.assertEqual(float(tx.amount), 65.50)
+
+        # Add savings goal
+        self.client.post(
+            reverse("savings_add"),
+            {
+                "title": "Fondo Emergenze",
+                "target_amount": "500",
+                "current_amount": "100",
+                "icon": "🛡️",
+            },
+        )
+        goal = SavingsGoal.objects.filter(title="Fondo Emergenze").first()
+        self.assertIsNotNone(goal)
+        self.assertEqual(goal.percent_complete, 20)
+
+        # Contribute to savings goal
+        self.client.post(
+            reverse("savings_contribute", args=[goal.pk]),
+            {"amount": "50"},
+        )
+        goal.refresh_from_db()
+        self.assertEqual(float(goal.current_amount), 150.0)
+        self.assertEqual(goal.percent_complete, 30)
+
+        # Delete
+        self.client.post(reverse("transaction_delete", args=[tx.pk]))
+        self.client.post(reverse("savings_delete", args=[goal.pk]))
+        self.assertEqual(Transaction.objects.filter(pk=tx.pk).count(), 0)
+        self.assertEqual(SavingsGoal.objects.filter(pk=goal.pk).count(), 0)
+
+    def test_journal_entry_create_and_delete(self):
+        today_str = timezone.localdate().strftime("%Y-%m-%d")
+        self.client.post(
+            reverse("journal_add"),
+            {
+                "date": today_str,
+                "mood": "energetic",
+                "weather": "☀️",
+                "gratitude_1": "Il sole al mattino",
+                "content": "Oggi grande sessione di produttività!",
+            },
+        )
+        entry = JournalEntry.objects.filter(date=timezone.localdate()).first()
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.mood, "energetic")
+        self.assertEqual(entry.mood_emoji, "⚡")
+
+        # Update entry for same day
+        self.client.post(
+            reverse("journal_add"),
+            {
+                "date": today_str,
+                "mood": "calm",
+                "weather": "⛅",
+                "gratitude_1": "Una tisana calda",
+                "content": "Serata di relax.",
+            },
+        )
+        entry.refresh_from_db()
+        self.assertEqual(entry.mood, "calm")
+        self.assertEqual(entry.mood_emoji, "🧘")
+
+        # Delete entry
+        self.client.post(reverse("journal_delete", args=[entry.pk]))
+        self.assertEqual(JournalEntry.objects.filter(pk=entry.pk).count(), 0)
+
+    def test_media_item_crud_and_status(self):
+        self.client.post(
+            reverse("media_add"),
+            {
+                "title": "Atomic Habits",
+                "creator": "James Clear",
+                "media_type": "book",
+                "status": "progress",
+                "rating": "5",
+                "review": "Lettura trasformativa",
+            },
+        )
+        item = MediaItem.objects.filter(title="Atomic Habits").first()
+        self.assertIsNotNone(item)
+        self.assertEqual(item.status, "progress")
+
+        # Mark as completed
+        self.client.post(
+            reverse("media_status_update", args=[item.pk]),
+            {"status": "completed", "rating": "5"},
+        )
+        item.refresh_from_db()
+        self.assertEqual(item.status, "completed")
+        self.assertIsNotNone(item.completed_at)
+        self.assertEqual(item.stars_display, "★★★★★")
+
+        # Delete
+        self.client.post(reverse("media_delete", args=[item.pk]))
+        self.assertEqual(MediaItem.objects.filter(pk=item.pk).count(), 0)
+
+    def test_rpg_rewards_and_xp(self):
+        profile = UserProfileRPG.objects.create(coins=50, xp=150)
+        self.assertEqual(profile.level, 2)
+
+        # Add reward
+        self.client.post(
+            reverse("rpg_reward_add"),
+            {
+                "title": "Serata Pizzeria",
+                "cost_coins": "30",
+                "icon": "🍕",
+            },
+        )
+        reward = RpgReward.objects.filter(title="Serata Pizzeria").first()
+        self.assertIsNotNone(reward)
+        self.assertFalse(reward.is_redeemed)
+
+        # Redeem reward
+        self.client.post(reverse("rpg_reward_redeem", args=[reward.pk]))
+        reward.refresh_from_db()
+        self.assertTrue(reward.is_redeemed)
+
+        # Delete reward
+        self.client.post(reverse("rpg_reward_delete", args=[reward.pk]))
+        self.assertEqual(RpgReward.objects.filter(pk=reward.pk).count(), 0)
+
+    def test_standalone_suites_views_load(self):
+        views_to_test = [
+            ("?view=wiki", "Second Brain"),
+            ("?view=finance", "Finance"),
+            ("?view=journal", "Journal"),
+            ("?view=media", "Bookshelf"),
+            ("?view=rpg", "Productivity RPG"),
+            ("?view=soundscapes", "Soundscapes"),
+            ("?view=ai_solver", "AI Problem Solver"),
+        ]
+        for query_param, expected_text in views_to_test:
+            res = self.client.get(reverse("todo_list") + query_param)
+            self.assertEqual(res.status_code, 200)
+            self.assertContains(res, expected_text)
+
+    def test_api_ai_solve(self):
+        # Valid problem request
+        res = self.client.post(
+            reverse("api_ai_solve"),
+            data=json.dumps({"problem": "Continuo a procrastinare sullo studio"}),
+            content_type="application/json",
+        )
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["status"], "ok")
+        self.assertIn("diagnosis", data)
+        self.assertGreaterEqual(len(data["strategies"]), 1)
+        self.assertGreaterEqual(len(data["tasks"]), 1)
+
+        # Empty problem should return 400
+        res_empty = self.client.post(
+            reverse("api_ai_solve"),
+            data=json.dumps({"problem": ""}),
+            content_type="application/json",
+        )
+        self.assertEqual(res_empty.status_code, 400)

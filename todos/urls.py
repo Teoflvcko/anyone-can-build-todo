@@ -45,4 +45,54 @@ urlpatterns = [
     path("export/ical/", views.todo_export_ical, name="todo_export_ical"),
     path("import/json/", views.todo_import_json, name="todo_import_json"),
     path("api/todos/", views.api_todos, name="api_todos"),
+    path("api/ai-solve/", views.api_ai_solve, name="api_ai_solve"),
+    # Second Brain / Wiki
+    path("wiki/add/", views.wiki_add, name="wiki_add"),
+    path("wiki/<int:pk>/edit/", views.wiki_edit, name="wiki_edit"),
+    path("wiki/<int:pk>/delete/", views.wiki_delete, name="wiki_delete"),
+    # Finance Tracker
+    path("finance/transaction/add/", views.transaction_add, name="transaction_add"),
+    path(
+        "finance/transaction/<int:pk>/delete/",
+        views.transaction_delete,
+        name="transaction_delete",
+    ),
+    path("finance/savings/add/", views.savings_add, name="savings_add"),
+    path(
+        "finance/savings/<int:pk>/contribute/",
+        views.savings_contribute,
+        name="savings_contribute",
+    ),
+    path(
+        "finance/savings/<int:pk>/delete/",
+        views.savings_delete,
+        name="savings_delete",
+    ),
+    # Journal & Mood
+    path("journal/entry/add/", views.journal_add, name="journal_add"),
+    path(
+        "journal/entry/<int:pk>/delete/",
+        views.journal_delete,
+        name="journal_delete",
+    ),
+    # Media & Bookshelf
+    path("media/item/add/", views.media_add, name="media_add"),
+    path(
+        "media/item/<int:pk>/status/",
+        views.media_status_update,
+        name="media_status_update",
+    ),
+    path("media/item/<int:pk>/delete/", views.media_delete, name="media_delete"),
+    # RPG Gamification
+    path("rpg/reward/add/", views.rpg_reward_add, name="rpg_reward_add"),
+    path(
+        "rpg/reward/<int:pk>/redeem/",
+        views.rpg_reward_redeem,
+        name="rpg_reward_redeem",
+    ),
+    path(
+        "rpg/reward/<int:pk>/delete/",
+        views.rpg_reward_delete,
+        name="rpg_reward_delete",
+    ),
 ]

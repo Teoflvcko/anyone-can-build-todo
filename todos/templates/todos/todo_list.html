@@ -930,6 +930,23 @@
                 {% endfor %}
             </div>
         </div>
+        <div style="margin-top:1.25rem; border-top:1px solid var(--sidebar-border); padding-top:0.75rem;">
+            <div style="margin-bottom:8px; padding:0 4px;">
+                <span style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:#c084fc; font-weight:700;">🌟 SUITE & MODULI EXTRA</span>
+            </div>
+            <nav class="sidebar-nav" style="gap:3px;">
+                <a href="?view=wiki" class="nav-item {% if active_view == 'wiki' %}active{% endif %}" style="padding:7px 10px; font-size:0.84rem;">🧠 {{ t.wiki|default:"Second Brain & Wiki" }}</a>
+                <a href="?view=finance" class="nav-item {% if active_view == 'finance' %}active{% endif %}" style="padding:7px 10px; font-size:0.84rem;">💰 {{ t.finance|default:"Finanze & Budget" }}</a>
+                <a href="?view=journal" class="nav-item {% if active_view == 'journal' %}active{% endif %}" style="padding:7px 10px; font-size:0.84rem;">📖 {{ t.journal|default:"Diario & Umore" }}</a>
+                <a href="?view=media" class="nav-item {% if active_view == 'media' %}active{% endif %}" style="padding:7px 10px; font-size:0.84rem;">📚 {{ t.media|default:"Libreria & Media" }}</a>
+                <a href="?view=rpg" class="nav-item {% if active_view == 'rpg' %}active{% endif %}" style="padding:7px 10px; font-size:0.84rem;">🎮 {{ t.rpg|default:"Gioco di Ruolo RPG" }}</a>
+                <a href="?view=soundscapes" class="nav-item {% if active_view == 'soundscapes' %}active{% endif %}" style="padding:7px 10px; font-size:0.84rem;">🎧 {{ t.soundscapes|default:"Oasi Sonora & Respiro" }}</a>
+                <a href="?view=ai_solver" class="nav-item {% if active_view == 'ai_solver' %}active{% endif %}" style="padding:7px 10px; font-size:0.84rem; background:linear-gradient(135deg, rgba(147, 51, 234, 0.22), rgba(56, 189, 248, 0.15)); border:1px solid rgba(168, 85, 247, 0.45); border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <span>🤖 {{ t.ai_solver|default:"Risolutore Problemi AI" }}</span>
+                    <span class="badge-pill" style="background:#9333ea; color:#fff; font-size:0.62rem; padding:1px 5px; font-weight:700;">AI</span>
+                </a>
+            </nav>
+        </div>
         <div class="sidebar-footer">
             <div style="display:flex; gap:5px; margin-bottom:6px;">
                 <button class="btn-ui" onclick="openStudioModal()" style="flex:1; justify-content:center; font-size:0.78rem;" title="Theme & Sound Studio">🎨 Studio</button>
@@ -1560,6 +1577,656 @@
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+
+        {% elif active_view == 'wiki' %}
+            <!-- SECOND BRAIN & WIKI VIEW -->
+            <div class="main-header">
+                <div>
+                    <h1 style="margin:0; font-size:1.6rem;">🧠 {{ t.wiki|default:"Second Brain & Wiki" }}</h1>
+                    <p style="margin:4px 0 0; color:var(--text-muted); font-size:0.9rem;">Costruisci la tua base di conoscenza personale, connetti note e mappa le tue idee.</p>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" class="btn-ui btn-primary" onclick="openNewWikiModal()">+ Nuova Nota</button>
+                    <a href="?view=list" class="btn-ui">← {{ t.my_tasks|default:"Back to List" }}</a>
+                </div>
+            </div>
+
+            <div class="panel-card" style="margin-bottom:1.5rem; position:relative; overflow:hidden;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <strong style="font-size:0.95rem; color:var(--text-main);">🌐 Knowledge Graph — Rete dei Concetti</strong>
+                    <span style="font-size:0.75rem; color:var(--text-muted);">Mappa interattiva delle tue note</span>
+                </div>
+                <canvas id="knowledgeGraphCanvas" width="900" height="240" style="width:100%; height:240px; background:radial-gradient(circle at center, rgba(147, 51, 234, 0.08) 0%, rgba(8, 4, 17, 0.95) 75%); border-radius:10px; border:1px solid var(--border-color); cursor:grab;"></canvas>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1rem;">
+                {% for page in wiki_pages %}
+                    <div class="panel-card" style="display:flex; flex-direction:column; justify-content:space-between; border-top:3px solid var(--primary);">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                                <span class="badge-pill" style="font-size:0.7rem; background:rgba(147, 51, 234, 0.15); border-color:var(--primary); color:#c084fc;">{{ page.category }}</span>
+                                <span style="font-size:0.72rem; color:var(--text-muted);">{{ page.updated_at|date:"d M Y" }}</span>
+                            </div>
+                            <h3 style="margin:0 0 8px; font-size:1.15rem; color:var(--text-main);">{{ page.title }}</h3>
+                            <div style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; max-height:80px; overflow:hidden; text-overflow:ellipsis; margin-bottom:12px; white-space:pre-line;">
+                                {{ page.content|default:"Nessun contenuto aggiuntivo..."|truncatewords:25 }}
+                            </div>
+                            {% if page.tags %}
+                                <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px;">
+                                    {% for tag in page.tag_list %}
+                                        <span class="badge-pill" style="font-size:0.68rem; padding:1px 6px;">#{{ tag }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div style="display:flex; justify-content:flex-end; gap:6px; border-top:1px solid var(--border-color); padding-top:8px;">
+                            <button type="button" class="btn-ui" onclick="openEditWikiModal('{{ page.id }}', '{{ page.title|escapejs }}', '{{ page.category|escapejs }}', '{{ page.tags|escapejs }}', '{{ page.content|escapejs }}')" style="padding:4px 8px; font-size:0.75rem;">✏️ Modifica</button>
+                            <form method="post" action="{% url 'wiki_delete' page.id %}" style="margin:0;" onsubmit="return confirm('Eliminare questa pagina della wiki?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-ui" style="padding:4px 8px; font-size:0.75rem; color:#ef4444;" title="Elimina">✕</button>
+                            </form>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="panel-card" style="grid-column:1/-1; text-align:center; padding:3.5rem 1rem; color:var(--text-muted);">
+                        <div style="font-size:3rem; margin-bottom:10px;">🧠</div>
+                        <h3 style="margin:0 0 6px;">Il tuo Second Brain è vuoto</h3>
+                        <p style="margin:0 0 1rem; font-size:0.9rem;">Crea la tua prima pagina di appunti, idee di progetto o note di studio.</p>
+                        <button type="button" class="btn-ui btn-primary" onclick="openNewWikiModal()">+ Crea Prima Nota</button>
+                    </div>
+                {% endfor %}
+            </div>
+
+        {% elif active_view == 'finance' %}
+            <!-- FINANCE & BUDGET VIEW -->
+            <div class="main-header">
+                <div>
+                    <h1 style="margin:0; font-size:1.6rem;">💰 {{ t.finance|default:"Finanze & Budget" }}</h1>
+                    <p style="margin:4px 0 0; color:var(--text-muted); font-size:0.9rem;">Tieni sotto controllo entrate, uscite mensili e i tuoi obiettivi di risparmio.</p>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" class="btn-ui btn-primary" onclick="openTransactionModal()">+ Nuova Transazione</button>
+                    <button type="button" class="btn-ui" onclick="openSavingsModal()">+ Nuovo Salvadanaio</button>
+                    <a href="?view=list" class="btn-ui">← {{ t.my_tasks|default:"Back to List" }}</a>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+                <div class="panel-card" style="border-left:4px solid #10b981;">
+                    <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">💵 Totale Entrate</div>
+                    <div style="font-size:1.6rem; font-weight:800; color:#10b981; margin:6px 0;">+€{{ total_income }}</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">Registrate sul conto</div>
+                </div>
+                <div class="panel-card" style="border-left:4px solid #ef4444;">
+                    <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">💸 Totale Uscite</div>
+                    <div style="font-size:1.6rem; font-weight:800; color:#ef4444; margin:6px 0;">-€{{ total_expense }}</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">Spese registrate</div>
+                </div>
+                <div class="panel-card" style="border-left:4px solid #38bdf8;">
+                    <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">⚖️ Saldo Netto</div>
+                    <div style="font-size:1.6rem; font-weight:800; color:#38bdf8; margin:6px 0;">€{{ net_balance }}</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">Differenza entrate - uscite</div>
+                </div>
+                <div class="panel-card" style="border-left:4px solid #a855f7;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">🛡️ Budget Mensile</span>
+                        <span style="font-size:0.75rem; color:#a855f7; font-weight:700;">{{ budget_spent_percent }}%</span>
+                    </div>
+                    <div style="font-size:1.3rem; font-weight:800; color:var(--text-main); margin:6px 0;">€{{ budget_remaining }} <span style="font-size:0.8rem; font-weight:400; color:var(--text-muted);">rimasti</span></div>
+                    <div class="progress-bar-container" style="height:6px; margin:0;"><div class="progress-bar-fill" style="width:{{ budget_spent_percent }}%; background:linear-gradient(90deg, #10b981, #f59e0b, #ef4444);"></div></div>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem;">
+                <div class="panel-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                        <strong style="font-size:1.1rem; color:var(--text-main);">📋 Ultimi Movimenti</strong>
+                        <button type="button" class="btn-ui" onclick="openTransactionModal()" style="font-size:0.78rem; padding:4px 10px;">+ Transazione</button>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:8px; max-height:450px; overflow-y:auto;">
+                        {% for tx in transactions %}
+                            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-radius:8px; background:var(--bg-page); border:1px solid var(--border-color);">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <div style="width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1rem; {% if tx.transaction_type == 'income' %}background:rgba(16,185,129,0.18); color:#10b981;{% else %}background:rgba(239,68,68,0.18); color:#ef4444;{% endif %}">
+                                        {% if tx.transaction_type == 'income' %}↓{% else %}↑{% endif %}
+                                    </div>
+                                    <div>
+                                        <strong style="font-size:0.9rem; color:var(--text-main);">{{ tx.title }}</strong>
+                                        <div style="font-size:0.75rem; color:var(--text-muted);">{{ tx.category }} • {{ tx.date|date:"d M Y" }}{% if tx.notes %} • {{ tx.notes }}{% endif %}</div>
+                                    </div>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span style="font-weight:700; font-size:0.95rem; {% if tx.transaction_type == 'income' %}color:#10b981;{% else %}color:#ef4444;{% endif %}">
+                                        {% if tx.transaction_type == 'income' %}+{% else %}-{% endif %}€{{ tx.amount }}
+                                    </span>
+                                    <form method="post" action="{% url 'transaction_delete' tx.id %}" style="margin:0;" onsubmit="return confirm('Eliminare questo movimento?');">
+                                        {% csrf_token %}
+                                        <button type="submit" style="background:none; border:none; color:var(--text-muted); cursor:pointer;" title="Elimina">✕</button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div style="text-align:center; padding:2rem; color:var(--text-muted); font-size:0.85rem;">
+                                Nessun movimento finanziario registrato.
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="panel-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                        <strong style="font-size:1.1rem; color:var(--text-main);">🎯 Obiettivi di Risparmio (Salvadanaio)</strong>
+                        <button type="button" class="btn-ui" onclick="openSavingsModal()" style="font-size:0.78rem; padding:4px 10px;">+ Nuovo</button>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:12px; max-height:450px; overflow-y:auto;">
+                        {% for goal in savings_goals %}
+                            <div style="padding:12px; border-radius:10px; background:var(--bg-page); border:1px solid var(--border-color);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <span style="font-size:1.3rem;">{{ goal.icon }}</span>
+                                        <div>
+                                            <strong style="font-size:0.95rem; color:var(--text-main);">{{ goal.title }}</strong>
+                                            {% if goal.target_date %}<div style="font-size:0.72rem; color:var(--text-muted);">Scadenza: {{ goal.target_date|date:"d M Y" }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                    <div style="text-align:right;">
+                                        <span style="font-weight:700; font-size:0.95rem; color:var(--accent-purple, #c084fc);">€{{ goal.current_amount }}</span>
+                                        <span style="font-size:0.75rem; color:var(--text-muted);">/ €{{ goal.target_amount }}</span>
+                                    </div>
+                                </div>
+                                <div class="progress-bar-container" style="height:6px; margin:8px 0;"><div class="progress-bar-fill" style="width:{{ goal.percent_complete }}%;"></div></div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                                    <span style="font-size:0.72rem; color:var(--text-muted); font-weight:600;">{{ goal.percent_complete }}% completato</span>
+                                    <div style="display:flex; gap:6px;">
+                                        <form method="post" action="{% url 'savings_contribute' goal.id %}" style="display:inline-flex; gap:4px; margin:0;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="amount" value="25">
+                                            <button type="submit" class="btn-ui" style="padding:2px 8px; font-size:0.72rem;">+25€</button>
+                                        </form>
+                                        <form method="post" action="{% url 'savings_contribute' goal.id %}" style="display:inline-flex; gap:4px; margin:0;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="amount" value="50">
+                                            <button type="submit" class="btn-ui" style="padding:2px 8px; font-size:0.72rem;">+50€</button>
+                                        </form>
+                                        <form method="post" action="{% url 'savings_delete' goal.id %}" style="margin:0;" onsubmit="return confirm('Eliminare questo obiettivo?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn-ui" style="padding:2px 6px; font-size:0.72rem; color:#ef4444;">✕</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div style="text-align:center; padding:2rem; color:var(--text-muted); font-size:0.85rem;">
+                                Nessun obiettivo di risparmio attivo. Creane uno per iniziare a risparmiare!
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+        {% elif active_view == 'journal' %}
+            <!-- DAILY JOURNAL & MOOD VIEW -->
+            <div class="main-header">
+                <div>
+                    <h1 style="margin:0; font-size:1.6rem;">📖 {{ t.journal|default:"Diario Quotidiano & Umore" }}</h1>
+                    <p style="margin:4px 0 0; color:var(--text-muted); font-size:0.9rem;">Scrivi i tuoi pensieri del giorno, pratica la gratitudine e monitora le tue emozioni.</p>
+                </div>
+                <a href="?view=list" class="btn-ui">← {{ t.my_tasks|default:"Back to List" }}</a>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-bottom:1.5rem; flex-wrap:wrap;">
+                <div class="panel-card" style="padding:10px 16px; flex:1; min-width:120px; text-align:center; border-bottom:3px solid #fbbf24;">
+                    <div style="font-size:1.4rem;">😄</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">Raggiante</div>
+                    <strong style="color:var(--text-main);">{{ mood_counts.radiant }}</strong>
+                </div>
+                <div class="panel-card" style="padding:10px 16px; flex:1; min-width:120px; text-align:center; border-bottom:3px solid #38bdf8;">
+                    <div style="font-size:1.4rem;">⚡</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">Motivato</div>
+                    <strong style="color:var(--text-main);">{{ mood_counts.energetic }}</strong>
+                </div>
+                <div class="panel-card" style="padding:10px 16px; flex:1; min-width:120px; text-align:center; border-bottom:3px solid #34d399;">
+                    <div style="font-size:1.4rem;">🧘</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">Calmo</div>
+                    <strong style="color:var(--text-main);">{{ mood_counts.calm }}</strong>
+                </div>
+                <div class="panel-card" style="padding:10px 16px; flex:1; min-width:120px; text-align:center; border-bottom:3px solid #94a3b8;">
+                    <div style="font-size:1.4rem;">😴</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">Stanco</div>
+                    <strong style="color:var(--text-main);">{{ mood_counts.tired }}</strong>
+                </div>
+                <div class="panel-card" style="padding:10px 16px; flex:1; min-width:120px; text-align:center; border-bottom:3px solid #f87171;">
+                    <div style="font-size:1.4rem;">🤯</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">Stressato</div>
+                    <strong style="color:var(--text-main);">{{ mood_counts.stressed }}</strong>
+                </div>
+            </div>
+
+            <div class="panel-card" style="margin-bottom:1.5rem;">
+                <h3 style="margin:0 0 1rem; font-size:1.15rem; color:var(--text-main);">✍️ La tua pagina di oggi</h3>
+                <form method="post" action="{% url 'journal_add' %}">
+                    {% csrf_token %}
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:12px;">
+                        <div>
+                            <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Stato d'Animo Principale:</label>
+                            <select name="mood" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main);">
+                                <option value="radiant" {% if today_journal.mood == 'radiant' %}selected{% endif %}>😄 Raggiante / Entusiasta</option>
+                                <option value="energetic" {% if today_journal.mood == 'energetic' %}selected{% endif %}>⚡ Motivato / Determinato</option>
+                                <option value="calm" {% if today_journal.mood == 'calm' or not today_journal %}selected{% endif %}>🧘 Calmo / Riflessivo</option>
+                                <option value="tired" {% if today_journal.mood == 'tired' %}selected{% endif %}>😴 Stanco / Bisogno di pausa</option>
+                                <option value="stressed" {% if today_journal.mood == 'stressed' %}selected{% endif %}>🤯 Stressato / Sopraffatto</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Meteo della Giornata:</label>
+                            <select name="weather" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main);">
+                                <option value="☀️" {% if today_journal.weather == '☀️' %}selected{% endif %}>☀️ Soleggiato</option>
+                                <option value="⛅" {% if today_journal.weather == '⛅' %}selected{% endif %}>⛅ Nuvoloso</option>
+                                <option value="🌧️" {% if today_journal.weather == '🌧️' %}selected{% endif %}>🌧️ Pioggia</option>
+                                <option value="⚡" {% if today_journal.weather == '⚡' %}selected{% endif %}>⚡ Temporale</option>
+                                <option value="❄️" {% if today_journal.weather == '❄️' %}selected{% endif %}>❄️ Neve</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:12px;">
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">🌱 Tre cose per cui sei grato oggi:</label>
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                            <input name="gratitude_1" value="{{ today_journal.gratitude_1|default:'' }}" placeholder="1. Sono grato per..." style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.88rem;">
+                            <input name="gratitude_2" value="{{ today_journal.gratitude_2|default:'' }}" placeholder="2. Un piccolo momento felice..." style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.88rem;">
+                            <input name="gratitude_3" value="{{ today_journal.gratitude_3|default:'' }}" placeholder="3. Una persona o opportunità..." style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.88rem;">
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:12px;">
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">💭 Riflessioni e Appunti del Diario:</label>
+                        <textarea name="content" rows="4" placeholder="Cosa è successo oggi? Quali lezioni o idee hai scoperto?" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.9rem; line-height:1.5;">{{ today_journal.content|default:'' }}</textarea>
+                    </div>
+
+                    <button type="submit" class="btn-ui btn-primary" style="padding:10px 20px;">Salva Diario (+30 XP) 💾</button>
+                </form>
+            </div>
+
+            <div>
+                <h3 style="margin:0 0 1rem; font-size:1.15rem; color:var(--text-main);">📜 Storico Pagine Precedenti</h3>
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    {% for entry in journal_entries %}
+                        <div class="panel-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:1.4rem;">{{ entry.mood_emoji }}</span>
+                                    <span style="font-size:1.1rem;">{{ entry.weather }}</span>
+                                    <strong style="color:var(--text-main);">{{ entry.date|date:"l, d F Y" }}</strong>
+                                </div>
+                                <form method="post" action="{% url 'journal_delete' entry.id %}" style="margin:0;" onsubmit="return confirm('Eliminare questa pagina di diario?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-ui" style="padding:2px 8px; font-size:0.75rem; color:#ef4444;">✕</button>
+                                </form>
+                            </div>
+                            {% if entry.gratitude_1 or entry.gratitude_2 or entry.gratitude_3 %}
+                                <div style="background:var(--bg-page); border-radius:8px; padding:8px 12px; margin-bottom:8px; font-size:0.84rem; color:var(--text-muted);">
+                                    <strong style="color:var(--text-main);">Gratitudine:</strong>
+                                    <ul style="margin:4px 0 0 1.2rem; padding:0;">
+                                        {% if entry.gratitude_1 %}<li>{{ entry.gratitude_1 }}</li>{% endif %}
+                                        {% if entry.gratitude_2 %}<li>{{ entry.gratitude_2 }}</li>{% endif %}
+                                        {% if entry.gratitude_3 %}<li>{{ entry.gratitude_3 }}</li>{% endif %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                            <div style="font-size:0.9rem; color:var(--text-main); line-height:1.6; white-space:pre-line;">
+                                {{ entry.content }}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="panel-card" style="text-align:center; padding:2rem; color:var(--text-muted);">
+                            Nessuna pagina archiviata ancora. Compila la tua prima riflessione qui sopra!
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        {% elif active_view == 'media' %}
+            <!-- BOOKSHELF & MEDIA TRACKER VIEW -->
+            <div class="main-header">
+                <div>
+                    <h1 style="margin:0; font-size:1.6rem;">📚 {{ t.media|default:"Libreria Personale & Media" }}</h1>
+                    <p style="margin:4px 0 0; color:var(--text-muted); font-size:0.9rem;">Traccia i libri letti, film visti, serie TV, corsi e podcast con valutazioni e recensioni.</p>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" class="btn-ui btn-primary" onclick="openMediaModal()">+ Aggiungi Media</button>
+                    <a href="?view=list" class="btn-ui">← {{ t.my_tasks|default:"Back to List" }}</a>
+                </div>
+            </div>
+
+            <div class="panel-card" style="margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:linear-gradient(135deg, rgba(147, 51, 234, 0.15) 0%, rgba(56, 189, 248, 0.1) 100%);">
+                <div>
+                    <strong style="font-size:1.15rem; color:var(--text-main);">🎯 Sfida Culturale dell'Anno</strong>
+                    <div style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Hai completato <strong>{{ media_completed_this_year }}</strong> su {{ media_yearly_goal }} titoli pianificati per quest'anno!</div>
+                </div>
+                <div style="min-width:200px;">
+                    <div style="display:flex; justify-content:space-between; font-size:0.78rem; margin-bottom:4px; font-weight:700;">
+                        <span>Progresso Annuale</span>
+                        <span>{{ media_goal_percent }}%</span>
+                    </div>
+                    <div class="progress-bar-container" style="height:8px; margin:0;"><div class="progress-bar-fill" style="width:{{ media_goal_percent }}%;"></div></div>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem;">
+                <div>
+                    <h3 style="font-size:1rem; color:var(--text-muted); text-transform:uppercase; margin:0 0 10px; display:flex; justify-content:space-between;">
+                        <span>📋 Da Iniziare ({{ media_want.count }})</span>
+                    </h3>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        {% for item in media_want %}
+                            <div class="panel-card" style="padding:12px;">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                                    <span style="font-size:1.3rem;">{{ item.icon }}</span>
+                                    <form method="post" action="{% url 'media_status_update' item.id %}" style="margin:0;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="progress">
+                                        <button type="submit" class="btn-ui" style="padding:2px 8px; font-size:0.72rem;">▶️ Inizia Ora</button>
+                                    </form>
+                                </div>
+                                <strong style="font-size:0.95rem; color:var(--text-main); display:block;">{{ item.title }}</strong>
+                                {% if item.creator %}<div style="font-size:0.78rem; color:var(--text-muted);">di {{ item.creator }}</div>{% endif %}
+                            </div>
+                        {% empty %}
+                            <div style="text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.8rem;">Nessun media in lista desideri.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="font-size:1rem; color:var(--accent-cyan, #38bdf8); text-transform:uppercase; margin:0 0 10px; display:flex; justify-content:space-between;">
+                        <span>🚀 In Corso ({{ media_progress.count }})</span>
+                    </h3>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        {% for item in media_progress %}
+                            <div class="panel-card" style="padding:12px; border-left:3px solid var(--accent-cyan, #38bdf8);">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                                    <span style="font-size:1.3rem;">{{ item.icon }}</span>
+                                    <form method="post" action="{% url 'media_status_update' item.id %}" style="margin:0;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="completed">
+                                        <button type="submit" class="btn-ui btn-primary" style="padding:2px 8px; font-size:0.72rem;">✓ Completa!</button>
+                                    </form>
+                                </div>
+                                <strong style="font-size:0.95rem; color:var(--text-main); display:block;">{{ item.title }}</strong>
+                                {% if item.creator %}<div style="font-size:0.78rem; color:var(--text-muted);">di {{ item.creator }}</div>{% endif %}
+                            </div>
+                        {% empty %}
+                            <div style="text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.8rem;">Non stai leggendo o guardando nulla al momento.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="font-size:1rem; color:var(--accent-emerald, #10b981); text-transform:uppercase; margin:0 0 10px; display:flex; justify-content:space-between;">
+                        <span>✅ Completati ({{ media_completed.count }})</span>
+                    </h3>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        {% for item in media_completed %}
+                            <div class="panel-card" style="padding:12px; border-left:3px solid #10b981;">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                                    <span style="font-size:1.3rem;">{{ item.icon }}</span>
+                                    <span style="color:#fbbf24; font-size:0.85rem;">{{ item.stars_display }}</span>
+                                </div>
+                                <strong style="font-size:0.95rem; color:var(--text-main); display:block;">{{ item.title }}</strong>
+                                {% if item.creator %}<div style="font-size:0.78rem; color:var(--text-muted);">di {{ item.creator }}</div>{% endif %}
+                                {% if item.review %}
+                                    <div style="font-size:0.8rem; color:var(--text-muted); font-style:italic; margin-top:6px; background:var(--bg-page); padding:6px 8px; border-radius:6px;">
+                                        "{{ item.review }}"
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% empty %}
+                            <div style="text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.8rem;">Nessun media completato ancora.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+        {% elif active_view == 'rpg' %}
+            <!-- PRODUCTIVITY RPG VIEW -->
+            <div class="main-header">
+                <div>
+                    <h1 style="margin:0; font-size:1.6rem;">🎮 {{ t.rpg|default:"Productivity RPG" }}</h1>
+                    <p style="margin:4px 0 0; color:var(--text-muted); font-size:0.9rem;">Sali di livello completando compiti reali, accresci le tue statistiche e riscatta ricompense!</p>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" class="btn-ui btn-primary" onclick="openNewRewardModal()">+ Nuovo Premio</button>
+                    <a href="?view=list" class="btn-ui">← {{ t.my_tasks|default:"Back to List" }}</a>
+                </div>
+            </div>
+
+            <div class="panel-card" style="margin-bottom:1.5rem; background:linear-gradient(135deg, rgba(147, 51, 234, 0.25) 0%, rgba(24, 12, 45, 0.8) 100%); border:1px solid rgba(168, 85, 247, 0.35);">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div style="display:flex; align-items:center; gap:16px;">
+                        <div style="width:64px; height:64px; border-radius:16px; background:linear-gradient(135deg, #8b5cf6, #ec4899); display:flex; align-items:center; justify-content:center; font-size:2rem; box-shadow:0 0 20px rgba(168, 85, 247, 0.5);">
+                            🧙‍♂️
+                        </div>
+                        <div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <h2 style="margin:0; font-size:1.4rem; color:#fff;">Livello {{ rpg_profile.level }}</h2>
+                                <span class="badge-pill" style="background:rgba(251, 191, 36, 0.2); border-color:#fbbf24; color:#fde047; font-weight:700;">{{ rpg_profile.rank_title }}</span>
+                            </div>
+                            <div style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">
+                                Monete d'Oro: <strong style="color:#fbbf24;">🪙 {{ rpg_profile.coins }}</strong> monete
+                            </div>
+                        </div>
+                    </div>
+                    <div style="min-width:240px;">
+                        <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:4px;">
+                            <span>Punti Esperienza (XP)</span>
+                            <strong>{{ rpg_profile.xp_in_level }} / 100 XP</strong>
+                        </div>
+                        <div class="progress-bar-container" style="height:10px; margin:0;"><div class="progress-bar-fill" style="width:{{ rpg_profile.xp_in_level }}%;"></div></div>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-top:1.25rem;">
+                    <div style="background:var(--bg-page); border-radius:8px; padding:10px; text-align:center; border:1px solid var(--border-color);">
+                        <div style="font-size:1.2rem;">🛡️</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted);">Disciplina</div>
+                        <strong style="color:var(--text-main); font-size:1.1rem;">{{ rpg_profile.discipline_stat }}</strong>
+                    </div>
+                    <div style="background:var(--bg-page); border-radius:8px; padding:10px; text-align:center; border:1px solid var(--border-color);">
+                        <div style="font-size:1.2rem;">💡</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted);">Creatività</div>
+                        <strong style="color:var(--text-main); font-size:1.1rem;">{{ rpg_profile.creativity_stat }}</strong>
+                    </div>
+                    <div style="background:var(--bg-page); border-radius:8px; padding:10px; text-align:center; border:1px solid var(--border-color);">
+                        <div style="font-size:1.2rem;">🎯</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted);">Focus</div>
+                        <strong style="color:var(--text-main); font-size:1.1rem;">{{ rpg_profile.focus_stat }}</strong>
+                    </div>
+                    <div style="background:var(--bg-page); border-radius:8px; padding:10px; text-align:center; border:1px solid var(--border-color);">
+                        <div style="font-size:1.2rem;">💖</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted);">Vitalità</div>
+                        <strong style="color:var(--text-main); font-size:1.1rem;">{{ rpg_profile.vitality_stat }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                    <h3 style="margin:0; font-size:1.2rem; color:var(--text-main);">🏪 Negozio delle Ricompense della Vita Reale</h3>
+                    <button type="button" class="btn-ui" onclick="openNewRewardModal()" style="font-size:0.8rem;">+ Crea Ricompensa</button>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:1rem;">
+                    {% for rew in rpg_rewards %}
+                        <div class="panel-card" style="display:flex; flex-direction:column; justify-content:space-between; {% if rew.is_redeemed %}opacity:0.6;{% endif %}">
+                            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                                <span style="font-size:1.8rem;">{{ rew.icon }}</span>
+                                <div>
+                                    <strong style="font-size:0.95rem; color:var(--text-main);">{{ rew.title }}</strong>
+                                    <div style="font-size:0.8rem; color:#fbbf24; font-weight:700;">🪙 {{ rew.cost_coins }} Monete</div>
+                                </div>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-color); padding-top:8px; margin-top:8px;">
+                                {% if rew.is_redeemed %}
+                                    <span class="badge-pill" style="background:#10b981; color:#fff; font-size:0.72rem;">✓ Già Riscattato</span>
+                                {% else %}
+                                    <form method="post" action="{% url 'rpg_reward_redeem' rew.id %}" style="margin:0;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-ui btn-primary" onclick="playLevelUpSound()" style="padding:4px 12px; font-size:0.75rem;">Riscatta 🎁</button>
+                                    </form>
+                                {% endif %}
+                                <form method="post" action="{% url 'rpg_reward_delete' rew.id %}" style="margin:0;" onsubmit="return confirm('Eliminare questo premio?');">
+                                    {% csrf_token %}
+                                    <button type="submit" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.85rem;" title="Elimina">✕</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="panel-card" style="grid-column:1/-1; text-align:center; padding:2rem; color:var(--text-muted);">
+                            Nessuna ricompensa nel negozio. Creane una (es. "Pizza con amici", "1 ora di videogame") da sbloccare con le monete guadagnate lavorando!
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        {% elif active_view == 'soundscapes' %}
+            <!-- FOCUS SOUNDSCAPES & BREATHING VIEW -->
+            <div class="main-header">
+                <div>
+                    <h1 style="margin:0; font-size:1.6rem;">🎧 {{ t.soundscapes|default:"Oasi Sonora & Studio Respiro" }}</h1>
+                    <p style="margin:4px 0 0; color:var(--text-muted); font-size:0.9rem;">Mixer sonoro sintetizzato dal vivo e guida alla respirazione per calmare la mente e potenziare il focus.</p>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" class="btn-ui btn-primary" onclick="toggleAllSoundscapes()">⏯️ Avvia / Ferma Tutto</button>
+                    <a href="?view=list" class="btn-ui">← {{ t.my_tasks|default:"Back to List" }}</a>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem;">
+                <div class="panel-card">
+                    <h3 style="margin:0 0 1rem; font-size:1.15rem; color:var(--text-main);">🎛️ Mixer Suoni Ambientali (Web Audio)</h3>
+                    <div style="display:flex; flex-direction:column; gap:16px;">
+                        <div style="display:flex; align-items:center; gap:12px; background:var(--bg-page); padding:10px 14px; border-radius:10px; border:1px solid var(--border-color);">
+                            <span style="font-size:1.6rem;">🌧️</span>
+                            <div style="flex:1;">
+                                <strong style="font-size:0.9rem; color:var(--text-main);">Pioggia sui Vetri</strong>
+                                <input type="range" min="0" max="100" value="0" id="soundscape-rain-vol" oninput="setSoundscapeVolume('rain', this.value)" style="width:100%; margin-top:4px;">
+                            </div>
+                            <span id="soundscape-rain-val" style="font-size:0.8rem; color:var(--text-muted); width:32px;">0%</span>
+                        </div>
+
+                        <div style="display:flex; align-items:center; gap:12px; background:var(--bg-page); padding:10px 14px; border-radius:10px; border:1px solid var(--border-color);">
+                            <span style="font-size:1.6rem;">🌊</span>
+                            <div style="flex:1;">
+                                <strong style="font-size:0.9rem; color:var(--text-main);">Onde dell'Oceano</strong>
+                                <input type="range" min="0" max="100" value="0" id="soundscape-waves-vol" oninput="setSoundscapeVolume('waves', this.value)" style="width:100%; margin-top:4px;">
+                            </div>
+                            <span id="soundscape-waves-val" style="font-size:0.8rem; color:var(--text-muted); width:32px;">0%</span>
+                        </div>
+
+                        <div style="display:flex; align-items:center; gap:12px; background:var(--bg-page); padding:10px 14px; border-radius:10px; border:1px solid var(--border-color);">
+                            <span style="font-size:1.6rem;">🔥</span>
+                            <div style="flex:1;">
+                                <strong style="font-size:0.9rem; color:var(--text-main);">Camino Scoppiettante</strong>
+                                <input type="range" min="0" max="100" value="0" id="soundscape-fire-vol" oninput="setSoundscapeVolume('fire', this.value)" style="width:100%; margin-top:4px;">
+                            </div>
+                            <span id="soundscape-fire-val" style="font-size:0.8rem; color:var(--text-muted); width:32px;">0%</span>
+                        </div>
+
+                        <div style="display:flex; align-items:center; gap:12px; background:var(--bg-page); padding:10px 14px; border-radius:10px; border:1px solid var(--border-color);">
+                            <span style="font-size:1.6rem;">☕</span>
+                            <div style="flex:1;">
+                                <strong style="font-size:0.9rem; color:var(--text-main);">Rumore Bianco & Caffetteria</strong>
+                                <input type="range" min="0" max="100" value="0" id="soundscape-cafe-vol" oninput="setSoundscapeVolume('cafe', this.value)" style="width:100%; margin-top:4px;">
+                            </div>
+                            <span id="soundscape-cafe-val" style="font-size:0.8rem; color:var(--text-muted); width:32px;">0%</span>
+                        </div>
+
+                        <div style="display:flex; align-items:center; gap:12px; background:var(--bg-page); padding:10px 14px; border-radius:10px; border:1px solid var(--border-color);">
+                            <span style="font-size:1.6rem;">🌲</span>
+                            <div style="flex:1;">
+                                <strong style="font-size:0.9rem; color:var(--text-main);">Brezza del Bosco & Canto Uccellini</strong>
+                                <input type="range" min="0" max="100" value="0" id="soundscape-forest-vol" oninput="setSoundscapeVolume('forest', this.value)" style="width:100%; margin-top:4px;">
+                            </div>
+                            <span id="soundscape-forest-val" style="font-size:0.8rem; color:var(--text-muted); width:32px;">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-card" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; position:relative; min-height:360px;">
+                    <h3 style="margin:0 0 4px; font-size:1.15rem; color:var(--text-main);">🧘 Guida Respirazione Quadrata (Box Breathing)</h3>
+                    <p style="margin:0 0 1.5rem; font-size:0.8rem; color:var(--text-muted);">4s Inspira • 4s Trattieni • 4s Espira • 4s Trattieni</p>
+
+                    <div id="breathingOrbContainer" style="width:180px; height:180px; display:flex; align-items:center; justify-content:center; margin-bottom:1.5rem; position:relative;">
+                        <div id="breathingRing" style="position:absolute; width:100%; height:100%; border-radius:50%; border:2px dashed rgba(168, 85, 247, 0.4);"></div>
+                        <div id="breathingOrb" style="width:90px; height:90px; border-radius:50%; background:radial-gradient(circle, #c084fc 0%, #9333ea 70%, transparent 100%); box-shadow:0 0 40px rgba(168, 85, 247, 0.7); display:flex; align-items:center; justify-content:center; transition:transform 4s ease-in-out;">
+                            <span id="breathingPhaseText" style="color:#fff; font-weight:700; font-size:0.85rem;">Pronto</span>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <button type="button" class="btn-ui btn-primary" id="btnBreathingToggle" onclick="toggleBreathingGuide()">Avvia Respirazione ▶️</button>
+                        <span id="breathingCycleCounter" style="font-size:0.8rem; color:var(--text-muted);">Cicli: 0</span>
+                    </div>
+                </div>
+            </div>
+
+        {% elif active_view == 'ai_solver' %}
+            <!-- AI PROBLEM SOLVER VIEW -->
+            <div class="main-header">
+                <div>
+                    <h1 style="margin:0; font-size:1.6rem;">🤖 {{ t.ai_solver|default:"Risolutore di Problemi AI" }}</h1>
+                    <p style="margin:4px 0 0; color:var(--text-muted); font-size:0.9rem;">L'intelligenza artificiale che scompone le complessità, diagnostica gli ostacoli e crea piani d'azione.</p>
+                </div>
+                <a href="?view=list" class="btn-ui">← {{ t.my_tasks|default:"Back to List" }}</a>
+            </div>
+
+            <!-- AI Problem Input Card -->
+            <div class="panel-card" style="margin-bottom:1.5rem; border:1px solid rgba(168, 85, 247, 0.4); background:linear-gradient(135deg, rgba(147, 51, 234, 0.12) 0%, rgba(18, 11, 34, 0.85) 100%);">
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px; font-weight:600;">Esempi di situazioni complesse:</div>
+                <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">
+                    <button type="button" class="btn-ui" onclick="setAiProblemPrompt('Non riesco a iniziare a studiare per un esame difficile e continuo a rimandare')" style="padding:4px 10px; font-size:0.75rem;">⚡ Blocco o procrastinazione</button>
+                    <button type="button" class="btn-ui" onclick="setAiProblemPrompt('Ho troppe scadenze al lavoro e mi sento sopraffatto dal disordine mentale')" style="padding:4px 10px; font-size:0.75rem;">⏳ Gestione del tempo e sovraccarico</button>
+                    <button type="button" class="btn-ui" onclick="setAiProblemPrompt('A fine mese spendo troppo per il cibo fuori e non riesco a risparmiare')" style="padding:4px 10px; font-size:0.75rem;">💸 Risparmio e finanze fuori controllo</button>
+                    <button type="button" class="btn-ui" onclick="setAiProblemPrompt('Sono molto stressato e non riesco a concentrarmi per più di 10 minuti')" style="padding:4px 10px; font-size:0.75rem;">🧘 Ansia e perdita di concentrazione</button>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <textarea id="aiProblemInput" rows="3" placeholder="Descrivi qui qualsiasi problema o sfida personale, di studio o professionale che vuoi risolvere..." style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.95rem; line-height:1.5; resize:vertical;"></textarea>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span id="aiSolverLoadingNotice" style="font-size:0.85rem; color:var(--accent-purple, #c084fc); display:none;">⚡ Elaborazione in corso...</span>
+                        <button type="button" class="btn-ui btn-primary" onclick="solveProblemWithAi()" style="padding:10px 22px; font-size:0.92rem; font-weight:700; margin-left:auto;">Risolvi Problema con AI ⚡</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Solution Result Area -->
+            <div id="aiSolverResult" style="display:none; flex-direction:column; gap:1.25rem;">
+                <div class="panel-card" style="border-left:4px solid #38bdf8;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                        <span style="font-size:1.3rem;">🔍</span>
+                        <strong style="color:#38bdf8; font-size:1.05rem;">Diagnosi della Causa Profonda</strong>
+                    </div>
+                    <div id="aiResultDiagnosis" style="font-size:0.92rem; color:var(--text-main); line-height:1.6;"></div>
+                </div>
+
+                <div class="panel-card" style="border-left:4px solid #c084fc;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                        <span style="font-size:1.3rem;">🧭</span>
+                        <strong style="color:#c084fc; font-size:1.05rem;">Strategia di Risoluzione in 3 Passi</strong>
+                    </div>
+                    <ul id="aiResultStrategies" style="margin:0; padding-left:1.4rem; font-size:0.9rem; color:var(--text-main); line-height:1.7;"></ul>
+                </div>
+
+                <div class="panel-card" style="border-left:4px solid #10b981;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:1.3rem;">📋</span>
+                            <strong style="color:#10b981; font-size:1.05rem;">Task Pratici Consigliati (Aggiungi ai To-Do)</strong>
+                        </div>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">Un clic per trasformare l'idea in azione</span>
+                    </div>
+                    <div id="aiResultTasks" style="display:flex; flex-direction:column; gap:8px;"></div>
+                </div>
             </div>
 
         {% else %}
@@ -2310,6 +2977,257 @@
                     <kbd style="padding:2px 8px; border:1px solid var(--border-color); border-radius:4px; background:var(--bg-page); font-weight:700;">?</kbd>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- New Wiki Note Modal -->
+    <div class="modal-overlay" id="newWikiModal">
+        <div class="modal-card" style="max-width:560px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="margin:0; font-size:1.2rem; font-weight:700;">🧠 Nuova Pagina Second Brain</h3>
+                <button type="button" class="btn-ui" onclick="closeNewWikiModal()" style="border-radius:999px; width:30px; height:30px; padding:0; justify-content:center;">✕</button>
+            </div>
+            <form method="post" action="{% url 'wiki_add' %}">
+                {% csrf_token %}
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Titolo Nota:</label>
+                    <input name="title" required placeholder="Es. Architettura di Sistema, Appunti di Psicologia, Ricette..." style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.95rem;">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Categoria:</label>
+                        <input name="category" value="Generale" placeholder="Es. Studio, Progetti, Idee..." style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.88rem;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Tag (separati da virgola):</label>
+                        <input name="tags" placeholder="ai, django, focus" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.88rem;">
+                    </div>
+                </div>
+                <div style="margin-bottom:14px;">
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Contenuto Markdown:</label>
+                    <textarea name="content" rows="6" placeholder="Scrivi note, liste, riferimenti o citazioni..." style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.9rem; line-height:1.5;"></textarea>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:8px;">
+                    <button type="button" class="btn-ui" onclick="closeNewWikiModal()">Annulla</button>
+                    <button type="submit" class="btn-ui btn-primary">Salva Nota (+25 XP) 🧠</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Wiki Note Modal -->
+    <div class="modal-overlay" id="editWikiModal">
+        <div class="modal-card" style="max-width:560px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="margin:0; font-size:1.2rem; font-weight:700;">✏️ Modifica Nota Second Brain</h3>
+                <button type="button" class="btn-ui" onclick="closeEditWikiModal()" style="border-radius:999px; width:30px; height:30px; padding:0; justify-content:center;">✕</button>
+            </div>
+            <form id="editWikiForm" method="post" action="">
+                {% csrf_token %}
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Titolo Nota:</label>
+                    <input id="editWikiTitle" name="title" required style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.95rem;">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Categoria:</label>
+                        <input id="editWikiCategory" name="category" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.88rem;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Tag (separati da virgola):</label>
+                        <input id="editWikiTags" name="tags" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.88rem;">
+                    </div>
+                </div>
+                <div style="margin-bottom:14px;">
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Contenuto Markdown:</label>
+                    <textarea id="editWikiContent" name="content" rows="6" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.9rem; line-height:1.5;"></textarea>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:8px;">
+                    <button type="button" class="btn-ui" onclick="closeEditWikiModal()">Annulla</button>
+                    <button type="submit" class="btn-ui btn-primary">Salva Modifiche</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Transaction Modal -->
+    <div class="modal-overlay" id="transactionModal">
+        <div class="modal-card" style="max-width:480px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="margin:0; font-size:1.2rem; font-weight:700;">💰 Registra Transazione</h3>
+                <button type="button" class="btn-ui" onclick="closeTransactionModal()" style="border-radius:999px; width:30px; height:30px; padding:0; justify-content:center;">✕</button>
+            </div>
+            <form method="post" action="{% url 'transaction_add' %}">
+                {% csrf_token %}
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Descrizione:</label>
+                    <input name="title" required placeholder="Es. Spesa al supermercato, Stipendio, Abbonamento..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.92rem;">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Tipo di Movimento:</label>
+                        <select name="transaction_type" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main);">
+                            <option value="expense">💸 Uscita / Spesa</option>
+                            <option value="income">💵 Entrata / Incasso</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Importo (€):</label>
+                        <input type="number" step="0.01" name="amount" required placeholder="0.00" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.92rem;">
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Categoria:</label>
+                        <input name="category" value="Cibo" placeholder="Cibo, Trasporti, Casa, Svago..." style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.88rem;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Data:</label>
+                        <input type="date" name="date" value="{{ today|date:'Y-m-d' }}" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.88rem;">
+                    </div>
+                </div>
+                <div style="margin-bottom:14px;">
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Note opzionali:</label>
+                    <input name="notes" placeholder="Dettagli aggiuntivi..." style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.88rem;">
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:8px;">
+                    <button type="button" class="btn-ui" onclick="closeTransactionModal()">Annulla</button>
+                    <button type="submit" class="btn-ui btn-primary">Registra Movimento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Savings Goal Modal -->
+    <div class="modal-overlay" id="savingsModal">
+        <div class="modal-card" style="max-width:460px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="margin:0; font-size:1.2rem; font-weight:700;">🎯 Nuovo Salvadanaio Digitale</h3>
+                <button type="button" class="btn-ui" onclick="closeSavingsModal()" style="border-radius:999px; width:30px; height:30px; padding:0; justify-content:center;">✕</button>
+            </div>
+            <form method="post" action="{% url 'savings_add' %}">
+                {% csrf_token %}
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Nome Obiettivo:</label>
+                    <input name="title" required placeholder="Es. Fondo Emergenza, Viaggio in Giappone, Nuovo PC..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.92rem;">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Target Finale (€):</label>
+                        <input type="number" step="0.01" name="target_amount" required placeholder="1000" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.92rem;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Già Risparmiati (€):</label>
+                        <input type="number" step="0.01" name="current_amount" value="0" style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.92rem;">
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Icona Emoji:</label>
+                        <input name="icon" value="🎯" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.92rem;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Data Obiettivo:</label>
+                        <input type="date" name="target_date" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.88rem;">
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:8px;">
+                    <button type="button" class="btn-ui" onclick="closeSavingsModal()">Annulla</button>
+                    <button type="submit" class="btn-ui btn-primary">Crea Salvadanaio</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Media Item Modal -->
+    <div class="modal-overlay" id="mediaModal">
+        <div class="modal-card" style="max-width:500px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="margin:0; font-size:1.2rem; font-weight:700;">📚 Aggiungi Media / Libro</h3>
+                <button type="button" class="btn-ui" onclick="closeMediaModal()" style="border-radius:999px; width:30px; height:30px; padding:0; justify-content:center;">✕</button>
+            </div>
+            <form method="post" action="{% url 'media_add' %}">
+                {% csrf_token %}
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Titolo Opera:</label>
+                    <input name="title" required placeholder="Es. Piccole Abitudini, Interstellar, Corso Python..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.92rem;">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Autore / Regista / Creator:</label>
+                        <input name="creator" placeholder="Es. James Clear, Nolan..." style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.88rem;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Tipo di Media:</label>
+                        <select name="media_type" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main);">
+                            <option value="book">📚 Libro</option>
+                            <option value="movie">🎬 Film / Serie TV</option>
+                            <option value="course">🎓 Corso Online</option>
+                            <option value="podcast">🎙️ Podcast</option>
+                            <option value="game">🎮 Videogioco</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Stato Iniziale:</label>
+                        <select name="status" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main);">
+                            <option value="want">📋 Da iniziare (Desideri)</option>
+                            <option value="progress">🚀 In corso di fruizione</option>
+                            <option value="completed">✅ Completato</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Valutazione (Stelle 1-5):</label>
+                        <select name="rating" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main);">
+                            <option value="5">★★★★★ (5/5)</option>
+                            <option value="4">★★★★☆ (4/5)</option>
+                            <option value="3">★★★☆☆ (3/5)</option>
+                            <option value="2">★★☆☆☆ (2/5)</option>
+                            <option value="1">★☆☆☆☆ (1/5)</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-bottom:14px;">
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Note o citazione preferita:</label>
+                    <textarea name="review" rows="3" placeholder="Cosa ti ha lasciato questa lettura o visione?" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.88rem;"></textarea>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:8px;">
+                    <button type="button" class="btn-ui" onclick="closeMediaModal()">Annulla</button>
+                    <button type="submit" class="btn-ui btn-primary">Aggiungi alla Libreria</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New RPG Reward Modal -->
+    <div class="modal-overlay" id="newRewardModal">
+        <div class="modal-card" style="max-width:440px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="margin:0; font-size:1.2rem; font-weight:700;">🎁 Crea Ricompensa Reale</h3>
+                <button type="button" class="btn-ui" onclick="closeNewRewardModal()" style="border-radius:999px; width:30px; height:30px; padding:0; justify-content:center;">✕</button>
+            </div>
+            <form method="post" action="{% url 'rpg_reward_add' %}">
+                {% csrf_token %}
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Nome Ricompensa:</label>
+                    <input name="title" required placeholder="Es. Pizza Gourmet con amici, 1 ora di gaming, Relax totale..." style="width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.92rem;">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Costo in Monete 🪙:</label>
+                        <input type="number" name="cost_coins" value="30" min="5" max="500" required style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.92rem;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Icona Emoji:</label>
+                        <input name="icon" value="🍕" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.92rem;">
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:8px;">
+                    <button type="button" class="btn-ui" onclick="closeNewRewardModal()">Annulla</button>
+                    <button type="submit" class="btn-ui btn-primary">Aggiungi al Negozio</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -3093,6 +4011,349 @@
         }
         function resetTimer() {
             setPomo(25);
+        }
+
+        // ==========================================
+        // SUITE MODAL HANDLERS
+        // ==========================================
+        function openNewWikiModal() {
+            const m = document.getElementById('newWikiModal');
+            if (m) m.classList.add('active');
+        }
+        function closeNewWikiModal() {
+            const m = document.getElementById('newWikiModal');
+            if (m) m.classList.remove('active');
+        }
+        function openEditWikiModal(id, title, category, tags, content) {
+            const m = document.getElementById('editWikiModal');
+            const f = document.getElementById('editWikiForm');
+            if (m && f) {
+                f.action = `/wiki/${id}/edit/`;
+                document.getElementById('editWikiTitle').value = title;
+                document.getElementById('editWikiCategory').value = category;
+                document.getElementById('editWikiTags').value = tags;
+                document.getElementById('editWikiContent').value = content;
+                m.classList.add('active');
+            }
+        }
+        function closeEditWikiModal() {
+            const m = document.getElementById('editWikiModal');
+            if (m) m.classList.remove('active');
+        }
+        function openTransactionModal() {
+            const m = document.getElementById('transactionModal');
+            if (m) m.classList.add('active');
+        }
+        function closeTransactionModal() {
+            const m = document.getElementById('transactionModal');
+            if (m) m.classList.remove('active');
+        }
+        function openSavingsModal() {
+            const m = document.getElementById('savingsModal');
+            if (m) m.classList.add('active');
+        }
+        function closeSavingsModal() {
+            const m = document.getElementById('savingsModal');
+            if (m) m.classList.remove('active');
+        }
+        function openMediaModal() {
+            const m = document.getElementById('mediaModal');
+            if (m) m.classList.add('active');
+        }
+        function closeMediaModal() {
+            const m = document.getElementById('mediaModal');
+            if (m) m.classList.remove('active');
+        }
+        function openNewRewardModal() {
+            const m = document.getElementById('newRewardModal');
+            if (m) m.classList.add('active');
+        }
+        function closeNewRewardModal() {
+            const m = document.getElementById('newRewardModal');
+            if (m) m.classList.remove('active');
+        }
+
+        // ==========================================
+        // AI PROBLEM SOLVER LOGIC
+        // ==========================================
+        function setAiProblemPrompt(text) {
+            const input = document.getElementById('aiProblemInput');
+            if (input) {
+                input.value = text;
+                input.focus();
+            }
+        }
+
+        function solveProblemWithAi() {
+            const input = document.getElementById('aiProblemInput');
+            const problem = input ? input.value.trim() : '';
+            if (!problem) {
+                alert('Inserisci una descrizione del problema prima di procedere.');
+                return;
+            }
+            const notice = document.getElementById('aiSolverLoadingNotice');
+            if (notice) notice.style.display = 'inline';
+
+            fetch('/api/ai-solve/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({ problem: problem })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (notice) notice.style.display = 'none';
+                if (data.status === 'ok') {
+                    const resultArea = document.getElementById('aiSolverResult');
+                    const diagEl = document.getElementById('aiResultDiagnosis');
+                    const stratEl = document.getElementById('aiResultStrategies');
+                    const tasksEl = document.getElementById('aiResultTasks');
+
+                    if (diagEl) diagEl.innerText = data.diagnosis;
+                    if (stratEl) {
+                        stratEl.innerHTML = '';
+                        data.strategies.forEach(s => {
+                            const li = document.createElement('li');
+                            li.innerText = s;
+                            stratEl.appendChild(li);
+                        });
+                    }
+                    if (tasksEl) {
+                        tasksEl.innerHTML = '';
+                        data.tasks.forEach(t => {
+                            const row = document.createElement('div');
+                            row.style = 'display:flex; justify-content:space-between; align-items:center; background:var(--bg-page); padding:8px 12px; border-radius:8px; border:1px solid var(--border-color);';
+                            row.innerHTML = `
+                                <div>
+                                    <strong style="color:var(--text-main); font-size:0.9rem;">${escapeHtmlText(t.title)}</strong>
+                                    <div style="font-size:0.75rem; color:var(--text-muted);">Priorità: ${t.priority} • Stima: ${t.estimated_minutes}m</div>
+                                </div>
+                                <button type="button" class="btn-ui btn-primary" onclick="addAiGeneratedTask('${escapeHtmlText(t.title).replace(/'/g, "\\'")}', '${t.priority}', ${t.estimated_minutes}, this)" style="padding:4px 10px; font-size:0.75rem;">+ Aggiungi ai To-Do</button>
+                            `;
+                            tasksEl.appendChild(row);
+                        });
+                    }
+                    if (resultArea) {
+                        resultArea.style.display = 'flex';
+                        resultArea.scrollIntoView({ behavior: 'smooth' });
+                    }
+                    playChimeSound();
+                }
+            })
+            .catch(err => {
+                if (notice) notice.style.display = 'none';
+                alert('Errore nella comunicazione con il Risolutore AI.');
+            });
+        }
+
+        function addAiGeneratedTask(title, priority, estMinutes, btn) {
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('priority', priority);
+            formData.append('estimated_minutes', estMinutes);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            fetch('{% url "todo_add" %}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => {
+                if (btn) {
+                    btn.innerText = '✓ Aggiunto!';
+                    btn.classList.remove('btn-primary');
+                    btn.disabled = true;
+                }
+                playLevelUpSound();
+            })
+            .catch(err => {
+                alert('Impossibile aggiungere il task.');
+            });
+        }
+
+        // ==========================================
+        // KNOWLEDGE GRAPH VISUALIZER CANVAS
+        // ==========================================
+        const graphCanvas = document.getElementById('knowledgeGraphCanvas');
+        if (graphCanvas) {
+            const ctx = graphCanvas.getContext('2d');
+            const nodes = [
+                { label: 'Second Brain', x: 450, y: 120, vx: 0.1, vy: 0.1, color: '#c084fc', r: 18 },
+                {% for page in wiki_pages|slice:":15" %}
+                { label: '{{ page.title|truncatechars:18|escapejs }}', x: 100 + Math.random() * 700, y: 40 + Math.random() * 160, vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4, color: '#38bdf8', r: 12 },
+                {% empty %}
+                { label: 'Idee & Note', x: 250, y: 100, vx: 0.2, vy: -0.1, color: '#38bdf8', r: 12 },
+                { label: 'Progetti', x: 650, y: 140, vx: -0.2, vy: 0.15, color: '#34d399', r: 12 },
+                { label: 'Studio & Ricerche', x: 400, y: 190, vx: 0.1, vy: 0.2, color: '#fbbf24', r: 12 },
+                {% endfor %}
+            ];
+
+            function animateKnowledgeGraph() {
+                ctx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+
+                // Draw connecting lines
+                for (let i = 0; i < nodes.length; i++) {
+                    for (let j = i + 1; j < nodes.length; j++) {
+                        const dx = nodes[i].x - nodes[j].x;
+                        const dy = nodes[i].y - nodes[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 180) {
+                            ctx.beginPath();
+                            ctx.moveTo(nodes[i].x, nodes[i].y);
+                            ctx.lineTo(nodes[j].x, nodes[j].y);
+                            ctx.strokeStyle = `rgba(168, 85, 247, ${1 - dist / 180})`;
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                // Update & draw nodes
+                nodes.forEach(n => {
+                    n.x += n.vx;
+                    n.y += n.vy;
+                    if (n.x < n.r || n.x > graphCanvas.width - n.r) n.vx *= -1;
+                    if (n.y < n.r || n.y > graphCanvas.height - n.r) n.vy *= -1;
+
+                    ctx.beginPath();
+                    ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+                    ctx.fillStyle = n.color;
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = n.color;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+
+                    ctx.fillStyle = '#fbfaff';
+                    ctx.font = '10px Inter, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(n.label, n.x, n.y + n.r + 12);
+                });
+
+                requestAnimationFrame(animateKnowledgeGraph);
+            }
+            animateKnowledgeGraph();
+        }
+
+        // ==========================================
+        // AMBIENT SOUNDSCAPE MIXER (WEB AUDIO)
+        // ==========================================
+        let soundscapeAudioCtx = null;
+        let soundscapeGains = { rain: null, waves: null, fire: null, cafe: null, forest: null };
+        let soundscapeActive = false;
+
+        function initSoundscapeAudio() {
+            if (soundscapeAudioCtx) return;
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            soundscapeAudioCtx = new AudioCtx();
+
+            // Rain noise buffer
+            const bufferSize = soundscapeAudioCtx.sampleRate * 2;
+            const noiseBuffer = soundscapeAudioCtx.createBuffer(1, bufferSize, soundscapeAudioCtx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+
+            // Create 5 gain nodes
+            ['rain', 'waves', 'fire', 'cafe', 'forest'].forEach(track => {
+                const gain = soundscapeAudioCtx.createGain();
+                gain.gain.value = 0;
+                gain.connect(soundscapeAudioCtx.destination);
+                soundscapeGains[track] = gain;
+
+                const whiteNoise = soundscapeAudioCtx.createBufferSource();
+                whiteNoise.buffer = noiseBuffer;
+                whiteNoise.loop = true;
+
+                const filter = soundscapeAudioCtx.createBiquadFilter();
+                if (track === 'rain') filter.type = 'lowpass', filter.frequency.value = 900;
+                else if (track === 'waves') filter.type = 'bandpass', filter.frequency.value = 400;
+                else if (track === 'fire') filter.type = 'highpass', filter.frequency.value = 1200;
+                else if (track === 'cafe') filter.type = 'lowpass', filter.frequency.value = 500;
+                else filter.type = 'bandpass', filter.frequency.value = 2400;
+
+                whiteNoise.connect(filter);
+                filter.connect(gain);
+                whiteNoise.start();
+            });
+        }
+
+        function setSoundscapeVolume(type, val) {
+            initSoundscapeAudio();
+            if (soundscapeAudioCtx && soundscapeAudioCtx.state === 'suspended') {
+                soundscapeAudioCtx.resume();
+            }
+            const normalized = parseFloat(val) / 100;
+            if (soundscapeGains[type]) {
+                soundscapeGains[type].gain.setValueAtTime(normalized * 0.15, soundscapeAudioCtx.currentTime);
+            }
+            const label = document.getElementById(`soundscape-${type}-val`);
+            if (label) label.innerText = `${val}%`;
+        }
+
+        function toggleAllSoundscapes() {
+            initSoundscapeAudio();
+            if (!soundscapeAudioCtx) return;
+            if (soundscapeActive) {
+                ['rain', 'waves', 'fire', 'cafe', 'forest'].forEach(t => {
+                    const input = document.getElementById(`soundscape-${t}-vol`);
+                    if (input) input.value = 0;
+                    setSoundscapeVolume(t, 0);
+                });
+                soundscapeActive = false;
+            } else {
+                ['rain', 'waves', 'fire', 'cafe', 'forest'].forEach(t => {
+                    const input = document.getElementById(`soundscape-${t}-vol`);
+                    if (input) input.value = 30;
+                    setSoundscapeVolume(t, 30);
+                });
+                soundscapeActive = true;
+            }
+        }
+
+        // ==========================================
+        // BOX BREATHING VISUALIZER
+        // ==========================================
+        let breathingInterval = null;
+        let breathingPhase = 0; // 0: Inhale, 1: Hold, 2: Exhale, 3: Hold
+        let breathingCycles = 0;
+        const breathingPhases = ['Inspira (4s)', 'Trattieni (4s)', 'Espira (4s)', 'Trattieni (4s)'];
+
+        function toggleBreathingGuide() {
+            const btn = document.getElementById('btnBreathingToggle');
+            const orb = document.getElementById('breathingOrb');
+            const phaseText = document.getElementById('breathingPhaseText');
+            const cycleText = document.getElementById('breathingCycleCounter');
+
+            if (breathingInterval) {
+                clearInterval(breathingInterval);
+                breathingInterval = null;
+                if (btn) btn.innerText = 'Avvia Respirazione ▶️';
+                if (orb) orb.style.transform = 'scale(1)';
+                if (phaseText) phaseText.innerText = 'Pronto';
+            } else {
+                if (btn) btn.innerText = 'Ferma Respirazione ⏸️';
+                breathingPhase = 0;
+                breathingCycles = 0;
+
+                function stepPhase() {
+                    if (phaseText) phaseText.innerText = breathingPhases[breathingPhase];
+                    if (breathingPhase === 0) {
+                        if (orb) orb.style.transform = 'scale(1.8)';
+                    } else if (breathingPhase === 2) {
+                        if (orb) orb.style.transform = 'scale(1)';
+                    }
+                    breathingPhase = (breathingPhase + 1) % 4;
+                    if (breathingPhase === 0) {
+                        breathingCycles++;
+                        if (cycleText) cycleText.innerText = `Cicli: ${breathingCycles}`;
+                    }
+                }
+                stepPhase();
+                breathingInterval = setInterval(stepPhase, 4000);
+            }
         }
     </script>
 </body>

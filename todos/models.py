@@ -323,3 +323,230 @@ class HabitLog(models.Model):
 
     def __str__(self):
         return f"{self.habit.name} - {self.date}"
+
+
+class WikiPage(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="wiki_pages",
+    )
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=200, blank=True)
+    category = models.CharField(max_length=50, default="Generale")
+    tags = models.CharField(max_length=255, blank=True, default="")
+    content = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at"]
+
+    def __str__(self):
+        return self.title
+
+    def tag_list(self):
+        return [t.strip() for t in self.tags.split(",") if t.strip()]
+
+
+class Transaction(models.Model):
+    TYPE_CHOICES = [
+        ("income", "Entrata"),
+        ("expense", "Uscita"),
+    ]
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="transactions",
+    )
+    title = models.CharField(max_length=150)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    transaction_type = models.CharField(
+        max_length=10, choices=TYPE_CHOICES, default="expense"
+    )
+    category = models.CharField(max_length=50, default="Altro")
+    date = models.DateField(default=timezone.localdate)
+    notes = models.CharField(max_length=255, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-date", "-created_at"]
+
+    def __str__(self):
+        prefix = "+" if self.transaction_type == "income" else "-"
+        return f"{prefix}€{self.amount} - {self.title} ({self.category})"
+
+
+class SavingsGoal(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="savings_goals",
+    )
+    title = models.CharField(max_length=150)
+    target_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    current_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    icon = models.CharField(max_length=20, default="🎯")
+    target_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["target_date", "-created_at"]
+
+    def __str__(self):
+        return f"{self.icon} {self.title}: €{self.current_amount}/€{self.target_amount}"
+
+    @property
+    def percent_complete(self):
+        if self.target_amount > 0:
+            return min(100, int((self.current_amount / self.target_amount) * 100))
+        return 0
+
+
+class JournalEntry(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="journal_entries",
+    )
+    date = models.DateField(default=timezone.localdate)
+    mood = models.CharField(max_length=20, default="calm")
+    weather = models.CharField(max_length=20, default="☀️")
+    gratitude_1 = models.CharField(max_length=255, blank=True, default="")
+    gratitude_2 = models.CharField(max_length=255, blank=True, default="")
+    gratitude_3 = models.CharField(max_length=255, blank=True, default="")
+    content = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-date", "-created_at"]
+
+    def __str__(self):
+        return f"Diario del {self.date} ({self.mood})"
+
+    @property
+    def mood_emoji(self):
+        emojis = {
+            "radiant": "😄",
+            "energetic": "⚡",
+            "calm": "🧘",
+            "tired": "😴",
+            "stressed": "🤯",
+        }
+        return emojis.get(self.mood, "📝")
+
+
+class MediaItem(models.Model):
+    TYPE_CHOICES = [
+        ("book", "Libro"),
+        ("movie", "Film/Serie"),
+        ("course", "Corso"),
+        ("podcast", "Podcast"),
+        ("game", "Videogioco"),
+    ]
+    STATUS_CHOICES = [
+        ("want", "Da iniziare"),
+        ("progress", "In corso"),
+        ("completed", "Completato"),
+    ]
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="media_items",
+    )
+    title = models.CharField(max_length=200)
+    creator = models.CharField(max_length=150, blank=True, default="")
+    media_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default="book")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="want")
+    rating = models.PositiveSmallIntegerField(default=5)
+    review = models.TextField(blank=True, default="")
+    icon = models.CharField(max_length=10, default="📚")
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.icon} {self.title} ({self.status})"
+
+    @property
+    def stars_display(self):
+        return "★" * self.rating + "☆" * (5 - self.rating)
+
+
+class UserProfileRPG(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="rpg_profile",
+    )
+    xp = models.PositiveIntegerField(default=120)
+    coins = models.PositiveIntegerField(default=50)
+    discipline_stat = models.PositiveIntegerField(default=10)
+    creativity_stat = models.PositiveIntegerField(default=10)
+    focus_stat = models.PositiveIntegerField(default=10)
+    vitality_stat = models.PositiveIntegerField(default=10)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Profilo RPG"
+        verbose_name_plural = "Profili RPG"
+
+    def __str__(self):
+        return f"Livello {self.level} - {self.rank_title}"
+
+    @property
+    def level(self):
+        return 1 + (self.xp // 100)
+
+    @property
+    def xp_in_level(self):
+        return self.xp % 100
+
+    @property
+    def rank_title(self):
+        lvl = self.level
+        if lvl >= 10:
+            return "Signore del Tempo 👑"
+        if lvl >= 7:
+            return "Gran Maestro della Mente 🔮"
+        if lvl >= 5:
+            return "Stratega del Focus ⚔️"
+        if lvl >= 3:
+            return "Esploratore delle Idee 🧭"
+        return "Novizio della Produttività 🌱"
+
+
+class RpgReward(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="rpg_rewards",
+    )
+    title = models.CharField(max_length=150)
+    cost_coins = models.PositiveIntegerField(default=30)
+    icon = models.CharField(max_length=20, default="🎁")
+    is_redeemed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["is_redeemed", "cost_coins"]
+
+    def __str__(self):
+        status = " (Riscattato)" if self.is_redeemed else ""
+        return f"{self.icon} {self.title} - {self.cost_coins} monete{status}"

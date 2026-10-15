@@ -2,6 +2,7 @@ import calendar
 import csv
 import json
 from datetime import datetime, timedelta
+from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login
@@ -11,18 +12,26 @@ from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.text import slugify
 from django.views.decorators.http import require_POST
 
 from .models import (
     CollaborationEvent,
     Habit,
     HabitLog,
+    JournalEntry,
+    MediaItem,
     Notification,
     Project,
+    RpgReward,
+    SavingsGoal,
     SocialActivity,
     SubTask,
     TaskComment,
     Todo,
+    Transaction,
+    UserProfileRPG,
+    WikiPage,
 )
 
 User = get_user_model()
@@ -85,6 +94,13 @@ TRANSLATIONS = {
         "smart_helper": "AI Task Helper",
         "standup_summary": "Daily Standup Summary",
         "actual_time": "Actual Time",
+        "wiki": "Second Brain & Wiki",
+        "finance": "Finance & Budget",
+        "journal": "Daily Journal & Mood",
+        "media": "Bookshelf & Media",
+        "rpg": "Productivity RPG",
+        "soundscapes": "Focus Soundscapes",
+        "ai_solver": "AI Problem Solver",
     },
     "it": {
         "brand": "TaskFlow Quantum",
@@ -143,8 +159,32 @@ TRANSLATIONS = {
         "smart_helper": "Assistente AI",
         "standup_summary": "Riepilogo Standup Giornaliero",
         "actual_time": "Tempo Effettivo",
+        "wiki": "Second Brain & Wiki",
+        "finance": "Finanze & Budget",
+        "journal": "Diario & Umore",
+        "media": "Libreria & Media",
+        "rpg": "Gioco di Ruolo RPG",
+        "soundscapes": "Oasi Sonora & Respiro",
+        "ai_solver": "Risolutore Problemi AI",
     },
 }
+
+
+def _award_rpg_xp(request, xp=15, coins=5, stat="discipline"):
+    """Award RPG XP, Coins and stat increments to user or session guest."""
+    user = request.user if request.user.is_authenticated else None
+    profile, _ = UserProfileRPG.objects.get_or_create(user=user)
+    profile.xp += xp
+    profile.coins += coins
+    if stat == "discipline":
+        profile.discipline_stat += 1
+    elif stat == "focus":
+        profile.focus_stat += 1
+    elif stat == "creativity":
+        profile.creativity_stat += 1
+    elif stat == "vitality":
+        profile.vitality_stat += 1
+    profile.save()
 
 
 def _get_user_todos(request, include_archived=False, include_deleted=False):
@@ -542,7 +582,86 @@ def todo_list(request):
         Q(due_date__lt=today) | Q(priority="high"), done=False
     )[:10]
 
+    # Suite 1: Second Brain & Wiki
+    wiki_pages = WikiPage.objects.all()
+    wiki_categories = sorted(set(w.category for w in wiki_pages if w.category))
+    wiki_all_tags = sorted(set(t for w in wiki_pages for t in w.tag_list()))
+
+    # Suite 2: Finance Tracker & Budget
+    transactions = Transaction.objects.all()[:100]
+    savings_goals = SavingsGoal.objects.all()
+    total_income = sum(
+        (t.amount for t in transactions if t.transaction_type == "income"),
+        Decimal("0.00"),
+    )
+    total_expense = sum(
+        (t.amount for t in transactions if t.transaction_type == "expense"),
+        Decimal("0.00"),
+    )
+    net_balance = total_income - total_expense
+    monthly_budget = Decimal("1500.00")
+    budget_spent_percent = (
+        min(100, int((total_expense / monthly_budget) * 100))
+        if monthly_budget > 0
+        else 0
+    )
+    budget_remaining = max(Decimal("0.00"), monthly_budget - total_expense)
+
+    # Suite 3: Daily Journal & Mood Tracker
+    all_journal_entries = JournalEntry.objects.all()
+    journal_entries = all_journal_entries[:30]
+    today_journal = JournalEntry.objects.filter(date=today).first()
+    mood_counts = {
+        "radiant": all_journal_entries.filter(mood="radiant").count(),
+        "energetic": all_journal_entries.filter(mood="energetic").count(),
+        "calm": all_journal_entries.filter(mood="calm").count(),
+        "tired": all_journal_entries.filter(mood="tired").count(),
+        "stressed": all_journal_entries.filter(mood="stressed").count(),
+    }
+
+    # Suite 4: Media & Bookshelf Tracker
+    media_items = MediaItem.objects.all()
+    media_want = media_items.filter(status="want")
+    media_progress = media_items.filter(status="progress")
+    media_completed = media_items.filter(status="completed")
+    media_completed_this_year = media_completed.filter(
+        completed_at__year=today.year
+    ).count()
+    media_yearly_goal = 20
+    media_goal_percent = min(
+        100, int((media_completed_this_year / media_yearly_goal) * 100)
+    )
+
+    # Suite 5: Productivity RPG
+    rpg_profile, _ = UserProfileRPG.objects.get_or_create(
+        user=request.user if request.user.is_authenticated else None
+    )
+    rpg_rewards = RpgReward.objects.all()
+
     context = {
+        "wiki_pages": wiki_pages,
+        "wiki_categories": wiki_categories,
+        "wiki_all_tags": wiki_all_tags,
+        "transactions": transactions,
+        "savings_goals": savings_goals,
+        "total_income": total_income,
+        "total_expense": total_expense,
+        "net_balance": net_balance,
+        "monthly_budget": monthly_budget,
+        "budget_spent_percent": budget_spent_percent,
+        "budget_remaining": budget_remaining,
+        "journal_entries": journal_entries,
+        "today_journal": today_journal,
+        "mood_counts": mood_counts,
+        "media_items": media_items,
+        "media_want": media_want,
+        "media_progress": media_progress,
+        "media_completed": media_completed,
+        "media_completed_this_year": media_completed_this_year,
+        "media_yearly_goal": media_yearly_goal,
+        "media_goal_percent": media_goal_percent,
+        "rpg_profile": rpg_profile,
+        "rpg_rewards": rpg_rewards,
         "projects": projects,
         "current_project": project_filter,
         "timeline_days": timeline_days,
@@ -827,6 +946,7 @@ def todo_toggle(request, pk):
     todo.done = not todo.done
     if todo.done:
         todo.status = "done"
+        _award_rpg_xp(request, xp=15, coins=5, stat="discipline")
         if request.user.is_authenticated:
             SocialActivity.objects.create(
                 user=request.user,
@@ -1165,6 +1285,7 @@ def habit_toggle(request, pk):
             habit.streak_count = 1
         habit.last_completed_date = today
         habit.save()
+        _award_rpg_xp(request, xp=20, coins=8, stat="discipline")
         messages.success(
             request,
             f"🔥 Obiettivo '{habit.name}' completato! Streak: {habit.streak_count} giorni!",
@@ -1548,3 +1669,572 @@ def signup(request):
     else:
         form = UserCreationForm()
     return render(request, "registration/signup.html", {"form": form})
+
+
+# ==========================================
+# SUITE 1: SECOND BRAIN & WIKI VIEWS
+# ==========================================
+
+
+@require_POST
+def wiki_add(request):
+    title = request.POST.get("title", "").strip()
+    if title:
+        user = request.user if request.user.is_authenticated else None
+        category = request.POST.get("category", "Generale").strip() or "Generale"
+        tags = request.POST.get("tags", "").strip()
+        content = request.POST.get("content", "").strip()
+        slug = slugify(title)
+        WikiPage.objects.create(
+            user=user,
+            title=title,
+            slug=slug,
+            category=category,
+            tags=tags,
+            content=content,
+        )
+        _award_rpg_xp(request, xp=25, coins=10, stat="creativity")
+        messages.success(request, f"Nota '{title}' salvata nel Second Brain! 🧠")
+    return redirect(reverse("todo_list") + "?view=wiki")
+
+
+@require_POST
+def wiki_edit(request, pk):
+    page = get_object_or_404(WikiPage, pk=pk)
+    title = request.POST.get("title", "").strip()
+    if title:
+        page.title = title
+        page.slug = slugify(title)
+        page.category = request.POST.get("category", "Generale").strip() or "Generale"
+        page.tags = request.POST.get("tags", "").strip()
+        page.content = request.POST.get("content", "").strip()
+        page.save()
+        messages.success(request, f"Nota '{page.title}' aggiornata!")
+    return redirect(reverse("todo_list") + "?view=wiki")
+
+
+@require_POST
+def wiki_delete(request, pk):
+    page = get_object_or_404(WikiPage, pk=pk)
+    title = page.title
+    page.delete()
+    messages.success(request, f"Nota '{title}' eliminata.")
+    return redirect(reverse("todo_list") + "?view=wiki")
+
+
+# ==========================================
+# SUITE 2: FINANCE & BUDGET VIEWS
+# ==========================================
+
+
+@require_POST
+def transaction_add(request):
+    title = request.POST.get("title", "").strip()
+    amount_raw = request.POST.get("amount", "0").replace(",", ".").strip()
+    try:
+        amount = Decimal(amount_raw)
+    except Exception:
+        amount = Decimal("0.00")
+    if title and amount > 0:
+        user = request.user if request.user.is_authenticated else None
+        ttype = request.POST.get("transaction_type", "expense")
+        category = request.POST.get("category", "Altro").strip() or "Altro"
+        notes = request.POST.get("notes", "").strip()
+        date_raw = request.POST.get("date", "").strip()
+        try:
+            tx_date = (
+                datetime.strptime(date_raw, "%Y-%m-%d").date()
+                if date_raw
+                else timezone.localdate()
+            )
+        except ValueError:
+            tx_date = timezone.localdate()
+        Transaction.objects.create(
+            user=user,
+            title=title,
+            amount=amount,
+            transaction_type=ttype,
+            category=category,
+            date=tx_date,
+            notes=notes,
+        )
+        messages.success(request, f"Transazione '{title}' registrata con successo!")
+    return redirect(reverse("todo_list") + "?view=finance")
+
+
+@require_POST
+def transaction_delete(request, pk):
+    tx = get_object_or_404(Transaction, pk=pk)
+    title = tx.title
+    tx.delete()
+    messages.success(request, f"Transazione '{title}' rimossa.")
+    return redirect(reverse("todo_list") + "?view=finance")
+
+
+@require_POST
+def savings_add(request):
+    title = request.POST.get("title", "").strip()
+    target_raw = request.POST.get("target_amount", "0").replace(",", ".").strip()
+    current_raw = request.POST.get("current_amount", "0").replace(",", ".").strip()
+    try:
+        target_amount = Decimal(target_raw)
+        current_amount = Decimal(current_raw)
+    except Exception:
+        target_amount, current_amount = Decimal("0.00"), Decimal("0.00")
+    if title and target_amount > 0:
+        user = request.user if request.user.is_authenticated else None
+        icon = request.POST.get("icon", "🎯").strip() or "🎯"
+        date_raw = request.POST.get("target_date", "").strip()
+        try:
+            target_date = (
+                datetime.strptime(date_raw, "%Y-%m-%d").date() if date_raw else None
+            )
+        except ValueError:
+            target_date = None
+        SavingsGoal.objects.create(
+            user=user,
+            title=title,
+            target_amount=target_amount,
+            current_amount=current_amount,
+            icon=icon,
+            target_date=target_date,
+        )
+        messages.success(request, f"Obiettivo di risparmio '{title}' creato!")
+    return redirect(reverse("todo_list") + "?view=finance")
+
+
+@require_POST
+def savings_contribute(request, pk):
+    goal = get_object_or_404(SavingsGoal, pk=pk)
+    amount_raw = request.POST.get("amount", "0").replace(",", ".").strip()
+    try:
+        amount = Decimal(amount_raw)
+    except Exception:
+        amount = Decimal("0.00")
+    if amount > 0:
+        goal.current_amount += amount
+        goal.save()
+        _award_rpg_xp(request, xp=15, coins=5, stat="discipline")
+        messages.success(
+            request,
+            f"Versati €{amount} per '{goal.title}'! Avanzamento: {goal.percent_complete}%",
+        )
+    return redirect(reverse("todo_list") + "?view=finance")
+
+
+@require_POST
+def savings_delete(request, pk):
+    goal = get_object_or_404(SavingsGoal, pk=pk)
+    title = goal.title
+    goal.delete()
+    messages.success(request, f"Obiettivo '{title}' eliminato.")
+    return redirect(reverse("todo_list") + "?view=finance")
+
+
+# ==========================================
+# SUITE 3: DAILY JOURNAL & MOOD VIEWS
+# ==========================================
+
+
+@require_POST
+def journal_add(request):
+    date_raw = request.POST.get("date", "").strip()
+    try:
+        j_date = (
+            datetime.strptime(date_raw, "%Y-%m-%d").date()
+            if date_raw
+            else timezone.localdate()
+        )
+    except ValueError:
+        j_date = timezone.localdate()
+    user = request.user if request.user.is_authenticated else None
+    mood = request.POST.get("mood", "calm").strip() or "calm"
+    weather = request.POST.get("weather", "☀️").strip() or "☀️"
+    gratitude_1 = request.POST.get("gratitude_1", "").strip()
+    gratitude_2 = request.POST.get("gratitude_2", "").strip()
+    gratitude_3 = request.POST.get("gratitude_3", "").strip()
+    content = request.POST.get("content", "").strip()
+
+    entry = JournalEntry.objects.filter(user=user, date=j_date).first()
+    if entry:
+        entry.mood = mood
+        entry.weather = weather
+        entry.gratitude_1 = gratitude_1
+        entry.gratitude_2 = gratitude_2
+        entry.gratitude_3 = gratitude_3
+        entry.content = content
+        entry.save()
+        messages.success(request, f"Diario del {j_date} aggiornato!")
+    else:
+        JournalEntry.objects.create(
+            user=user,
+            date=j_date,
+            mood=mood,
+            weather=weather,
+            gratitude_1=gratitude_1,
+            gratitude_2=gratitude_2,
+            gratitude_3=gratitude_3,
+            content=content,
+        )
+        _award_rpg_xp(request, xp=30, coins=10, stat="vitality")
+        messages.success(request, f"Pagina di diario salvata per il {j_date}! 📖")
+    return redirect(reverse("todo_list") + "?view=journal")
+
+
+@require_POST
+def journal_delete(request, pk):
+    entry = get_object_or_404(JournalEntry, pk=pk)
+    entry.delete()
+    messages.success(request, "Pagina di diario rimossa.")
+    return redirect(reverse("todo_list") + "?view=journal")
+
+
+# ==========================================
+# SUITE 4: BOOKSHELF & MEDIA VIEWS
+# ==========================================
+
+
+@require_POST
+def media_add(request):
+    title = request.POST.get("title", "").strip()
+    if title:
+        user = request.user if request.user.is_authenticated else None
+        creator = request.POST.get("creator", "").strip()
+        media_type = request.POST.get("media_type", "book").strip() or "book"
+        status = request.POST.get("status", "want").strip() or "want"
+        try:
+            rating = max(1, min(5, int(request.POST.get("rating", "5"))))
+        except (ValueError, TypeError):
+            rating = 5
+        review = request.POST.get("review", "").strip()
+        icon = request.POST.get("icon", "📚").strip() or "📚"
+        completed_at = timezone.localdate() if status == "completed" else None
+        MediaItem.objects.create(
+            user=user,
+            title=title,
+            creator=creator,
+            media_type=media_type,
+            status=status,
+            rating=rating,
+            review=review,
+            icon=icon,
+            completed_at=completed_at,
+        )
+        _award_rpg_xp(request, xp=20, coins=5, stat="creativity")
+        messages.success(request, f"'{title}' aggiunto alla tua libreria! 📚")
+    return redirect(reverse("todo_list") + "?view=media")
+
+
+@require_POST
+def media_status_update(request, pk):
+    item = get_object_or_404(MediaItem, pk=pk)
+    new_status = request.POST.get("status", item.status).strip()
+    item.status = new_status
+    if new_status == "completed" and not item.completed_at:
+        item.completed_at = timezone.localdate()
+        _award_rpg_xp(request, xp=40, coins=15, stat="focus")
+        messages.success(
+            request,
+            f"Complimenti! Hai completato '{item.title}'! 🎉 (+40 XP)",
+        )
+    rating_raw = request.POST.get("rating")
+    if rating_raw:
+        try:
+            item.rating = max(1, min(5, int(rating_raw)))
+        except (ValueError, TypeError):
+            pass
+    item.save()
+    return redirect(reverse("todo_list") + "?view=media")
+
+
+@require_POST
+def media_delete(request, pk):
+    item = get_object_or_404(MediaItem, pk=pk)
+    title = item.title
+    item.delete()
+    messages.success(request, f"'{title}' rimosso dalla libreria.")
+    return redirect(reverse("todo_list") + "?view=media")
+
+
+# ==========================================
+# SUITE 5: PRODUCTIVITY RPG VIEWS
+# ==========================================
+
+
+@require_POST
+def rpg_reward_add(request):
+    title = request.POST.get("title", "").strip()
+    try:
+        cost = max(1, int(request.POST.get("cost_coins", "30")))
+    except (ValueError, TypeError):
+        cost = 30
+    icon = request.POST.get("icon", "🎁").strip() or "🎁"
+    if title:
+        user = request.user if request.user.is_authenticated else None
+        RpgReward.objects.create(
+            user=user,
+            title=title,
+            cost_coins=cost,
+            icon=icon,
+        )
+        messages.success(request, f"Nuova ricompensa '{title}' aggiunta al Negozio! 🏪")
+    return redirect(reverse("todo_list") + "?view=rpg")
+
+
+@require_POST
+def rpg_reward_redeem(request, pk):
+    reward = get_object_or_404(RpgReward, pk=pk)
+    user = request.user if request.user.is_authenticated else None
+    profile, _ = UserProfileRPG.objects.get_or_create(user=user)
+    if profile.coins >= reward.cost_coins:
+        profile.coins -= reward.cost_coins
+        profile.save()
+        reward.is_redeemed = True
+        reward.save()
+        messages.success(
+            request,
+            f"🎉 Ricompensa '{reward.title}' riscattata con successo! Goditi il tuo premio!",
+        )
+    else:
+        messages.error(
+            request,
+            f"Monete insufficienti! Ti servono {reward.cost_coins} monete (ne hai {profile.coins}).",
+        )
+    return redirect(reverse("todo_list") + "?view=rpg")
+
+
+@require_POST
+def rpg_reward_delete(request, pk):
+    reward = get_object_or_404(RpgReward, pk=pk)
+    title = reward.title
+    reward.delete()
+    messages.success(request, f"Ricompensa '{title}' eliminata.")
+    return redirect(reverse("todo_list") + "?view=rpg")
+
+
+# ==========================================
+# SUITE 7: AI PROBLEM SOLVER ENDPOINT
+# ==========================================
+
+
+@require_POST
+def api_ai_solve(request):
+    """Analyze a problem and return structured diagnosis, actionable strategies, and suggested tasks."""
+    try:
+        body = json.loads(request.body.decode("utf-8")) if request.body else {}
+    except Exception:
+        body = {}
+    problem = (body.get("problem") or request.POST.get("problem", "")).strip()
+
+    if not problem:
+        return JsonResponse(
+            {"status": "error", "message": "Descrivi un problema per procedere."},
+            status=400,
+        )
+
+    p_lower = problem.lower()
+
+    if any(
+        k in p_lower
+        for k in ["procrastin", "rimand", "blocc", "voglia", "difficil", "inizia"]
+    ):
+        diagnosis = (
+            "La procrastinazione è spesso una risposta all'ansia da prestazione o alla mole "
+            "percepita dell'obiettivo. Il cervello cerca sollievo immediato rimandando."
+        )
+        strategies = [
+            "Applica la 'Regola dei 2 Minuti': prometti a te stesso di lavorare al compito solo per 120 secondi.",
+            "Riduci l'attrito iniziale: prepara l'ambiente rimuovendo distrazioni e aprendo solo il materiale essenziale.",
+            "Elimina il perfezionismo: la prima bozza può essere imperfetta, l'importante è far partire lo slancio.",
+        ]
+        tasks = [
+            {
+                "title": f"Avvio rapido 2m: prima bozza per {problem[:30]}",
+                "priority": "high",
+                "estimated_minutes": 10,
+            },
+            {
+                "title": "Sessione Pomodoro (25m) focalizzata",
+                "priority": "high",
+                "estimated_minutes": 25,
+            },
+            {
+                "title": "Revisione e festeggiamento del traguardo",
+                "priority": "medium",
+                "estimated_minutes": 10,
+            },
+        ]
+    elif any(
+        k in p_lower
+        for k in [
+            "tempo",
+            "tropp",
+            "scadenz",
+            "organizz",
+            "giornat",
+            "agenda",
+            "ritard",
+        ]
+    ):
+        diagnosis = (
+            "Il sovraccarico cognitivo nasce dal trattare tutti gli impegni con la stessa urgenza. "
+            "Quando tutto è prioritario, nulla lo è veramente."
+        )
+        strategies = [
+            "Applica la Matrice di Eisenhower: isola i 2 compiti che hanno il massimo impatto oggi.",
+            "Fai 'Time Blocking': assegna fasce orarie fisse invece di saltare continuamente da un'attività all'altra.",
+            "Impara a dire di no o a delegare ciò che non rientra nei tuoi 3 obiettivi centrali.",
+        ]
+        tasks = [
+            {
+                "title": f"Isolare i 3 compiti chiave per: {problem[:30]}",
+                "priority": "urgent",
+                "estimated_minutes": 15,
+            },
+            {
+                "title": "Blocco di concentrazione profonda (45 min)",
+                "priority": "high",
+                "estimated_minutes": 45,
+            },
+            {
+                "title": "Chiusura ordinata attività aperte",
+                "priority": "medium",
+                "estimated_minutes": 15,
+            },
+        ]
+    elif any(
+        k in p_lower
+        for k in ["sold", "spend", "spes", "risparmi", "budget", "finanz", "cost"]
+    ):
+        diagnosis = (
+            "Le spese fuori controllo derivano spesso da piccole 'fughe invisibili' quotidiane che "
+            "si accumulano nel corso delle settimane."
+        )
+        strategies = [
+            "Traccia ogni singola uscita per 7 giorni per identificare il vero punto di perdita del budget.",
+            "Applica la regola delle 48 ore: attendi due giorni prima di acquistare qualcosa di non essenziale.",
+            "Automatizza il risparmio: alloca subito a inizio mese una quota fissa nel tuo salvadanaio digitale.",
+        ]
+        tasks = [
+            {
+                "title": f"Controllo spese e abbonamenti ({problem[:25]})",
+                "priority": "high",
+                "estimated_minutes": 20,
+            },
+            {
+                "title": "Impostare limite spesa settimanale nel Finance Tracker",
+                "priority": "high",
+                "estimated_minutes": 15,
+            },
+            {
+                "title": "Versamento simbolico di 15€ nel salvadanaio",
+                "priority": "medium",
+                "estimated_minutes": 5,
+            },
+        ]
+    elif any(
+        k in p_lower
+        for k in ["ansia", "stress", "stanc", "dorm", "paura", "esaurit", "ripos"]
+    ):
+        diagnosis = (
+            "Il sistema nervoso è in sovraccarico di stimoli. Forzare senza pause adeguate genera "
+            "rendimenti decrescenti e affaticamento decisionale."
+        )
+        strategies = [
+            "Effettua una sessione di respirazione quadrata (Box Breathing) di 3 minuti nell'Oasi Sonora.",
+            "Fai un 'Brain Dump' nel Diario Personale: svuota tutti i pensieri per liberare spazio mentale.",
+            "Stacca dagli schermi ed effettua una camminata di 10 minuti per rigenerare la lucidità.",
+        ]
+        tasks = [
+            {
+                "title": "3 minuti di respirazione profonda nell'Oasi Sonora",
+                "priority": "urgent",
+                "estimated_minutes": 5,
+            },
+            {
+                "title": f"Scrivere nel Diario i pensieri su: {problem[:30]}",
+                "priority": "high",
+                "estimated_minutes": 15,
+            },
+            {
+                "title": "Pausa attiva rigenerante all'aperto",
+                "priority": "medium",
+                "estimated_minutes": 15,
+            },
+        ]
+    elif any(
+        k in p_lower
+        for k in [
+            "studi",
+            "esam",
+            "libri",
+            "ripass",
+            "memor",
+            "tesi",
+            "scuola",
+            "universit",
+        ]
+    ):
+        diagnosis = (
+            "La rilettura passiva è inefficiente. Il vero apprendimento avviene tramite recupero "
+            "attivo (Active Recall) e scomposizione dei capitoli in concetti chiave."
+        )
+        strategies = [
+            "Crea una scheda di sintesi nel Second Brain / Wiki con domande chiave e collegamenti.",
+            "Spiega il concetto ad alta voce come se dovessi insegnarlo (Tecnica di Feynman).",
+            "Alterna blocchi da 25 minuti di studio focalizzato a 5 minuti di recupero.",
+        ]
+        tasks = [
+            {
+                "title": f"Mappa concettuale nella Wiki per: {problem[:30]}",
+                "priority": "high",
+                "estimated_minutes": 25,
+            },
+            {
+                "title": "Ripetizione attiva (Active Recall) a libro chiuso",
+                "priority": "high",
+                "estimated_minutes": 30,
+            },
+            {
+                "title": "Autovalutazione con 5 domande di verifica",
+                "priority": "medium",
+                "estimated_minutes": 15,
+            },
+        ]
+    else:
+        diagnosis = (
+            "Ogni problema complesso sembra insormontabile solo finché rimane un blocco unico. "
+            "Decomponendolo in unità minime azionabili, la resistenza mentale scompare."
+        )
+        strategies = [
+            "Scomponi il macro-obiettivo nella più piccola azione fisica eseguibile adesso.",
+            "Definisci chiaramente il criterio di successo ('Come saprò esattamente quando è completato?').",
+            "Imposta una scadenza realistica e celebra il completamento per alimentare la motivazione.",
+        ]
+        tasks = [
+            {
+                "title": f"Fase 1: Preparazione e ricerca per {problem[:30]}",
+                "priority": "high",
+                "estimated_minutes": 20,
+            },
+            {
+                "title": "Fase 2: Esecuzione operativa del primo blocco",
+                "priority": "urgent",
+                "estimated_minutes": 35,
+            },
+            {
+                "title": "Fase 3: Revisione finale e chiusura",
+                "priority": "medium",
+                "estimated_minutes": 15,
+            },
+        ]
+
+    return JsonResponse(
+        {
+            "status": "ok",
+            "problem": problem,
+            "diagnosis": diagnosis,
+            "strategies": strategies,
+            "tasks": tasks,
+        }
+    )
