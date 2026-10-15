@@ -33,141 +33,9 @@ from .models import (
     UserProfileRPG,
     WikiPage,
 )
+from .translations import AI_SOLVER_RESPONSES, TRANSLATIONS
 
 User = get_user_model()
-
-TRANSLATIONS = {
-    "en": {
-        "brand": "TaskFlow Quantum",
-        "welcome_intro": "Welcome Page",
-        "start_app": "Start Application",
-        "my_tasks": "My Tasks",
-        "kanban": "Kanban Board",
-        "calendar": "Calendar",
-        "eisenhower": "Eisenhower Matrix",
-        "analytics": "Analytics & Velocity",
-        "leaderboard": "Leaderboard",
-        "focus_timer": "Focus Timer",
-        "trash": "Trash Bin",
-        "social": "Social Hub",
-        "collab_events": "Collab Events",
-        "notifications": "Notifications",
-        "mark_all_read": "Mark All as Read",
-        "no_notifications": "No notifications yet",
-        "tags": "Tags",
-        "comments": "Comments",
-        "add_comment": "Write a comment...",
-        "shortcuts": "Shortcuts",
-        "quick_template": "Template",
-        "today_btn": "Today",
-        "prev": "Prev",
-        "next": "Next",
-        "total": "Total",
-        "pending": "Pending",
-        "completed": "Completed",
-        "pinned": "Pinned",
-        "overdue": "Overdue",
-        "workload": "Workload",
-        "xp_level": "Level",
-        "add_task": "Add Task",
-        "what_needs_doing": "What needs doing?",
-        "category": "Category",
-        "priority": "Priority",
-        "due_date": "Due date",
-        "est_min": "Est. min",
-        "pin_to_top": "Pin to Top",
-        "share": "Share",
-        "delete": "Delete",
-        "edit": "Edit",
-        "archive": "Archive",
-        "restore": "Restore",
-        "empty_trash": "Empty Trash",
-        "urgent_important": "🔥 Urgent & Important (Do First)",
-        "not_urgent_important": "📅 Important, Not Urgent (Schedule)",
-        "urgent_not_important": "⚡ Urgent, Not Important (Delegate)",
-        "not_urgent_not_important": "🌱 Neither (Eliminate)",
-        "timeline": "Timeline Gantt",
-        "habits": "Habits & Streaks",
-        "zen_focus": "Zen Focus Mode",
-        "theme_studio": "Theme & Sound Studio",
-        "projects": "Projects",
-        "smart_helper": "AI Task Helper",
-        "standup_summary": "Daily Standup Summary",
-        "actual_time": "Actual Time",
-        "wiki": "Second Brain & Wiki",
-        "finance": "Finance & Budget",
-        "journal": "Daily Journal & Mood",
-        "media": "Bookshelf & Media",
-        "rpg": "Productivity RPG",
-        "soundscapes": "Focus Soundscapes",
-        "ai_solver": "AI Problem Solver",
-    },
-    "it": {
-        "brand": "TaskFlow Quantum",
-        "welcome_intro": "Pagina Iniziale",
-        "start_app": "Entra nell'Applicazione",
-        "my_tasks": "I Miei Compiti",
-        "kanban": "Tabellone Kanban",
-        "calendar": "Calendario",
-        "eisenhower": "Matrice Eisenhower",
-        "analytics": "Analisi & Produttività",
-        "leaderboard": "Classifica Team",
-        "focus_timer": "Timer Concentrazione",
-        "trash": "Cestino",
-        "social": "Area Social",
-        "collab_events": "Eventi Condivisi",
-        "notifications": "Notifiche",
-        "mark_all_read": "Segna tutti come letti",
-        "no_notifications": "Nessuna notifica al momento",
-        "tags": "Tag",
-        "comments": "Commenti",
-        "add_comment": "Scrivi un commento...",
-        "shortcuts": "Scorciatoie",
-        "quick_template": "Modello",
-        "today_btn": "Oggi",
-        "prev": "Prec",
-        "next": "Succ",
-        "total": "Totale",
-        "pending": "In Sospeso",
-        "completed": "Completati",
-        "pinned": "In Evidenza",
-        "overdue": "Scaduti",
-        "workload": "Carico di Lavoro",
-        "xp_level": "Livello",
-        "add_task": "Aggiungi Compito",
-        "what_needs_doing": "Cosa c'è da fare?",
-        "category": "Categoria",
-        "priority": "Priorità",
-        "due_date": "Scadenza",
-        "est_min": "Min. stimati",
-        "pin_to_top": "Fissa in Alto",
-        "share": "Condividi",
-        "delete": "Elimina",
-        "edit": "Modifica",
-        "archive": "Archivia",
-        "restore": "Ripristina",
-        "empty_trash": "Svuota Cestino",
-        "urgent_important": "🔥 Urgente e Importante (Fai Subito)",
-        "not_urgent_important": "📅 Importante, Non Urgente (Pianifica)",
-        "urgent_not_important": "⚡ Urgente, Non Importante (Delega)",
-        "not_urgent_not_important": "🌱 Né Urgente né Importante (Elimina)",
-        "timeline": "Timeline Gantt",
-        "habits": "Abitudini & Costanza",
-        "zen_focus": "Modalità Zen",
-        "theme_studio": "Studio Temi & Suoni",
-        "projects": "Progetti",
-        "smart_helper": "Assistente AI",
-        "standup_summary": "Riepilogo Standup Giornaliero",
-        "actual_time": "Tempo Effettivo",
-        "wiki": "Second Brain & Wiki",
-        "finance": "Finanze & Budget",
-        "journal": "Diario & Umore",
-        "media": "Libreria & Media",
-        "rpg": "Gioco di Ruolo RPG",
-        "soundscapes": "Oasi Sonora & Respiro",
-        "ai_solver": "Risolutore Problemi AI",
-    },
-}
 
 
 def _award_rpg_xp(request, xp=15, coins=5, stat="discipline"):
@@ -206,15 +74,16 @@ def _get_user_todos(request, include_archived=False, include_deleted=False):
 
 
 def set_language_view(request, lang_code):
-    """Switch language between English ('en') and Italian ('it')."""
-    if lang_code in ["en", "it"]:
+    """Switch language between English ('en'), Italian ('it'), Spanish ('es'), and Japanese ('ja')."""
+    if lang_code in ["en", "it", "es", "ja"]:
         request.session["django_language"] = lang_code
-        messages.success(
-            request,
-            "Language changed to English!"
-            if lang_code == "en"
-            else "Lingua cambiata in Italiano!",
-        )
+        msgs = {
+            "en": "Language changed to English!",
+            "it": "Lingua cambiata in Italiano!",
+            "es": "¡Idioma cambiado a Español!",
+            "ja": "言語を日本語に変更しました！",
+        }
+        messages.success(request, msgs.get(lang_code, "Language updated!"))
     return redirect(request.META.get("HTTP_REFERER", "todo_list"))
 
 
@@ -2046,6 +1915,10 @@ def rpg_reward_delete(request, pk):
 @require_POST
 def api_ai_solve(request):
     """Analyze a problem and return structured diagnosis, actionable strategies, and suggested tasks."""
+    lang_code = request.session.get("django_language", "en")
+    if lang_code not in ["en", "it", "es", "ja"]:
+        lang_code = "en"
+
     try:
         body = json.loads(request.body.decode("utf-8")) if request.body else {}
     except Exception:
@@ -2053,8 +1926,14 @@ def api_ai_solve(request):
     problem = (body.get("problem") or request.POST.get("problem", "")).strip()
 
     if not problem:
+        empty_err = {
+            "en": "Please describe a problem to proceed.",
+            "it": "Descrivi un problema per procedere.",
+            "es": "Por favor describe un problema para continuar.",
+            "ja": "続行するには問題の内容を入力してください。",
+        }
         return JsonResponse(
-            {"status": "error", "message": "Descrivi un problema per procedere."},
+            {"status": "error", "message": empty_err.get(lang_code, empty_err["en"])},
             status=400,
         )
 
@@ -2062,34 +1941,28 @@ def api_ai_solve(request):
 
     if any(
         k in p_lower
-        for k in ["procrastin", "rimand", "blocc", "voglia", "difficil", "inizia"]
+        for k in [
+            "procrastin",
+            "rimand",
+            "blocc",
+            "voglia",
+            "difficil",
+            "inizia",
+            "delay",
+            "start",
+            "stuck",
+            "postpone",
+            "procrastinar",
+            "bloqueo",
+            "difícil",
+            "empezar",
+            "先延ばし",
+            "やる気",
+            "始められない",
+            "進まない",
+        ]
     ):
-        diagnosis = (
-            "La procrastinazione è spesso una risposta all'ansia da prestazione o alla mole "
-            "percepita dell'obiettivo. Il cervello cerca sollievo immediato rimandando."
-        )
-        strategies = [
-            "Applica la 'Regola dei 2 Minuti': prometti a te stesso di lavorare al compito solo per 120 secondi.",
-            "Riduci l'attrito iniziale: prepara l'ambiente rimuovendo distrazioni e aprendo solo il materiale essenziale.",
-            "Elimina il perfezionismo: la prima bozza può essere imperfetta, l'importante è far partire lo slancio.",
-        ]
-        tasks = [
-            {
-                "title": f"Avvio rapido 2m: prima bozza per {problem[:30]}",
-                "priority": "high",
-                "estimated_minutes": 10,
-            },
-            {
-                "title": "Sessione Pomodoro (25m) focalizzata",
-                "priority": "high",
-                "estimated_minutes": 25,
-            },
-            {
-                "title": "Revisione e festeggiamento del traguardo",
-                "priority": "medium",
-                "estimated_minutes": 10,
-            },
-        ]
+        cat = "procrastination"
     elif any(
         k in p_lower
         for k in [
@@ -2100,94 +1973,73 @@ def api_ai_solve(request):
             "giornat",
             "agenda",
             "ritard",
+            "time",
+            "busy",
+            "deadline",
+            "overwhelm",
+            "schedule",
+            "plazo",
+            "agobio",
+            "horario",
+            "時間",
+            "締切",
+            "忙しい",
+            "スケジュール",
+            "タスク多すぎ",
         ]
     ):
-        diagnosis = (
-            "Il sovraccarico cognitivo nasce dal trattare tutti gli impegni con la stessa urgenza. "
-            "Quando tutto è prioritario, nulla lo è veramente."
-        )
-        strategies = [
-            "Applica la Matrice di Eisenhower: isola i 2 compiti che hanno il massimo impatto oggi.",
-            "Fai 'Time Blocking': assegna fasce orarie fisse invece di saltare continuamente da un'attività all'altra.",
-            "Impara a dire di no o a delegare ciò che non rientra nei tuoi 3 obiettivi centrali.",
-        ]
-        tasks = [
-            {
-                "title": f"Isolare i 3 compiti chiave per: {problem[:30]}",
-                "priority": "urgent",
-                "estimated_minutes": 15,
-            },
-            {
-                "title": "Blocco di concentrazione profonda (45 min)",
-                "priority": "high",
-                "estimated_minutes": 45,
-            },
-            {
-                "title": "Chiusura ordinata attività aperte",
-                "priority": "medium",
-                "estimated_minutes": 15,
-            },
-        ]
+        cat = "time"
     elif any(
         k in p_lower
-        for k in ["sold", "spend", "spes", "risparmi", "budget", "finanz", "cost"]
+        for k in [
+            "sold",
+            "spend",
+            "spes",
+            "risparmi",
+            "budget",
+            "finanz",
+            "cost",
+            "money",
+            "save",
+            "expense",
+            "dinero",
+            "gasto",
+            "ahorro",
+            "presupuesto",
+            "お金",
+            "支出",
+            "節約",
+            "予算",
+            "費用",
+        ]
     ):
-        diagnosis = (
-            "Le spese fuori controllo derivano spesso da piccole 'fughe invisibili' quotidiane che "
-            "si accumulano nel corso delle settimane."
-        )
-        strategies = [
-            "Traccia ogni singola uscita per 7 giorni per identificare il vero punto di perdita del budget.",
-            "Applica la regola delle 48 ore: attendi due giorni prima di acquistare qualcosa di non essenziale.",
-            "Automatizza il risparmio: alloca subito a inizio mese una quota fissa nel tuo salvadanaio digitale.",
-        ]
-        tasks = [
-            {
-                "title": f"Controllo spese e abbonamenti ({problem[:25]})",
-                "priority": "high",
-                "estimated_minutes": 20,
-            },
-            {
-                "title": "Impostare limite spesa settimanale nel Finance Tracker",
-                "priority": "high",
-                "estimated_minutes": 15,
-            },
-            {
-                "title": "Versamento simbolico di 15€ nel salvadanaio",
-                "priority": "medium",
-                "estimated_minutes": 5,
-            },
-        ]
+        cat = "finance"
     elif any(
         k in p_lower
-        for k in ["ansia", "stress", "stanc", "dorm", "paura", "esaurit", "ripos"]
+        for k in [
+            "ansia",
+            "stress",
+            "stanc",
+            "dorm",
+            "paura",
+            "esaurit",
+            "ripos",
+            "tired",
+            "anxiety",
+            "burnout",
+            "sleep",
+            "rest",
+            "cansado",
+            "sueño",
+            "fatiga",
+            "ストレス",
+            "不安",
+            "疲れた",
+            "睡眠",
+            "休みたい",
+        ]
     ):
-        diagnosis = (
-            "Il sistema nervoso è in sovraccarico di stimoli. Forzare senza pause adeguate genera "
-            "rendimenti decrescenti e affaticamento decisionale."
-        )
-        strategies = [
-            "Effettua una sessione di respirazione quadrata (Box Breathing) di 3 minuti nell'Oasi Sonora.",
-            "Fai un 'Brain Dump' nel Diario Personale: svuota tutti i pensieri per liberare spazio mentale.",
-            "Stacca dagli schermi ed effettua una camminata di 10 minuti per rigenerare la lucidità.",
-        ]
-        tasks = [
-            {
-                "title": "3 minuti di respirazione profonda nell'Oasi Sonora",
-                "priority": "urgent",
-                "estimated_minutes": 5,
-            },
-            {
-                "title": f"Scrivere nel Diario i pensieri su: {problem[:30]}",
-                "priority": "high",
-                "estimated_minutes": 15,
-            },
-            {
-                "title": "Pausa attiva rigenerante all'aperto",
-                "priority": "medium",
-                "estimated_minutes": 15,
-            },
-        ]
+        cat = "stress"
     elif any(
         k in p_lower
         for k in [
@@ -2199,61 +2051,31 @@ def api_ai_solve(request):
             "tesi",
             "scuola",
             "universit",
+            "study",
+            "exam",
+            "thesis",
+            "learn",
+            "college",
+            "school",
+            "estudio",
+            "examen",
+            "tesis",
+            "universidad",
+            "勉強",
+            "試験",
+            "受験",
+            "卒論",
+            "暗記",
         ]
     ):
-        diagnosis = (
-            "La rilettura passiva è inefficiente. Il vero apprendimento avviene tramite recupero "
-            "attivo (Active Recall) e scomposizione dei capitoli in concetti chiave."
-        )
-        strategies = [
-            "Crea una scheda di sintesi nel Second Brain / Wiki con domande chiave e collegamenti.",
-            "Spiega il concetto ad alta voce come se dovessi insegnarlo (Tecnica di Feynman).",
-            "Alterna blocchi da 25 minuti di studio focalizzato a 5 minuti di recupero.",
-        ]
-        tasks = [
-            {
-                "title": f"Mappa concettuale nella Wiki per: {problem[:30]}",
-                "priority": "high",
-                "estimated_minutes": 25,
-            },
-            {
-                "title": "Ripetizione attiva (Active Recall) a libro chiuso",
-                "priority": "high",
-                "estimated_minutes": 30,
-            },
-            {
-                "title": "Autovalutazione con 5 domande di verifica",
-                "priority": "medium",
-                "estimated_minutes": 15,
-            },
-        ]
+        cat = "study"
     else:
-        diagnosis = (
-            "Ogni problema complesso sembra insormontabile solo finché rimane un blocco unico. "
-            "Decomponendolo in unità minime azionabili, la resistenza mentale scompare."
-        )
-        strategies = [
-            "Scomponi il macro-obiettivo nella più piccola azione fisica eseguibile adesso.",
-            "Definisci chiaramente il criterio di successo ('Come saprò esattamente quando è completato?').",
-            "Imposta una scadenza realistica e celebra il completamento per alimentare la motivazione.",
-        ]
-        tasks = [
-            {
-                "title": f"Fase 1: Preparazione e ricerca per {problem[:30]}",
-                "priority": "high",
-                "estimated_minutes": 20,
-            },
-            {
-                "title": "Fase 2: Esecuzione operativa del primo blocco",
-                "priority": "urgent",
-                "estimated_minutes": 35,
-            },
-            {
-                "title": "Fase 3: Revisione finale e chiusura",
-                "priority": "medium",
-                "estimated_minutes": 15,
-            },
-        ]
+        cat = "default"
+
+    resp = AI_SOLVER_RESPONSES[cat][lang_code]
+    diagnosis = resp["diagnosis"]
+    strategies = resp["strategies"]
+    tasks = resp["tasks"](problem)
 
     return JsonResponse(
         {

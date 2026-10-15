@@ -469,22 +469,24 @@
             <div class="header-actions">
                 <a href="{% url 'set_language' 'en' %}" class="lang-pill {% if lang_code == 'en' %}active{% endif %}">🇬🇧 EN</a>
                 <a href="{% url 'set_language' 'it' %}" class="lang-pill {% if lang_code == 'it' %}active{% endif %}">🇮🇹 IT</a>
+                <a href="{% url 'set_language' 'es' %}" class="lang-pill {% if lang_code == 'es' %}active{% endif %}">🇪🇸 ES</a>
+                <a href="{% url 'set_language' 'ja' %}" class="lang-pill {% if lang_code == 'ja' %}active{% endif %}">🇯🇵 JA</a>
                 {% if user.is_authenticated %}
                     <span style="font-size:0.85rem; color:var(--accent-cyan); display:flex; align-items:center; gap:6px;">
                         <span>👤</span> @{{ user.username }}
                     </span>
                     <form method="post" action="{% url 'logout' %}" style="margin:0; display:inline;">
                         {% csrf_token %}
-                        <button type="submit" class="lang-pill" style="cursor:pointer;" title="Esci dall'account">Esci</button>
+                        <button type="submit" class="lang-pill" style="cursor:pointer;" title="{{ t.logout|default:'Logout' }}">{{ t.logout|default:"Logout" }}</button>
                     </form>
                     <a href="{% url 'todo_list' %}" class="btn-launch-header">
                         <span>START</span>
                         <span>→</span>
                     </a>
                 {% else %}
-                    <a href="{% url 'login' %}" class="lang-pill" style="color:#fff; border-color:#a855f7;">Accedi</a>
+                    <a href="{% url 'login' %}" class="lang-pill" style="color:#fff; border-color:#a855f7;">{{ t.login|default:"Login" }}</a>
                     <a href="{% url 'signup' %}" class="btn-launch-header" style="background:linear-gradient(135deg, #10b981, #059669); box-shadow:0 4px 18px rgba(16, 185, 129, 0.35);">
-                        <span>Registrati</span>
+                        <span>{{ t.signup|default:"Sign Up" }}</span>
                     </a>
                     <a href="{% url 'todo_list' %}" class="btn-launch-header">
                         <span>START</span>
@@ -499,11 +501,15 @@
             <div>
                 <div class="hero-badge">
                     <span>✨</span>
-                    <span>{% if lang_code == 'it' %}La To-Do List Definitiva • 100 Features{% else %}The Ultimate To-Do Platform • 100 Features{% endif %}</span>
+                    <span>{% if lang_code == 'it' %}La To-Do List Definitiva • 100 Features{% elif lang_code == 'es' %}La Plataforma de Tareas Definitiva • 100 Features{% elif lang_code == 'ja' %}究極のToDoプラットフォーム • 100以上の機能{% else %}The Ultimate To-Do Platform • 100 Features{% endif %}</span>
                 </div>
                 <h1>
                     {% if lang_code == 'it' %}
                         Organizza, Pianifica e Conquista i Tuoi Obiettivi.
+                    {% elif lang_code == 'es' %}
+                        Organiza, Planifica y Conquista tus Objetivos.
+                    {% elif lang_code == 'ja' %}
+                        目標を整理し、計画し、最高の成果を達成する。
                     {% else %}
                         Organize, Plan, and Conquer Your Best Work.
                     {% endif %}
@@ -511,6 +517,10 @@
                 <p class="lead">
                     {% if lang_code == 'it' %}
                         Benvenuto su <strong>TaskFlow</strong>! Non un semplice elenco di impegni, ma il tuo quartier generale moderno per la produttività: Kanban agile, calendario interattivo con scadenze, timer Pomodoro con audio feedback, matrice di Eisenhower, statistiche di velocità e collaborazione di team in tempo reale.
+                    {% elif lang_code == 'es' %}
+                        ¡Bienvenido a <strong>TaskFlow</strong>! Más que una lista de tareas básica, es tu centro de productividad de última generación: Kanban ágil, calendario interactivo con fechas límite, temporizador Pomodoro con retroalimentación sonora, matriz de Eisenhower, analítica de velocidad y colaboración en equipo en tiempo real.
+                    {% elif lang_code == 'ja' %}
+                        <strong>TaskFlow</strong>へようこそ！単なるToDoリストを超えた、次世代の生産性ワークスペースです。アジャイルなカンバン、締切付きカレンダー、効果音付きポモドーロタイマー、アイゼンハワーマトリクス、ベロシティ分析、そしてリアルタイムのチームコラボレーションを備えています。
                     {% else %}
                         Welcome to <strong>TaskFlow</strong>! More than a basic to-do list, this is your next-gen productivity workspace: agile Kanban, interactive calendar with deadlines, Pomodoro focus timer with audio feedback, Eisenhower matrix, velocity analytics, and real-time team collaboration.
                     {% endif %}
@@ -518,12 +528,12 @@
                 <div class="hero-cta-group">
                     <a href="{% url 'todo_list' %}" class="btn-cta-main" style="box-shadow: 0 0 25px rgba(168, 85, 247, 0.65);">
                         <span>🚀</span>
-                        <span>START — {% if lang_code == 'it' %}Entra nell'Applicazione{% else %}Start Application{% endif %}</span>
+                        <span>START — {% if lang_code == 'it' %}Entra nell'Applicazione{% elif lang_code == 'es' %}Entrar a la Aplicación{% elif lang_code == 'ja' %}アプリを起動{% else %}Start Application{% endif %}</span>
                         <span>→</span>
                     </a>
                     <a href="{% url 'todo_list' %}?view=calendar" class="btn-cta-secondary">
                         <span>📅</span>
-                        <span>{% if lang_code == 'it' %}Vedi Calendario{% else %}Interactive Calendar{% endif %}</span>
+                        <span>{% if lang_code == 'it' %}Vedi Calendario{% elif lang_code == 'es' %}Ver Calendario{% elif lang_code == 'ja' %}カレンダー表示{% else %}Interactive Calendar{% endif %}</span>
                     </a>
                 </div>
             </div>
@@ -617,19 +627,19 @@
         <section class="stats-bar">
             <div class="stat-item">
                 <div class="stat-val accent">100+</div>
-                <div class="stat-label">{% if lang_code == 'it' %}Funzionalità Attive{% else %}Features Built{% endif %}</div>
+                <div class="stat-label">{% if lang_code == 'it' %}Funzionalità Attive{% elif lang_code == 'es' %}Funciones Activas{% elif lang_code == 'ja' %}アクティブ機能{% else %}Features Built{% endif %}</div>
             </div>
             <div class="stat-item">
                 <div class="stat-val">{{ total_todos }}</div>
-                <div class="stat-label">{% if lang_code == 'it' %}Compiti Registrati{% else %}Tasks Created{% endif %}</div>
+                <div class="stat-label">{% if lang_code == 'it' %}Compiti Registrati{% elif lang_code == 'es' %}Tareas Creadas{% elif lang_code == 'ja' %}作成されたタスク{% else %}Tasks Created{% endif %}</div>
             </div>
             <div class="stat-item">
                 <div class="stat-val" style="color:#34d399;">{{ completed_todos }}</div>
-                <div class="stat-label">{% if lang_code == 'it' %}Traguardi Raggiunti{% else %}Goals Completed{% endif %}</div>
+                <div class="stat-label">{% if lang_code == 'it' %}Traguardi Raggiunti{% elif lang_code == 'es' %}Metas Cumplidas{% elif lang_code == 'ja' %}達成された目標{% else %}Goals Completed{% endif %}</div>
             </div>
             <div class="stat-item">
                 <div class="stat-val" style="color:#fbbf24;">⚡ 0 ms</div>
-                <div class="stat-label">{% if lang_code == 'it' %}Latenza SQLite Locale{% else %}Local SQLite Speed{% endif %}</div>
+                <div class="stat-label">{% if lang_code == 'it' %}Latenza SQLite Locale{% elif lang_code == 'es' %}Latencia SQLite Local{% elif lang_code == 'ja' %}ローカルSQLite速度{% else %}Local SQLite Speed{% endif %}</div>
             </div>
         </section>
 
@@ -639,6 +649,10 @@
                 <h2>
                     {% if lang_code == 'it' %}
                         Un Ecosistema Completo per Ogni Tuo Flusso di Lavoro
+                    {% elif lang_code == 'es' %}
+                        Un Ecosistema Completo para Cada Flujo de Trabajo
+                    {% elif lang_code == 'ja' %}
+                        あらゆるワークフローに対応する完全なエコシステム
                     {% else %}
                         A Complete Ecosystem for Every Workflow
                     {% endif %}
@@ -646,6 +660,10 @@
                 <p>
                     {% if lang_code == 'it' %}
                         Dimentica le app complicate o i semplici fogli di testo: TaskFlow unisce potenza tecnica, design professionale e reattività immediata.
+                    {% elif lang_code == 'es' %}
+                        Olvida las aplicaciones complicadas o las notas de texto: TaskFlow combina potencia técnica, diseño profesional y velocidad instantánea.
+                    {% elif lang_code == 'ja' %}
+                        複雑なツールやメモ帳はもう不要です。TaskFlowは優れた職人技、深い集中ツール、そして超高速な応答性を兼ね備えています。
                     {% else %}
                         No clunky software or plain text files: TaskFlow combines modern craftsmanship, deep focus tools, and lightning speed.
                     {% endif %}
@@ -656,10 +674,14 @@
                 <!-- Feature 1: Smart Task Management -->
                 <div class="feature-card">
                     <div class="feature-icon-bubble">📋</div>
-                    <h3>{% if lang_code == 'it' %}Gestione Compiti Avanzata{% else %}Smart Task Flow{% endif %}</h3>
+                    <h3>{% if lang_code == 'it' %}Gestione Compiti Avanzata{% elif lang_code == 'es' %}Gestión Avanzada de Tareas{% elif lang_code == 'ja' %}スマートタスク管理{% else %}Smart Task Flow{% endif %}</h3>
                     <p>
                         {% if lang_code == 'it' %}
                             Organizza i tuoi compiti con tag multipli (`#lavoro #urgente`), livelli di energia (bassa, media, alta), ricorrenza automatica giornaliera/settimanale e subtasks spuntabili.
+                        {% elif lang_code == 'es' %}
+                            Organiza tus tareas con etiquetas múltiples (`#trabajo #urgente`), niveles de energía, recurrencia automática y subtareas verificables.
+                        {% elif lang_code == 'ja' %}
+                            複数タグ（#仕事 #緊急）、エネルギーレベル、日次/週次の自動繰り返し、チェックリスト、見積時間でタスクをスマートに整理します。
                         {% else %}
                             Organize tasks with multi-tagging (`#work #urgent`), energy levels, automatic recurrence, checklists, and estimated minutes.
                         {% endif %}
@@ -669,10 +691,14 @@
                 <!-- Feature 2: Interactive Calendar -->
                 <div class="feature-card">
                     <div class="feature-icon-bubble">📅</div>
-                    <h3>{% if lang_code == 'it' %}Calendario Interattivo & Scadenze{% else %}Interactive Calendar & Deadlines{% endif %}</h3>
+                    <h3>{% if lang_code == 'it' %}Calendario Interattivo & Scadenze{% elif lang_code == 'es' %}Calendario Interactivo y Fechas Límite{% elif lang_code == 'ja' %}インタラクティブカレンダー＆締切{% else %}Interactive Calendar & Deadlines{% endif %}</h3>
                     <p>
                         {% if lang_code == 'it' %}
                             Mappa temporale completa del mese e della settimana con badge colorati per le date di scadenza. Clicca direttamente su qualsiasi giorno per aggiungere un impegno.
+                        {% elif lang_code == 'es' %}
+                            Mapa mensual y semanal completo con insignias de fecha límite. Haz clic en cualquier día para programar al instante.
+                        {% elif lang_code == 'ja' %}
+                            月間・週間の視覚的グリッドとカラー締切バッジ。日付セルをクリックして素早くマイルストーンを登録できます。
                         {% else %}
                             Full visual monthly grid with color-coded deadline badges. Click on any date cell to instantly schedule milestones.
                         {% endif %}
@@ -682,10 +708,14 @@
                 <!-- Feature 3: Kanban Workflow -->
                 <div class="feature-card">
                     <div class="feature-icon-bubble">📊</div>
-                    <h3>{% if lang_code == 'it' %}Kanban Board con Drag & Drop{% else %}Kanban Board & Drag & Drop{% endif %}</h3>
+                    <h3>{% if lang_code == 'it' %}Kanban Board con Drag & Drop{% elif lang_code == 'es' %}Tablero Kanban con Arrastrar y Soltar{% elif lang_code == 'ja' %}カンバンボード＆ドラッグ＆ドロップ{% else %}Kanban Board & Drag & Drop{% endif %}</h3>
                     <p>
                         {% if lang_code == 'it' %}
                             Sposta fluidamente le schede tra le colonne "Da Fare", "In Corso" e "Completato" grazie al trascinamento HTML5 nativo o con i pulsanti rapidi.
+                        {% elif lang_code == 'es' %}
+                            Mueve tarjetas de forma fluida entre las columnas "Por Hacer", "En Progreso" y "Hecho" mediante HTML5 nativo o botones rápidos.
+                        {% elif lang_code == 'ja' %}
+                            「未着手」「進行中」「完了」のレーン間でカードをドラッグ＆ドロップし、直感的に進捗を管理します。
                         {% else %}
                             Drag cards effortlessly across agile lanes (To Do, In Progress, Done) with native HTML5 drag-and-drop feedback.
                         {% endif %}
@@ -695,10 +725,14 @@
                 <!-- Feature 4: Eisenhower Matrix -->
                 <div class="feature-card">
                     <div class="feature-icon-bubble">🎯</div>
-                    <h3>{% if lang_code == 'it' %}Matrice di Eisenhower{% else %}Eisenhower Matrix{% endif %}</h3>
+                    <h3>{% if lang_code == 'it' %}Matrice di Eisenhower{% elif lang_code == 'es' %}Matriz de Eisenhower{% elif lang_code == 'ja' %}アイゼンハワーマトリクス{% else %}Eisenhower Matrix{% endif %}</h3>
                     <p>
                         {% if lang_code == 'it' %}
                             Suddividi istantaneamente le attività nei 4 quadranti decisionali: Urgente & Importante (Fai Subito), Da Pianificare, Da Delegare, o Da Eliminare.
+                        {% elif lang_code == 'es' %}
+                            Divide tus actividades en los 4 cuadrantes de decisión: Urgente e Importante (Hacer Ya), Planificar, Delegar o Eliminar.
+                        {% elif lang_code == 'ja' %}
+                            「緊急かつ重要」「計画」「委任」「削除」の4つの判断象限で優先順位を明確にし、認知的負荷を解消します。
                         {% else %}
                             Prioritize high-impact work using the 4 urgent/important decision quadrants to eliminate cognitive clutter.
                         {% endif %}
@@ -708,10 +742,14 @@
                 <!-- Feature 5: Focus Timer & Audio Synthesizer -->
                 <div class="feature-card">
                     <div class="feature-icon-bubble">🍅</div>
-                    <h3>{% if lang_code == 'it' %}Focus Timer & Sintetizzatore Audio{% else %}Focus Timer & Web Audio Synth{% endif %}</h3>
+                    <h3>{% if lang_code == 'it' %}Focus Timer & Sintetizzatore Audio{% elif lang_code == 'es' %}Temporizador de Enfoque y Sintetizador{% elif lang_code == 'ja' %}集中タイマー＆シンセサイザー音{% else %}Focus Timer & Web Audio Synth{% endif %}</h3>
                     <p>
                         {% if lang_code == 'it' %}
                             Sessioni Pomodoro di 25 minuti con pause programmate, sintetizzatore Web Audio senza file esterni e celebrazione con coriandoli animati al 100%.
+                        {% elif lang_code == 'es' %}
+                            Sesiones Pomodoro de 25 minutos con descansos programados, sintetizador Web Audio nativo y celebración con confeti animado.
+                        {% elif lang_code == 'ja' %}
+                            25分間のポモドーロセッション、Web Audioシンセサイザーによるチャイム音、完了時の紙吹雪演出で集中をサポート。
                         {% else %}
                             Deep work intervals with customizable Pomodoro timers, Web Audio synthesizer chime feedback, and particle canvas confetti.
                         {% endif %}
@@ -721,10 +759,14 @@
                 <!-- Feature 6: Team Collaboration & Events -->
                 <div class="feature-card">
                     <div class="feature-icon-bubble">👥</div>
-                    <h3>{% if lang_code == 'it' %}Hub Sociale & Sprint Condivisi{% else %}Social Hub & Shared Sprints{% endif %}</h3>
+                    <h3>{% if lang_code == 'it' %}Hub Sociale & Sprint Condivisi{% elif lang_code == 'es' %}Centro Social y Sprints Compartidos{% elif lang_code == 'ja' %}ソーシャルハブ＆チームスプリント{% else %}Social Hub & Shared Sprints{% endif %}</h3>
                     <p>
                         {% if lang_code == 'it' %}
                             Condividi singoli compiti con i tuoi colleghi, pianifica eventi collaborativi con calendario e commenta direttamente sulle schede di lavoro.
+                        {% elif lang_code == 'es' %}
+                            Comparte tareas individuales con tus compañeros, planifica eventos en equipo y comenta directamente en las tarjetas de trabajo.
+                        {% elif lang_code == 'ja' %}
+                            チームメイトとタスクを共有し、共同スプリントイベントを計画し、カード上で直接コメントを交換できます。
                         {% else %}
                             Share tasks with teammates, join collaborative deadline sprints, write comments, and follow team achievements.
                         {% endif %}
@@ -738,6 +780,10 @@
             <h2>
                 {% if lang_code == 'it' %}
                     Pronto a Trasformare il Tuo Modo di Lavorare?
+                {% elif lang_code == 'es' %}
+                    ¿Listo para Transformar tu Forma de Trabajar?
+                {% elif lang_code == 'ja' %}
+                    あなたの働き方を変革する準備はできましたか？
                 {% else %}
                     Ready to Transform the Way You Work?
                 {% endif %}
@@ -745,13 +791,17 @@
             <p>
                 {% if lang_code == 'it' %}
                     Nessun account obbligatorio per iniziare: entra subito nello spazio di lavoro e sperimenta la vera fluidità operativa.
+                {% elif lang_code == 'es' %}
+                    No se requiere cuenta obligatoria para comenzar: accede directamente y experimenta verdadera agilidad operativa.
+                {% elif lang_code == 'ja' %}
+                    アカウント登録なしですぐにお試しいただけます。今すぐワークスペースを開いて、快適な生産性を体験してください。
                 {% else %}
                     No mandatory sign up to explore: jump straight into your workspace and experience true productivity.
                 {% endif %}
             </p>
             <a href="{% url 'todo_list' %}" class="btn-cta-main" style="padding:18px 44px; font-size:1.15rem; box-shadow: 0 0 30px rgba(168, 85, 247, 0.7);">
                 <span>🚀</span>
-                <span>START — {% if lang_code == 'it' %}Entra nell'Applicazione{% else %}Launch Application{% endif %}</span>
+                <span>START — {% if lang_code == 'it' %}Entra nell'Applicazione{% elif lang_code == 'es' %}Entrar a la Aplicación{% elif lang_code == 'ja' %}アプリを起動{% else %}Launch Application{% endif %}</span>
                 <span>→</span>
             </a>
         </section>
@@ -759,12 +809,12 @@
         <!-- Footer -->
         <footer>
             <div>
-                © 2026 {{ t.brand|default:"TaskFlow Quantum" }} • {% if lang_code == 'it' %}Costruito con Django, SQLite & Amore{% else %}Crafted with Django, SQLite & Care{% endif %}
+                © 2026 {{ t.brand|default:"TaskFlow Quantum" }} • {% if lang_code == 'it' %}Costruito con Django, SQLite & Amore{% elif lang_code == 'es' %}Construido con Django, SQLite y Cariño{% elif lang_code == 'ja' %}Django、SQLiteと情熱で構築{% else %}Crafted with Django, SQLite & Care{% endif %}
             </div>
             <div style="display:flex; gap:16px;">
-                <a href="{% url 'todo_list' %}" style="color:var(--text-muted); text-decoration:none;">{% if lang_code == 'it' %}Vai all'App{% else %}Go to App{% endif %}</a>
-                <a href="{% url 'todo_list' %}?view=calendar" style="color:var(--text-muted); text-decoration:none;">{% if lang_code == 'it' %}Calendario{% else %}Calendar{% endif %}</a>
-                <a href="{% url 'todo_list' %}?view=kanban" style="color:var(--text-muted); text-decoration:none;">{% if lang_code == 'it' %}Kanban{% else %}Kanban{% endif %}</a>
+                <a href="{% url 'todo_list' %}" style="color:var(--text-muted); text-decoration:none;">{% if lang_code == 'it' %}Vai all'App{% elif lang_code == 'es' %}Ir a la App{% elif lang_code == 'ja' %}アプリへ移動{% else %}Go to App{% endif %}</a>
+                <a href="{% url 'todo_list' %}?view=calendar" style="color:var(--text-muted); text-decoration:none;">{% if lang_code == 'it' %}Calendario{% elif lang_code == 'es' %}Calendario{% elif lang_code == 'ja' %}カレンダー{% else %}Calendar{% endif %}</a>
+                <a href="{% url 'todo_list' %}?view=kanban" style="color:var(--text-muted); text-decoration:none;">{% if lang_code == 'it' %}Kanban{% elif lang_code == 'es' %}Kanban{% elif lang_code == 'ja' %}カンバン{% else %}Kanban{% endif %}</a>
             </div>
         </footer>
     </div>

@@ -886,9 +886,11 @@
             </div>
             <span>{{ t.brand|default:"TaskFlow Quantum" }}</span>
         </a>
-        <div style="display:flex; gap:6px; margin-bottom:1.5rem; padding:0 0.5rem;">
-            <a href="{% url 'set_language' 'en' %}" class="btn-ui {% if lang_code == 'en' %}btn-primary{% endif %}" style="padding:4px 10px; font-size:0.75rem; border-radius:999px; text-decoration:none;">🇬🇧 EN</a>
-            <a href="{% url 'set_language' 'it' %}" class="btn-ui {% if lang_code == 'it' %}btn-primary{% endif %}" style="padding:4px 10px; font-size:0.75rem; border-radius:999px; text-decoration:none;">🇮🇹 IT</a>
+        <div style="display:flex; gap:4px; margin-bottom:1.5rem; padding:0 0.5rem; flex-wrap:wrap;">
+            <a href="{% url 'set_language' 'en' %}" class="btn-ui {% if lang_code == 'en' %}btn-primary{% endif %}" style="padding:4px 8px; font-size:0.72rem; border-radius:999px; text-decoration:none;">🇬🇧 EN</a>
+            <a href="{% url 'set_language' 'it' %}" class="btn-ui {% if lang_code == 'it' %}btn-primary{% endif %}" style="padding:4px 8px; font-size:0.72rem; border-radius:999px; text-decoration:none;">🇮🇹 IT</a>
+            <a href="{% url 'set_language' 'es' %}" class="btn-ui {% if lang_code == 'es' %}btn-primary{% endif %}" style="padding:4px 8px; font-size:0.72rem; border-radius:999px; text-decoration:none;">🇪🇸 ES</a>
+            <a href="{% url 'set_language' 'ja' %}" class="btn-ui {% if lang_code == 'ja' %}btn-primary{% endif %}" style="padding:4px 8px; font-size:0.72rem; border-radius:999px; text-decoration:none;">🇯🇵 JA</a>
         </div>
         <nav class="sidebar-nav">
             <a href="{% url 'welcome' %}" class="nav-item">🏠 {{ t.welcome_intro|default:"Welcome Page" }}</a>
@@ -912,7 +914,7 @@
             </div>
             <div style="display:flex; flex-direction:column; gap:3px; max-height:160px; overflow-y:auto;">
                 <a href="?view=list" class="nav-item {% if not current_project %}active{% endif %}" style="padding:6px 8px; font-size:0.8rem;">
-                    <span>📁 Tutti i progetti</span>
+                    <span>📁 {{ t.all_projects|default:"Tutti i progetti" }}</span>
                 </a>
                 {% for p in projects %}
                     <div style="display:flex; align-items:center; justify-content:space-between; border-radius:8px; {% if current_project == p.id|stringformat:'i' %}background:var(--sidebar-active-bg);{% endif %}">
@@ -926,13 +928,13 @@
                         </form>
                     </div>
                 {% empty %}
-                    <div style="font-size:0.75rem; color:var(--text-muted); padding:4px 8px;">Nessun progetto</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); padding:4px 8px;">{{ t.no_projects|default:"Nessun progetto" }}</div>
                 {% endfor %}
             </div>
         </div>
         <div style="margin-top:1.25rem; border-top:1px solid var(--sidebar-border); padding-top:0.75rem;">
             <div style="margin-bottom:8px; padding:0 4px;">
-                <span style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:#c084fc; font-weight:700;">🌟 SUITE & MODULI EXTRA</span>
+                <span style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:#c084fc; font-weight:700;">🌟 {{ t.extra_suites|default:"SUITE & MODULI EXTRA" }}</span>
             </div>
             <nav class="sidebar-nav" style="gap:3px;">
                 <a href="?view=wiki" class="nav-item {% if active_view == 'wiki' %}active{% endif %}" style="padding:7px 10px; font-size:0.84rem;">🧠 {{ t.wiki|default:"Second Brain & Wiki" }}</a>
@@ -949,12 +951,12 @@
         </div>
         <div class="sidebar-footer">
             <div style="display:flex; gap:5px; margin-bottom:6px;">
-                <button class="btn-ui" onclick="openStudioModal()" style="flex:1; justify-content:center; font-size:0.78rem;" title="Theme & Sound Studio">🎨 Studio</button>
-                <button class="btn-ui" onclick="openStandupModal()" style="flex:1; justify-content:center; font-size:0.78rem;" title="Daily Standup AI">📋 Standup</button>
+                <button class="btn-ui" onclick="openStudioModal()" style="flex:1; justify-content:center; font-size:0.78rem;" title="Theme & Sound Studio">🎨 {{ t.studio|default:"Studio" }}</button>
+                <button class="btn-ui" onclick="openStandupModal()" style="flex:1; justify-content:center; font-size:0.78rem;" title="Daily Standup AI">📋 {{ t.standup|default:"Standup" }}</button>
                 <button class="btn-ui" onclick="openZenMode()" style="padding:7px 10px;" title="Zen Focus Mode">🧘</button>
             </div>
             <div style="display:flex; gap:6px;">
-                <button class="btn-ui" id="themeBtn" style="flex:1; justify-content:center;">🌓 Theme</button>
+                <button class="btn-ui" id="themeBtn" style="flex:1; justify-content:center;">🌓 {{ t.theme|default:"Theme" }}</button>
                 <button class="btn-ui" id="soundToggleBtn" onclick="toggleSound()" style="padding:7px 10px;" title="Toggle Audio Chimes">🔊</button>
                 <button class="btn-ui" onclick="openShortcutsModal()" style="padding:7px 10px;" title="Keyboard Shortcuts">⌨️</button>
             </div>
@@ -962,11 +964,11 @@
                 <div style="font-size:0.85rem; color:#fff; text-align:center;">👤 {{ user.username }}</div>
                 <form method="post" action="{% url 'logout' %}" style="margin:0;">
                     {% csrf_token %}
-                    <button type="submit" class="btn-ui" style="width:100%; justify-content:center;">Logout</button>
+                    <button type="submit" class="btn-ui" style="width:100%; justify-content:center;">{{ t.logout|default:"Logout" }}</button>
                 </form>
             {% else %}
-                <a href="{% url 'login' %}" class="btn-ui" style="justify-content:center;">Login</a>
-                <a href="{% url 'signup' %}" class="btn-ui btn-primary" style="justify-content:center;">Sign Up</a>
+                <a href="{% url 'login' %}" class="btn-ui" style="justify-content:center;">{{ t.login|default:"Login" }}</a>
+                <a href="{% url 'signup' %}" class="btn-ui btn-primary" style="justify-content:center;">{{ t.signup|default:"Sign Up" }}</a>
             {% endif %}
         </div>
     </aside>
@@ -986,32 +988,32 @@
                 <span id="liveGreetingIcon" style="font-size:1.6rem;">☀️</span>
                 <div>
                     <div style="font-size:0.92rem; font-weight:700; color:var(--text-main);">
-                        <span id="liveGreetingText">Buona giornata</span>{% if user.is_authenticated %}, {{ user.username }}{% endif %}!
+                        <span id="liveGreetingText">...</span>{% if user.is_authenticated %}, {{ user.username }}{% endif %}!
                     </div>
                     <div style="font-size:0.75rem; color:var(--text-muted); display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                        <span id="liveDateDisplay">Caricamento data...</span>
+                        <span id="liveDateDisplay">...</span>
                         <span>•</span>
-                        <span id="liveWeatherDisplay" style="color:var(--accent-cyan, #38bdf8);">🌤️ 21°C Sereno</span>
+                        <span id="liveWeatherDisplay" style="color:var(--accent-cyan, #38bdf8);">🌤️ 21°C {{ t.sunny|default:"Sereno" }}</span>
                         <span>•</span>
-                        <span class="badge-pill" style="font-size:0.65rem; padding:1px 6px; background:rgba(16, 185, 129, 0.15); border-color:#10b981; color:#34d399;">⚡ Focus Ottimale</span>
+                        <span class="badge-pill" style="font-size:0.65rem; padding:1px 6px; background:rgba(16, 185, 129, 0.15); border-color:#10b981; color:#34d399;">⚡ {{ t.optimal_focus|default:"Focus Ottimale" }}</span>
                     </div>
                 </div>
             </div>
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                 <div style="text-align:right; margin-right:4px;">
                     <div id="liveClockDisplay" style="font-family:monospace; font-size:1.25rem; font-weight:800; color:#fff; letter-spacing:0.06em;">00:00:00</div>
-                    <div style="font-size:0.68rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em;">Tempo Reale Live</div>
+                    <div style="font-size:0.68rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em;">{{ t.realtime_live|default:"Tempo Reale Live" }}</div>
                 </div>
-                <button type="button" class="btn-ui" onclick="toggleSpotlight()" title="Cerca in tutto il workspace (Cmd+K)" style="padding:6px 11px; font-size:0.8rem; background:rgba(168, 85, 247, 0.15); border-color:rgba(168, 85, 247, 0.4); color:#c084fc;">
-                    🔍 Cerca <kbd style="font-size:0.65rem; background:rgba(0,0,0,0.3); padding:1px 4px; border-radius:4px; margin-left:3px;">⌘K</kbd>
+                <button type="button" class="btn-ui" onclick="toggleSpotlight()" title="{{ t.search|default:'Cerca' }} (Cmd+K)" style="padding:6px 11px; font-size:0.8rem; background:rgba(168, 85, 247, 0.15); border-color:rgba(168, 85, 247, 0.4); color:#c084fc;">
+                    🔍 {{ t.search|default:"Cerca" }} <kbd style="font-size:0.65rem; background:rgba(0,0,0,0.3); padding:1px 4px; border-radius:4px; margin-left:3px;">⌘K</kbd>
                 </button>
-                <button type="button" class="btn-ui" onclick="openExportModal()" title="Esporta e Scarica Dati (CSV, iCal, JSON, PDF)" style="padding:6px 11px; font-size:0.8rem; background:rgba(56, 189, 248, 0.15); border-color:rgba(56, 189, 248, 0.4); color:#38bdf8;">
-                    📥 Esporta Dati
+                <button type="button" class="btn-ui" onclick="openExportModal()" title="{{ t.export_data|default:'Esporta Dati' }}" style="padding:6px 11px; font-size:0.8rem; background:rgba(56, 189, 248, 0.15); border-color:rgba(56, 189, 248, 0.4); color:#38bdf8;">
+                    📥 {{ t.export_data|default:"Esporta Dati" }}
                 </button>
-                <button type="button" class="btn-ui" onclick="requestDesktopNotificationPermission()" id="btnDesktopNotif" title="Attiva Notifiche Desktop per le Scadenze" style="padding:6px 10px; font-size:0.8rem; background:rgba(16, 185, 129, 0.15); border-color:rgba(16, 185, 129, 0.4); color:#34d399;">
-                    🔔 Notifiche
+                <button type="button" class="btn-ui" onclick="requestDesktopNotificationPermission()" id="btnDesktopNotif" title="{{ t.notifications|default:'Notifiche' }}" style="padding:6px 10px; font-size:0.8rem; background:rgba(16, 185, 129, 0.15); border-color:rgba(16, 185, 129, 0.4); color:#34d399;">
+                    🔔 {{ t.notifications|default:"Notifiche" }}
                 </button>
-                <button type="button" class="btn-ui" onclick="toggleQuickScratchpad()" title="Apri Post-it Rapido" style="padding:6px 11px; font-size:0.8rem; background:rgba(251, 191, 36, 0.15); border-color:rgba(251, 191, 36, 0.4); color:#fde047;">📌 Post-it</button>
+                <button type="button" class="btn-ui" onclick="toggleQuickScratchpad()" title="{{ t.scratchpad|default:'Post-it' }}" style="padding:6px 11px; font-size:0.8rem; background:rgba(251, 191, 36, 0.15); border-color:rgba(251, 191, 36, 0.4); color:#fde047;">📌 {{ t.scratchpad|default:"Post-it" }}</button>
             </div>
         </div>
 
@@ -3404,8 +3406,8 @@
                 <div style="display:flex; align-items:center; gap:8px;">
                     <span style="font-size:1.4rem;">📥</span>
                     <div>
-                        <h3 style="margin:0; font-size:1.15rem; font-weight:700;">Centro Esportazione & Backup Dati</h3>
-                        <div style="font-size:0.75rem; color:var(--text-muted);">I tuoi dati ti appartengono: scaricali in qualsiasi formato quando vuoi.</div>
+                        <h3 style="margin:0; font-size:1.15rem; font-weight:700;">{{ t.export_hub_title|default:"Centro Esportazione & Backup Dati" }}</h3>
+                        <div style="font-size:0.75rem; color:var(--text-muted);">{{ t.export_hub_desc|default:"I tuoi dati ti appartengono: scaricali in qualsiasi formato quando vuoi." }}</div>
                     </div>
                 </div>
                 <button type="button" class="btn-ui" onclick="closeExportModal()" style="border-radius:999px; width:30px; height:30px; padding:0; justify-content:center;">✕</button>
@@ -3415,51 +3417,51 @@
                 <!-- Option 1: Tasks CSV -->
                 <div style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:10px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <strong style="font-size:0.92rem; color:var(--text-main); display:block;">📋 Compiti & Task (Excel / CSV)</strong>
-                        <span style="font-size:0.75rem; color:var(--text-muted);">Tutti i tuoi impegni, categorie, priorità e date di scadenza.</span>
+                        <strong style="font-size:0.92rem; color:var(--text-main); display:block;">📋 {{ t.export_tasks_csv|default:"Compiti & Task (Excel / CSV)" }}</strong>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">{{ t.export_tasks_csv_desc|default:"Tutti i tuoi impegni, categorie, priorità e date di scadenza." }}</span>
                     </div>
-                    <a href="{% url 'todo_export_csv' %}" class="btn-ui btn-primary" style="padding:6px 14px; font-size:0.8rem; text-decoration:none; white-space:nowrap;">Scarica CSV</a>
+                    <a href="{% url 'todo_export_csv' %}" class="btn-ui btn-primary" style="padding:6px 14px; font-size:0.8rem; text-decoration:none; white-space:nowrap;">{{ t.download_csv|default:"Scarica CSV" }}</a>
                 </div>
 
                 <!-- Option 2: Finance CSV -->
                 <div style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:10px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <strong style="font-size:0.92rem; color:var(--text-main); display:block;">💰 Finanze & Spese (Excel / CSV)</strong>
-                        <span style="font-size:0.75rem; color:var(--text-muted);">Tutte le entrate, uscite e categorie del mese per la tua contabilità.</span>
+                        <strong style="font-size:0.92rem; color:var(--text-main); display:block;">💰 {{ t.export_finance_csv|default:"Finanze & Spese (Excel / CSV)" }}</strong>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">{{ t.export_finance_csv_desc|default:"Tutte le entrate, uscite e categorie del mese per la tua contabilità." }}</span>
                     </div>
-                    <a href="{% url 'finance_export_csv' %}" class="btn-ui btn-primary" style="padding:6px 14px; font-size:0.8rem; text-decoration:none; white-space:nowrap;">Scarica CSV</a>
+                    <a href="{% url 'finance_export_csv' %}" class="btn-ui btn-primary" style="padding:6px 14px; font-size:0.8rem; text-decoration:none; white-space:nowrap;">{{ t.download_csv|default:"Scarica CSV" }}</a>
                 </div>
 
                 <!-- Option 3: Calendar iCal -->
                 <div style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:10px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <strong style="font-size:0.92rem; color:var(--text-main); display:block;">📅 Sincronizzazione Calendario (.ics)</strong>
-                        <span style="font-size:0.75rem; color:var(--text-muted);">Importa le tue scadenze direttamente su Google Calendar o Apple Calendar.</span>
+                        <strong style="font-size:0.92rem; color:var(--text-main); display:block;">📅 {{ t.export_calendar_ical|default:"Sincronizzazione Calendario (.ics)" }}</strong>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">{{ t.export_calendar_ical_desc|default:"Importa le tue scadenze direttamente su Google Calendar o Apple Calendar." }}</span>
                     </div>
-                    <a href="{% url 'todo_export_ical' %}" class="btn-ui" style="padding:6px 14px; font-size:0.8rem; text-decoration:none; white-space:nowrap;">Scarica .ics</a>
+                    <a href="{% url 'todo_export_ical' %}" class="btn-ui" style="padding:6px 14px; font-size:0.8rem; text-decoration:none; white-space:nowrap;">{{ t.download_ics|default:"Scarica .ics" }}</a>
                 </div>
 
                 <!-- Option 4: Full JSON Backup -->
                 <div style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:10px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <strong style="font-size:0.92rem; color:var(--text-main); display:block;">💾 Backup Completo (JSON)</strong>
-                        <span style="font-size:0.75rem; color:var(--text-muted);">Copia di sicurezza grezza di tutti i task e sotto-task dell'account.</span>
+                        <strong style="font-size:0.92rem; color:var(--text-main); display:block;">💾 {{ t.export_json|default:"Backup Completo (JSON)" }}</strong>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">{{ t.export_json_desc|default:"Copia di sicurezza grezza di tutti i task e sotto-task dell'account." }}</span>
                     </div>
-                    <a href="{% url 'todo_export_json' %}" class="btn-ui" style="padding:6px 14px; font-size:0.8rem; text-decoration:none; white-space:nowrap;">Backup JSON</a>
+                    <a href="{% url 'todo_export_json' %}" class="btn-ui" style="padding:6px 14px; font-size:0.8rem; text-decoration:none; white-space:nowrap;">{{ t.download_json|default:"Backup JSON" }}</a>
                 </div>
 
                 <!-- Option 5: Print / Save to PDF -->
                 <div style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:10px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <strong style="font-size:0.92rem; color:var(--text-main); display:block;">🖨️ Stampa / Esporta in PDF</strong>
-                        <span style="font-size:0.75rem; color:var(--text-muted);">Genera un file PDF pulito della schermata attuale, diario o calendario.</span>
+                        <strong style="font-size:0.92rem; color:var(--text-main); display:block;">🖨️ {{ t.export_pdf|default:"Stampa / Esporta in PDF" }}</strong>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">{{ t.export_pdf_desc|default:"Genera un file PDF pulito della schermata attuale, diario o calendario." }}</span>
                     </div>
-                    <button type="button" onclick="window.print()" class="btn-ui" style="padding:6px 14px; font-size:0.8rem; white-space:nowrap;">Stampa PDF 🖨️</button>
+                    <button type="button" onclick="window.print()" class="btn-ui" style="padding:6px 14px; font-size:0.8rem; white-space:nowrap;">{{ t.print_pdf_btn|default:"Stampa PDF 🖨️" }}</button>
                 </div>
             </div>
 
             <div style="display:flex; justify-content:flex-end;">
-                <button type="button" class="btn-ui" onclick="closeExportModal()">Chiudi</button>
+                <button type="button" class="btn-ui" onclick="closeExportModal()">{{ t.close|default:"Chiudi" }}</button>
             </div>
         </div>
     </div>
@@ -3470,55 +3472,55 @@
             <!-- Search Bar Header -->
             <div style="display:flex; align-items:center; gap:12px; padding:16px 20px; border-bottom:1px solid var(--border-color); background:var(--bg-page);">
                 <span style="font-size:1.3rem;">🔍</span>
-                <input type="text" id="spotlightSearchInput" placeholder="Cerca compiti, note, spese o scorciatoie (es. 'spesa', 'wiki', 'focus')..." style="flex:1; background:none; border:none; outline:none; font-size:1.05rem; color:var(--text-main);" oninput="filterSpotlightResults(this.value)">
+                <input type="text" id="spotlightSearchInput" placeholder="{{ t.spotlight_placeholder|default:'Cerca compiti, note, spese o scorciatoie...' }}" style="flex:1; background:none; border:none; outline:none; font-size:1.05rem; color:var(--text-main);" oninput="filterSpotlightResults(this.value)">
                 <kbd style="font-size:0.75rem; background:rgba(255,255,255,0.08); padding:3px 6px; border-radius:4px; border:1px solid var(--border-color); color:var(--text-muted); cursor:pointer;" onclick="closeSpotlight()">ESC</kbd>
             </div>
 
             <!-- Spotlight Results List -->
             <div id="spotlightResultsContainer" style="max-height:360px; overflow-y:auto; padding:10px 14px; display:flex; flex-direction:column; gap:6px;">
-                <div style="font-size:0.72rem; text-transform:uppercase; color:var(--text-muted); font-weight:700; padding:6px 8px;">Scorciatoie di Navigazione Rapida</div>
+                <div style="font-size:0.72rem; text-transform:uppercase; color:var(--text-muted); font-weight:700; padding:6px 8px;">{{ t.quick_navigation|default:"Scorciatoie di Navigazione Rapida" }}</div>
                 <a href="?view=calendar" class="spotlight-item" style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-radius:8px; text-decoration:none; color:var(--text-main); background:var(--bg-page);">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span>📅</span> <strong>Calendario Mensile & Scadenze</strong>
+                        <span>📅</span> <strong>{{ t.calendar|default:"Calendario" }}</strong>
                     </div>
-                    <span style="font-size:0.75rem; color:var(--text-muted);">Vai al calendario</span>
+                    <span style="font-size:0.75rem; color:var(--text-muted);">{{ t.my_tasks|default:"Vai al calendario" }}</span>
                 </a>
                 <a href="?view=finance" class="spotlight-item" style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-radius:8px; text-decoration:none; color:var(--text-main); background:var(--bg-page);">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span>💰</span> <strong>Finanze, Budget & Risparmio</strong>
+                        <span>💰</span> <strong>{{ t.finance|default:"Finanze & Budget" }}</strong>
                     </div>
-                    <span style="font-size:0.75rem; color:var(--text-muted);">Vai a finanze</span>
+                    <span style="font-size:0.75rem; color:var(--text-muted);">{{ t.finance|default:"Vai a finanze" }}</span>
                 </a>
                 <a href="?view=wiki" class="spotlight-item" style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-radius:8px; text-decoration:none; color:var(--text-main); background:var(--bg-page);">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span>🧠</span> <strong>Second Brain & Note Wiki</strong>
+                        <span>🧠</span> <strong>{{ t.wiki|default:"Second Brain & Note Wiki" }}</strong>
                     </div>
-                    <span style="font-size:0.75rem; color:var(--text-muted);">Vai alle note</span>
+                    <span style="font-size:0.75rem; color:var(--text-muted);">{{ t.wiki|default:"Vai alle note" }}</span>
                 </a>
                 <a href="?view=ai_solver" class="spotlight-item" style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-radius:8px; text-decoration:none; color:var(--text-main); background:var(--bg-page);">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span>🤖</span> <strong>Risolutore Problemi AI</strong>
+                        <span>🤖</span> <strong>{{ t.ai_solver|default:"Risolutore Problemi AI" }}</strong>
                     </div>
-                    <span style="font-size:0.75rem; color:var(--text-muted);">Apri chat AI</span>
+                    <span style="font-size:0.75rem; color:var(--text-muted);">{{ t.ai_solver|default:"Apri chat AI" }}</span>
                 </a>
                 <a href="?view=soundscapes" class="spotlight-item" style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-radius:8px; text-decoration:none; color:var(--text-main); background:var(--bg-page);">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span>🎧</span> <strong>Oasi Sonora & Mixer Focus</strong>
+                        <span>🎧</span> <strong>{{ t.soundscapes|default:"Oasi Sonora & Mixer Focus" }}</strong>
                     </div>
-                    <span style="font-size:0.75rem; color:var(--text-muted);">Ascolta suoni</span>
+                    <span style="font-size:0.75rem; color:var(--text-muted);">{{ t.soundscapes|default:"Ascolta suoni" }}</span>
                 </a>
                 <a href="?view=pomodoro" class="spotlight-item" style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-radius:8px; text-decoration:none; color:var(--text-main); background:var(--bg-page);">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span>🍅</span> <strong>Focus Timer Pomodoro</strong>
+                        <span>🍅</span> <strong>{{ t.focus_timer|default:"Focus Timer Pomodoro" }}</strong>
                     </div>
-                    <span style="font-size:0.75rem; color:var(--text-muted);">Avvia timer</span>
+                    <span style="font-size:0.75rem; color:var(--text-muted);">{{ t.focus_timer|default:"Avvia timer" }}</span>
                 </a>
             </div>
 
             <!-- Spotlight Footer -->
             <div style="padding:10px 16px; background:var(--bg-page); border-top:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:var(--text-muted);">
-                <span>Premi <kbd>↵</kbd> per selezionare</span>
-                <span>Usa <kbd>Cmd</kbd> + <kbd>K</kbd> per aprire ovunque</span>
+                <span>{{ t.press_enter_to_select|default:"Premi ↵ per selezionare" }}</span>
+                <span>{{ t.cmd_k_to_open|default:"Usa Cmd + K per aprire ovunque" }}</span>
             </div>
         </div>
     </div>
@@ -4679,7 +4681,14 @@
         let breathingInterval = null;
         let breathingPhase = 0; // 0: Inhale, 1: Hold, 2: Exhale, 3: Hold
         let breathingCycles = 0;
-        const breathingPhases = ['Inspira (4s)', 'Trattieni (4s)', 'Espira (4s)', 'Trattieni (4s)'];
+        const breathingPhasesMap = {
+            'en': ['Inhale (4s)', 'Hold (4s)', 'Exhale (4s)', 'Hold (4s)'],
+            'it': ['Inspira (4s)', 'Trattieni (4s)', 'Espira (4s)', 'Trattieni (4s)'],
+            'es': ['Inhala (4s)', 'Mantén (4s)', 'Exhala (4s)', 'Mantén (4s)'],
+            'ja': ['息を吸う (4秒)', '止める (4秒)', '息を吐く (4秒)', '止める (4秒)']
+        };
+        const currentLangCode = '{{ lang_code|default:"en" }}';
+        const breathingPhases = breathingPhasesMap[currentLangCode] || breathingPhasesMap['en'];
 
         function toggleBreathingGuide() {
             const btn = document.getElementById('btnBreathingToggle');
@@ -4690,11 +4699,11 @@
             if (breathingInterval) {
                 clearInterval(breathingInterval);
                 breathingInterval = null;
-                if (btn) btn.innerText = 'Avvia Respirazione ▶️';
+                if (btn) btn.innerText = '{{ t.start_breathing|default:"Start Breathing ▶️" }}';
                 if (orb) orb.style.transform = 'scale(1)';
-                if (phaseText) phaseText.innerText = 'Pronto';
+                if (phaseText) phaseText.innerText = '{{ t.breathing_ready|default:"Ready" }}';
             } else {
-                if (btn) btn.innerText = 'Ferma Respirazione ⏸️';
+                if (btn) btn.innerText = '{{ t.stop_breathing|default:"Stop Breathing ⏸️" }}';
                 breathingPhase = 0;
                 breathingCycles = 0;
 
@@ -4708,7 +4717,7 @@
                     breathingPhase = (breathingPhase + 1) % 4;
                     if (breathingPhase === 0) {
                         breathingCycles++;
-                        if (cycleText) cycleText.innerText = `Cicli: ${breathingCycles}`;
+                        if (cycleText) cycleText.innerText = `{{ t.cycles|default:"Cycles" }}: ${breathingCycles}`;
                     }
                 }
                 stepPhase();
@@ -4724,14 +4733,31 @@
             const dateEl = document.getElementById('liveDateDisplay');
             const greetingText = document.getElementById('liveGreetingText');
             const greetingIcon = document.getElementById('liveGreetingIcon');
+            const activeLang = '{{ lang_code|default:"en" }}';
+
+            const localeMap = {
+                'en': 'en-US',
+                'it': 'it-IT',
+                'es': 'es-ES',
+                'ja': 'ja-JP'
+            };
+            const currentLocale = localeMap[activeLang] || 'en-US';
+
+            const greetingsMap = {
+                'en': { morning: 'Good morning', afternoon: 'Good afternoon', evening: 'Good evening', night: 'Good night' },
+                'it': { morning: 'Buongiorno', afternoon: 'Buon pomeriggio', evening: 'Buonasera', night: 'Buonanotte' },
+                'es': { morning: 'Buenos días', afternoon: 'Buenas tardes', evening: 'Buenas noches', night: 'Buenas noches' },
+                'ja': { morning: 'おはようございます', afternoon: 'こんにちは', evening: 'こんばんは', night: 'おやすみなさい' }
+            };
+            const currentGreetings = greetingsMap[activeLang] || greetingsMap['en'];
 
             function updateTime() {
                 const now = new Date();
                 if (clockEl) {
-                    clockEl.innerText = now.toLocaleTimeString('it-IT', { hour12: false });
+                    clockEl.innerText = now.toLocaleTimeString(currentLocale, { hour12: false });
                 }
                 if (dateEl) {
-                    dateEl.innerText = now.toLocaleDateString('it-IT', {
+                    dateEl.innerText = now.toLocaleDateString(currentLocale, {
                         weekday: 'long',
                         day: 'numeric',
                         month: 'long',
@@ -4741,16 +4767,16 @@
                 const hour = now.getHours();
                 if (greetingText && greetingIcon) {
                     if (hour >= 5 && hour < 12) {
-                        greetingText.innerText = 'Buongiorno';
+                        greetingText.innerText = currentGreetings.morning;
                         greetingIcon.innerText = '☀️';
                     } else if (hour >= 12 && hour < 18) {
-                        greetingText.innerText = 'Buon pomeriggio';
+                        greetingText.innerText = currentGreetings.afternoon;
                         greetingIcon.innerText = '🌤️';
                     } else if (hour >= 18 && hour < 22) {
-                        greetingText.innerText = 'Buonasera';
+                        greetingText.innerText = currentGreetings.evening;
                         greetingIcon.innerText = '🌆';
                     } else {
-                        greetingText.innerText = 'Buonanotte';
+                        greetingText.innerText = currentGreetings.night;
                         greetingIcon.innerText = '🌙';
                     }
                 }
@@ -4767,11 +4793,11 @@
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             const slices = [
-                { label: 'Cibo', percent: 0.32, color: '#ef4444' },
-                { label: 'Trasporti', percent: 0.20, color: '#f59e0b' },
-                { label: 'Casa', percent: 0.25, color: '#3b82f6' },
-                { label: 'Svago', percent: 0.15, color: '#8b5cf6' },
-                { label: 'Salute & Altro', percent: 0.08, color: '#10b981' }
+                { label: '{{ t.food|default:"Food" }}', percent: 0.32, color: '#ef4444' },
+                { label: '{{ t.transport|default:"Transport" }}', percent: 0.20, color: '#f59e0b' },
+                { label: '{{ t.housing|default:"Housing" }}', percent: 0.25, color: '#3b82f6' },
+                { label: '{{ t.entertainment|default:"Leisure" }}', percent: 0.15, color: '#8b5cf6' },
+                { label: '{{ t.health_other|default:"Health" }}', percent: 0.08, color: '#10b981' }
             ];
 
             const centerX = canvas.width / 2;
@@ -4801,20 +4827,42 @@
         function openMysteryChest() {
             const btn = document.getElementById('mysteryChestBtn');
             const todayKey = 'rpg_mystery_chest_' + new Date().toISOString().slice(0, 10);
+            const activeLang = '{{ lang_code|default:"en" }}';
+
+            const alreadyClaimed = {
+                'en': '🎁 You have already opened your fortune chest today! Come back tomorrow.',
+                'it': '🎁 Hai già aperto il tuo baule quotidiano oggi! Torna domani per sbloccare altri tesori.',
+                'es': '🎁 ¡Ya has abierto tu cofre hoy! Vuelve mañana para desbloquear más tesoros.',
+                'ja': '🎁 本日の宝箱はすでに開封済みです！明日またお越しください。'
+            }[activeLang] || '🎁 Already opened today!';
+
             if (localStorage.getItem(todayKey)) {
-                alert('🎁 Hai già aperto il tuo baule quotidiano oggi! Torna domani per sbloccare altri tesori.');
+                alert(alreadyClaimed);
                 return;
             }
 
             localStorage.setItem(todayKey, 'claimed');
             playLevelUpSound();
             if (btn) {
-                btn.innerText = '✓ Baule Aperto (+50 XP, +20 🪙)';
+                const btnOpened = {
+                    'en': '✓ Chest Opened (+50 XP, +20 🪙)',
+                    'it': '✓ Baule Aperto (+50 XP, +20 🪙)',
+                    'es': '✓ Cofre Abierto (+50 XP, +20 🪙)',
+                    'ja': '✓ 宝箱開封済み (+50 XP, +20 🪙)'
+                }[activeLang] || '✓ Chest Opened (+50 XP, +20 🪙)';
+                btn.innerText = btnOpened;
                 btn.style.background = 'rgba(16, 185, 129, 0.2)';
                 btn.style.color = '#34d399';
                 btn.style.border = '1px solid #10b981';
             }
-            alert('🎉 Congratulazioni! Hai aperto lo Scrigno della Fortuna Quotidiano: +50 XP e +20 Monete d\'Oro aggiunti al tuo eroe!');
+
+            const successMsg = {
+                'en': '🎉 Congratulations! You opened the Fortune Chest: +50 XP and +20 Gold Coins added!',
+                'it': '🎉 Congratulazioni! Hai aperto lo Scrigno della Fortuna Quotidiano: +50 XP e +20 Monete d\'Oro aggiunti!',
+                'es': '🎉 ¡Felicidades! Abriste el Cofre de la Fortuna: +50 XP y +20 Monedas de Oro añadidos!',
+                'ja': '🎉 おめでとうございます！幸運の宝箱を開封しました：+50 XP と +20 ゴールドコインを獲得！'
+            }[activeLang] || '🎉 Congratulations! +50 XP and +20 Coins added!';
+            alert(successMsg);
         }
 
         // ==========================================
@@ -4836,9 +4884,9 @@
             localStorage.setItem('taskflow_scratchpad', val);
             const status = document.getElementById('scratchpadSaveStatus');
             if (status) {
-                status.innerText = 'Salvato...';
+                status.innerText = '{{ t.saving|default:"Saving..." }}';
                 setTimeout(() => {
-                    if (status) status.innerText = 'Salvato in memoria';
+                    if (status) status.innerText = '{{ t.saved_in_memory|default:"Saved in memory" }}';
                 }, 800);
             }
         }
@@ -4851,8 +4899,15 @@
             }
             const todayKey = 'rpg_mystery_chest_' + new Date().toISOString().slice(0, 10);
             const chestBtn = document.getElementById('mysteryChestBtn');
+            const activeLang = '{{ lang_code|default:"en" }}';
             if (chestBtn && localStorage.getItem(todayKey)) {
-                chestBtn.innerText = '✓ Baule Già Aperto Oggi';
+                const chestAlreadyText = {
+                    'en': '✓ Chest Already Opened Today',
+                    'it': '✓ Baule Già Aperto Oggi',
+                    'es': '✓ Cofre Ya Abierto Hoy',
+                    'ja': '✓ 本日の宝箱は開封済みです'
+                }[activeLang] || '✓ Chest Opened';
+                chestBtn.innerText = chestAlreadyText;
                 chestBtn.style.opacity = '0.7';
             }
         }
@@ -4862,14 +4917,21 @@
             if (textarea) textarea.value = '';
             localStorage.removeItem('taskflow_scratchpad');
             const status = document.getElementById('scratchpadSaveStatus');
-            if (status) status.innerText = 'Vuoto';
+            if (status) status.innerText = '{{ t.empty|default:"Empty" }}';
         }
 
         function convertScratchpadToTodo() {
             const textarea = document.getElementById('scratchpadTextarea');
             const text = textarea ? textarea.value.trim() : '';
+            const activeLang = '{{ lang_code|default:"en" }}';
             if (!text) {
-                alert('Scrivi qualcosa nel Post-it prima di trasformarlo in To-Do.');
+                const emptyAlert = {
+                    'en': 'Please write something in the note before converting to a task.',
+                    'it': 'Scrivi qualcosa nel Post-it prima di trasformarlo in To-Do.',
+                    'es': 'Escribe algo en la nota antes de convertirla en tarea.',
+                    'ja': 'タスクに変換する前に付箋に何か入力してください。'
+                }[activeLang] || 'Please write something before converting.';
+                alert(emptyAlert);
                 return;
             }
 
@@ -4887,11 +4949,10 @@
                 playLevelUpSound();
                 clearScratchpad();
                 toggleQuickScratchpad();
-                alert(`✓ Creato nuovo compito: "${title}"!`);
                 window.location.reload();
             })
             .catch(err => {
-                alert('Errore durante la creazione del compito dal Post-it.');
+                alert('Error creating task from note.');
             });
         }
 
@@ -4977,13 +5038,13 @@
                 if (permission === 'granted') {
                     playLevelUpSound();
                     new Notification('TaskFlow Quantum ⚡', {
-                        body: 'Perfetto! Notifiche attivate con successo.',
+                        body: '{{ t.notif_granted_body|escapejs }}',
                         icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><text y="20" font-size="20">🔔</text></svg>'
                     });
                     const btn = document.getElementById('btnDesktopNotif');
-                    if (btn) btn.innerText = '🔔 Attive';
+                    if (btn) btn.innerText = '🔔 {{ t.notif_active|escapejs }}';
                 } else {
-                    alert('Permesso per le notifiche non concesso. Puoi abilitarlo dalle impostazioni del browser.');
+                    alert('{{ t.notif_denied|escapejs }}');
                 }
             });
         }
@@ -4995,8 +5056,8 @@
 
             const overdueCount = document.querySelectorAll('.todo-item.overdue, .due-today').length;
             if (overdueCount > 0) {
-                new Notification('Scadenze di Oggi ⚠️', {
-                    body: `Hai ${overdueCount} compiti con scadenza vicina o da completare oggi!`,
+                new Notification('{{ t.deadlines_today_title|escapejs }}', {
+                    body: `(${overdueCount}) {{ t.deadlines_today_body|escapejs }}`,
                     icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><text y="20" font-size="20">⚠️</text></svg>'
                 });
                 sessionStorage.setItem(notifiedKey, 'true');
@@ -5011,7 +5072,7 @@
             checkApproachingDeadlines();
             if ('Notification' in window && Notification.permission === 'granted') {
                 const btn = document.getElementById('btnDesktopNotif');
-                if (btn) btn.innerText = '🔔 Attive';
+                if (btn) btn.innerText = '🔔 {{ t.notif_active|escapejs }}';
             }
         });
     </script>
@@ -5023,24 +5084,24 @@
             <div style="background:linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.05)); padding:10px 14px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(251, 191, 36, 0.2);">
                 <div style="display:flex; align-items:center; gap:8px;">
                     <span>📌</span>
-                    <strong style="font-size:0.85rem; color:#fde047;">Post-it Rapido</strong>
+                    <strong style="font-size:0.85rem; color:#fde047;">{{ t.scratchpad|default:"Post-it" }}</strong>
                 </div>
                 <div style="display:flex; gap:6px;">
-                    <button type="button" onclick="clearScratchpad()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.8rem;" title="Pulisci">🗑️</button>
-                    <button type="button" onclick="toggleQuickScratchpad()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.9rem;" title="Chiudi">✕</button>
+                    <button type="button" onclick="clearScratchpad()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.8rem;" title="{{ t.clear|default:'Clear' }}">🗑️</button>
+                    <button type="button" onclick="toggleQuickScratchpad()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.9rem;" title="{{ t.close|default:'Close' }}">✕</button>
                 </div>
             </div>
             <div style="padding:12px;">
-                <textarea id="scratchpadTextarea" rows="4" placeholder="Annota al volo pensieri, idee o un promemoria (si salva da solo)..." style="width:100%; box-sizing:border-box; padding:8px 10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.85rem; line-height:1.4; resize:vertical; outline:none;" oninput="saveScratchpad(this.value)"></textarea>
+                <textarea id="scratchpadTextarea" rows="4" placeholder="{{ t.scratchpad_placeholder }}" style="width:100%; box-sizing:border-box; padding:8px 10px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-page); color:var(--text-main); font-size:0.85rem; line-height:1.4; resize:vertical; outline:none;" oninput="saveScratchpad(this.value)"></textarea>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-                    <span id="scratchpadSaveStatus" style="font-size:0.72rem; color:var(--text-muted);">Salvato in memoria</span>
-                    <button type="button" class="btn-ui btn-primary" onclick="convertScratchpadToTodo()" style="padding:4px 10px; font-size:0.78rem;">⚡ Trasforma in To-Do</button>
+                    <span id="scratchpadSaveStatus" style="font-size:0.72rem; color:var(--text-muted);">{{ t.saved_in_memory }}</span>
+                    <button type="button" class="btn-ui btn-primary" onclick="convertScratchpadToTodo()" style="padding:4px 10px; font-size:0.78rem;">{{ t.convert_to_todo }}</button>
                 </div>
             </div>
         </div>
 
         <!-- Floating Dock Button -->
-        <button type="button" id="floatingScratchpadBtn" onclick="toggleQuickScratchpad()" style="pointer-events:auto; width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg, #f59e0b, #d97706); border:2px solid rgba(251, 191, 36, 0.8); box-shadow:0 6px 20px rgba(245, 158, 11, 0.4); display:flex; align-items:center; justify-content:center; font-size:1.4rem; cursor:pointer; transition:transform 0.2s ease;" title="Apri Post-it Rapido">
+        <button type="button" id="floatingScratchpadBtn" onclick="toggleQuickScratchpad()" style="pointer-events:auto; width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg, #f59e0b, #d97706); border:2px solid rgba(251, 191, 36, 0.8); box-shadow:0 6px 20px rgba(245, 158, 11, 0.4); display:flex; align-items:center; justify-content:center; font-size:1.4rem; cursor:pointer; transition:transform 0.2s ease;" title="{{ t.open_scratchpad|default:'Post-it' }}">
             📌
         </button>
     </div>

@@ -375,15 +375,37 @@ class TodoTests(TestCase):
         )
 
     def test_set_language_view(self):
+        # Italian
         self.client.get(reverse("set_language", args=["it"]))
         self.assertEqual(self.client.session.get("django_language"), "it")
-        res_page = self.client.get(reverse("todo_list"))
-        self.assertContains(res_page, "I Miei Compiti")
+        res_it = self.client.get(reverse("todo_list"))
+        self.assertContains(res_it, "I Miei Compiti")
+        res_welcome_it = self.client.get(reverse("welcome"))
+        self.assertContains(res_welcome_it, "Entra nell'Applicazione")
 
+        # English
         self.client.get(reverse("set_language", args=["en"]))
         self.assertEqual(self.client.session.get("django_language"), "en")
-        res_page_en = self.client.get(reverse("todo_list"))
-        self.assertContains(res_page_en, "My Tasks")
+        res_en = self.client.get(reverse("todo_list"))
+        self.assertContains(res_en, "My Tasks")
+        res_welcome_en = self.client.get(reverse("welcome"))
+        self.assertContains(res_welcome_en, "Start Application")
+
+        # Spanish
+        self.client.get(reverse("set_language", args=["es"]))
+        self.assertEqual(self.client.session.get("django_language"), "es")
+        res_es = self.client.get(reverse("todo_list"))
+        self.assertContains(res_es, "Mis Tareas")
+        res_welcome_es = self.client.get(reverse("welcome"))
+        self.assertContains(res_welcome_es, "Entrar a la Aplicación")
+
+        # Japanese
+        self.client.get(reverse("set_language", args=["ja"]))
+        self.assertEqual(self.client.session.get("django_language"), "ja")
+        res_ja = self.client.get(reverse("todo_list"))
+        self.assertContains(res_ja, "マイタスク")
+        res_welcome_ja = self.client.get(reverse("welcome"))
+        self.assertContains(res_welcome_ja, "アプリを起動")
 
     def test_todo_favorite(self):
         todo = Todo.objects.create(title="VIP Task", is_favorite=False)
@@ -876,3 +898,39 @@ class TodoTests(TestCase):
         signup_res = self.client.get(reverse("signup"))
         self.assertEqual(signup_res.status_code, 200)
         self.assertTemplateUsed(signup_res, "registration/signup.html")
+
+    def test_api_ai_solve_multilingual(self):
+        # Spanish
+        self.client.get(reverse("set_language", args=["es"]))
+        res_es = self.client.post(
+            reverse("api_ai_solve"),
+            data=json.dumps({"problem": "tengo problemas de gastos y finanzas"}),
+            content_type="application/json",
+        )
+        self.assertEqual(res_es.status_code, 200)
+        data_es = res_es.json()
+        self.assertIn("gastos", data_es["diagnosis"].lower())
+
+        # Japanese
+        self.client.get(reverse("set_language", args=["ja"]))
+        res_ja = self.client.post(
+            reverse("api_ai_solve"),
+            data=json.dumps({"problem": "仕事の先延ばしをやめたい"}),
+            content_type="application/json",
+        )
+        self.assertEqual(res_ja.status_code, 200)
+        data_ja = res_ja.json()
+        self.assertIn("先延ばし", data_ja["diagnosis"])
+
+    def test_auth_pages_multilingual(self):
+        self.client.get(reverse("set_language", args=["es"]))
+        res_login_es = self.client.get(reverse("login"))
+        self.assertContains(res_login_es, "Iniciar Sesión")
+        res_signup_es = self.client.get(reverse("signup"))
+        self.assertContains(res_signup_es, "Crea tu Cuenta")
+
+        self.client.get(reverse("set_language", args=["ja"]))
+        res_login_ja = self.client.get(reverse("login"))
+        self.assertContains(res_login_ja, "ワークスペースにログイン")
+        res_signup_ja = self.client.get(reverse("signup"))
+        self.assertContains(res_signup_ja, "アカウントを作成")

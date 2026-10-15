@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="it">
+<html lang="{{ lang_code|default:'en' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Accedi — TaskFlow Quantum</title>
+    <title>{{ t.auth_login_title }} — {{ t.brand }}</title>
     <link rel="icon" href="data:,">
     <style>
         :root {
@@ -161,38 +161,66 @@
             margin-bottom: 1.25rem;
             text-align: left;
         }
+
+        .lang-picker {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+        }
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .lang-btn.active, .lang-btn:hover {
+            background: rgba(168, 85, 247, 0.2);
+            border-color: #a855f7;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
     <div class="auth-card">
+        <div class="lang-picker">
+            <a href="{% url 'set_language' 'en' %}" class="lang-btn {% if lang_code == 'en' %}active{% endif %}">🇬🇧 EN</a>
+            <a href="{% url 'set_language' 'it' %}" class="lang-btn {% if lang_code == 'it' %}active{% endif %}">🇮🇹 IT</a>
+            <a href="{% url 'set_language' 'es' %}" class="lang-btn {% if lang_code == 'es' %}active{% endif %}">🇪🇸 ES</a>
+            <a href="{% url 'set_language' 'ja' %}" class="lang-btn {% if lang_code == 'ja' %}active{% endif %}">🇯🇵 JA</a>
+        </div>
         <div class="brand-icon">⚡</div>
-        <h1>Accedi al Tuo Spazio</h1>
-        <p class="subtitle">Bentornato! Inserisci le tue credenziali per accedere ai tuoi compiti, finanze e note personali.</p>
+        <h1>{{ t.auth_login_title }}</h1>
+        <p class="subtitle">{{ t.auth_login_subtitle }}</p>
 
         {% if form.errors %}
             <div class="error-banner">
-                <strong>Attenzione:</strong> Nome utente o password non corretti. Riprova.
+                <strong>{{ t.auth_error_title }}</strong> {{ t.auth_login_error }}
             </div>
         {% endif %}
 
         <form method="post" action="{% url 'login' %}">
             {% csrf_token %}
             <div class="form-group">
-                <label for="id_username">Nome Utente:</label>
-                <input type="text" name="username" autofocus required id="id_username" placeholder="Inserisci il tuo username">
+                <label for="id_username">{{ t.auth_username }}</label>
+                <input type="text" name="username" autofocus required id="id_username">
             </div>
 
             <div class="form-group">
-                <label for="id_password">Password:</label>
-                <input type="password" name="password" required id="id_password" placeholder="Inserisci la password">
+                <label for="id_password">{{ t.auth_password }}</label>
+                <input type="password" name="password" required id="id_password">
             </div>
 
-            <button type="submit" class="btn-submit">Accedi 🚀</button>
+            <button type="submit" class="btn-submit">{{ t.auth_login_btn }}</button>
         </form>
 
         <div class="links-area">
-            <div>Non hai ancora un account? <a href="{% url 'signup' %}">Registrati gratis qui</a></div>
-            <div><a href="/">← Torna alla Home Page</a> • <a href="{% url 'todo_list' %}">Entra come Ospite</a></div>
+            <div>{{ t.auth_no_account }} <a href="{% url 'signup' %}">{{ t.auth_register_link }}</a></div>
+            <div><a href="/">← {{ t.auth_home_link }}</a> • <a href="{% url 'todo_list' %}">{{ t.auth_guest_link }}</a></div>
         </div>
     </div>
 </body>
