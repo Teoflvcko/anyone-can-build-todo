@@ -5,6 +5,26 @@ from django.db import models
 from django.utils import timezone
 
 
+class Project(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="projects",
+    )
+    name = models.CharField(max_length=100)
+    icon = models.CharField(max_length=10, default="📁")
+    color = models.CharField(max_length=20, default="#a855f7")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return f"{self.icon} {self.name}"
+
+
 class Todo(models.Model):
     PRIORITY_CHOICES = [
         ("low", "Low"),
@@ -67,8 +87,16 @@ class Todo(models.Model):
         default="medium",
     )
     tags = models.CharField(max_length=200, blank=True, default="")
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="todos",
+    )
     due_date = models.DateField(null=True, blank=True)
     estimated_minutes = models.PositiveIntegerField(default=0, blank=True)
+    actual_minutes = models.PositiveIntegerField(default=0, blank=True)
     is_pinned = models.BooleanField(default=False)
     is_favorite = models.BooleanField(default=False)
     is_archived = models.BooleanField(default=False)
@@ -130,6 +158,17 @@ class Todo(models.Model):
             return f"{self.estimated_minutes}m"
         hours = self.estimated_minutes // 60
         mins = self.estimated_minutes % 60
+        return f"{hours}h {mins}m" if mins else f"{hours}h"
+
+    @property
+    def formatted_actual_duration(self):
+        """Format actual tracked minutes into human-readable duration."""
+        if not self.actual_minutes:
+            return ""
+        if self.actual_minutes < 60:
+            return f"{self.actual_minutes}m"
+        hours = self.actual_minutes // 60
+        mins = self.actual_minutes % 60
         return f"{hours}h {mins}m" if mins else f"{hours}h"
 
     @property
@@ -241,3 +280,46 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.user.username}: {self.message}"
+
+
+class Habit(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="habits",
+    )
+    name = models.CharField(max_length=150)
+    streak_count = models.PositiveIntegerField(default=0)
+    last_completed_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-streak_count", "name"]
+
+    def __str__(self):
+        return f"{self.name} (🔥 {self.streak_count})"
+
+    def is_completed_today(self):
+        return self.last_completed_date == timezone.localdate()
+
+
+class HabitLog(models.Model):
+    habit = models.ForeignKey(
+        Habit,
+        on_delete=models.CASCADE,
+        related_name="logs",
+    )
+    date = models.DateField(default=timezone.localdate)
+
+    class Meta:
+        ordering = ["-date"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["habit", "date"], name="unique_habit_log_per_day"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.habit.name} - {self.date}"

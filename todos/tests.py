@@ -7,7 +7,15 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import Notification, TaskComment, Todo
+from .models import (
+    Habit,
+    HabitLog,
+    Notification,
+    Project,
+    SubTask,
+    TaskComment,
+    Todo,
+)
 
 User = get_user_model()
 
@@ -525,3 +533,110 @@ class TodoTests(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertContains(res, "TaskFlow Quantum")
         self.assertContains(res, "Start Application")
+
+    def test_time_tracking_and_log(self):
+        todo = Todo.objects.create(title="Tracked Task", estimated_minutes=60)
+        # Form POST logging 25 minutes
+        res1 = self.client.post(
+            reverse("todo_time_log", args=[todo.pk]),
+            {"minutes": "25"},
+        )
+        self.assertEqual(res1.status_code, 302)
+        todo.refresh_from_db()
+        self.assertEqual(todo.actual_minutes, 25)
+        self.assertEqual(todo.formatted_actual_duration, "25m")
+
+        # JSON AJAX POST logging 15 minutes
+        res2 = self.client.post(
+            reverse("todo_time_log", args=[todo.pk]),
+            data=json.dumps({"minutes": 15}),
+            content_type="application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(res2.status_code, 200)
+        data = res2.json()
+        self.assertEqual(data["actual_minutes"], 40)
+        todo.refresh_from_db()
+        self.assertEqual(todo.actual_minutes, 40)
+
+    def test_smart_breakdown_ai(self):
+        todo = Todo.objects.create(title="Esame di Matematica e studio approfondito")
+        res = self.client.post(reverse("todo_smart_breakdown", args=[todo.pk]))
+        self.assertEqual(res.status_code, 302)
+        subtasks = SubTask.objects.filter(todo=todo)
+        self.assertGreaterEqual(subtasks.count(), 3)
+        self.assertTrue(
+            subtasks.filter(title__icontains="appunti").exists()
+            or subtasks.filter(title__icontains="schema").exists()
+        )
+
+    def test_project_crud_and_filter(self):
+        # Create Project
+        res = self.client.post(
+            reverse("project_add"),
+            {"name": "Frontend Redesign", "icon": "🎨", "color": "#ec4899"},
+        )
+        self.assertEqual(res.status_code, 302)
+        project = Project.objects.get(name="Frontend Redesign")
+        self.assertEqual(project.icon, "🎨")
+        self.assertEqual(project.color, "#ec4899")
+
+        # Create Task with Project
+        self.client.post(
+            reverse("todo_add"),
+            {"title": "Build UI Components", "project": str(project.id)},
+        )
+        task = Todo.objects.get(title="Build UI Components")
+        self.assertEqual(task.project, project)
+
+        # Filter by Project in List View
+        res_list = self.client.get(reverse("todo_list") + f"?project={project.id}")
+        self.assertEqual(res_list.status_code, 200)
+        self.assertContains(res_list, "Build UI Components")
+
+        # Delete Project
+        del_res = self.client.post(reverse("project_delete", args=[project.pk]))
+        self.assertEqual(del_res.status_code, 302)
+        self.assertEqual(Project.objects.filter(pk=project.pk).count(), 0)
+        task.refresh_from_db()
+        self.assertIsNone(task.project)
+
+    def test_habit_creation_streak_and_toggle(self):
+        # Create habit
+        res_add = self.client.post(
+            reverse("habit_add"),
+            {"name": "Morning Meditation"},
+        )
+        self.assertEqual(res_add.status_code, 302)
+        habit = Habit.objects.get(name="Morning Meditation")
+        self.assertEqual(habit.streak_count, 0)
+
+        # Toggle habit today -> streak becomes 1
+        res_toggle = self.client.post(reverse("habit_toggle", args=[habit.pk]))
+        self.assertEqual(res_toggle.status_code, 302)
+        habit.refresh_from_db()
+        self.assertEqual(habit.streak_count, 1)
+        self.assertTrue(habit.is_completed_today())
+        self.assertEqual(
+            HabitLog.objects.filter(habit=habit, date=timezone.localdate()).count(),
+            1,
+        )
+
+        # Toggle again today -> untoggle
+        self.client.post(reverse("habit_toggle", args=[habit.pk]))
+        habit.refresh_from_db()
+        self.assertEqual(habit.streak_count, 0)
+        self.assertFalse(habit.is_completed_today())
+
+        # Delete habit
+        self.client.post(reverse("habit_delete", args=[habit.pk]))
+        self.assertEqual(Habit.objects.filter(pk=habit.pk).count(), 0)
+
+    def test_timeline_and_habits_views_load(self):
+        res_timeline = self.client.get(reverse("todo_list") + "?view=timeline")
+        self.assertEqual(res_timeline.status_code, 200)
+        self.assertContains(res_timeline, "Timeline Gantt")
+
+        res_habits = self.client.get(reverse("todo_list") + "?view=habits")
+        self.assertEqual(res_habits.status_code, 200)
+        self.assertContains(res_habits, "Habits &amp; Streaks")

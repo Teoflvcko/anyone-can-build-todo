@@ -60,6 +60,229 @@
             --pinned-border: rgba(192, 132, 252, 0.55);
         }
 
+        [data-palette="cyberpunk"] {
+            --bg-page: #020904;
+            --bg-gradient: radial-gradient(ellipse at 15% 0%, rgba(16, 185, 129, 0.25) 0%, transparent 55%),
+                           radial-gradient(ellipse at 85% 100%, rgba(34, 197, 94, 0.18) 0%, transparent 55%),
+                           #020904;
+            --sidebar-bg: #010603;
+            --sidebar-text: #6ee7b7;
+            --sidebar-active-bg: rgba(16, 185, 129, 0.24);
+            --sidebar-border: rgba(16, 185, 129, 0.22);
+            --card-bg: rgba(5, 20, 12, 0.85);
+            --card-border: rgba(16, 185, 129, 0.28);
+            --text-main: #ecfdf5;
+            --text-muted: #6ee7b7;
+            --border-color: rgba(16, 185, 129, 0.25);
+            --primary: #10b981;
+            --primary-gradient: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+            --primary-hover: #059669;
+            --primary-glow: 0 0 25px rgba(16, 185, 129, 0.5);
+            --primary-subtle: rgba(16, 185, 129, 0.18);
+            --task-bg: rgba(4, 18, 10, 0.88);
+            --task-hover: rgba(8, 28, 16, 0.95);
+            --pinned-bg: rgba(6, 36, 18, 0.7);
+            --pinned-border: rgba(52, 211, 153, 0.5);
+        }
+
+        [data-palette="emerald"] {
+            --bg-page: #030f14;
+            --bg-gradient: radial-gradient(ellipse at 15% 0%, rgba(20, 184, 166, 0.25) 0%, transparent 55%),
+                           radial-gradient(ellipse at 85% 100%, rgba(56, 189, 248, 0.18) 0%, transparent 55%),
+                           #030f14;
+            --sidebar-bg: #020a0e;
+            --sidebar-text: #5eead4;
+            --sidebar-active-bg: rgba(20, 184, 166, 0.24);
+            --sidebar-border: rgba(20, 184, 166, 0.22);
+            --card-bg: rgba(6, 25, 33, 0.85);
+            --card-border: rgba(20, 184, 166, 0.28);
+            --text-main: #f0fdfa;
+            --text-muted: #5eead4;
+            --border-color: rgba(20, 184, 166, 0.25);
+            --primary: #14b8a6;
+            --primary-gradient: linear-gradient(135deg, #0d9488 0%, #14b8a6 50%, #38bdf8 100%);
+            --primary-hover: #0d9488;
+            --primary-glow: 0 0 25px rgba(20, 184, 166, 0.5);
+            --primary-subtle: rgba(20, 184, 166, 0.18);
+            --task-bg: rgba(5, 20, 28, 0.88);
+            --task-hover: rgba(8, 30, 42, 0.95);
+            --pinned-bg: rgba(8, 38, 48, 0.7);
+            --pinned-border: rgba(45, 212, 191, 0.5);
+        }
+
+        [data-palette="solar"] {
+            --bg-page: #100604;
+            --bg-gradient: radial-gradient(ellipse at 15% 0%, rgba(249, 115, 22, 0.25) 0%, transparent 55%),
+                           radial-gradient(ellipse at 85% 100%, rgba(234, 179, 8, 0.18) 0%, transparent 55%),
+                           #100604;
+            --sidebar-bg: #0c0402;
+            --sidebar-text: #fdba74;
+            --sidebar-active-bg: rgba(249, 115, 22, 0.24);
+            --sidebar-border: rgba(249, 115, 22, 0.22);
+            --card-bg: rgba(28, 12, 8, 0.85);
+            --card-border: rgba(249, 115, 22, 0.28);
+            --text-main: #fff7ed;
+            --text-muted: #fdba74;
+            --border-color: rgba(249, 115, 22, 0.25);
+            --primary: #f97316;
+            --primary-gradient: linear-gradient(135deg, #ea580c 0%, #f97316 50%, #eab308 100%);
+            --primary-hover: #ea580c;
+            --primary-glow: 0 0 25px rgba(249, 115, 22, 0.5);
+            --primary-subtle: rgba(249, 115, 22, 0.18);
+            --task-bg: rgba(24, 10, 6, 0.88);
+            --task-hover: rgba(36, 16, 10, 0.95);
+            --pinned-bg: rgba(46, 18, 10, 0.7);
+            --pinned-border: rgba(251, 146, 60, 0.5);
+        }
+
+        /* Timeline Gantt View */
+        .timeline-wrapper {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            overflow-x: auto;
+            backdrop-filter: blur(12px);
+        }
+        .timeline-header-grid {
+            display: grid;
+            grid-template-columns: 240px repeat(14, minmax(48px, 1fr));
+            gap: 4px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.75rem;
+            text-align: center;
+        }
+        .timeline-header-cell {
+            padding: 6px 2px;
+            border-radius: 6px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        .timeline-header-cell.today {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: var(--primary-glow);
+        }
+        .timeline-row-item {
+            display: grid;
+            grid-template-columns: 240px repeat(14, minmax(48px, 1fr));
+            gap: 4px;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .timeline-bar-pill {
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.76rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+        .timeline-bar-pill:hover {
+            transform: scale(1.05);
+        }
+
+        /* Habit Tracker Heat Map */
+        .habit-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            backdrop-filter: blur(10px);
+        }
+        .habit-heat-grid {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            overflow-x: auto;
+            padding: 4px 0;
+        }
+        .habit-cell {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        .habit-cell.done {
+            background: var(--primary);
+            border-color: #c084fc;
+            box-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
+        }
+        .habit-cell.today-ring {
+            outline: 2px solid #38bdf8;
+            outline-offset: 1px;
+        }
+
+        /* Zen Focus Overlay */
+        .zen-overlay {
+            position: fixed;
+            inset: 0;
+            background: #040208;
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: #ffffff;
+            text-align: center;
+        }
+        .zen-overlay.active { display: flex; }
+        .zen-breathing-ring {
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%);
+            border: 2px solid rgba(168, 85, 247, 0.25);
+            animation: zenBreathe 8s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes zenBreathe {
+            0%, 100% { transform: scale(0.9); opacity: 0.4; }
+            50% { transform: scale(1.35); opacity: 0.85; filter: drop-shadow(0 0 35px rgba(168,85,247,0.4)); }
+        }
+        .zen-timer-digits {
+            font-size: 3.5rem;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.03em;
+            margin: 1.5rem 0;
+            background: linear-gradient(135deg, #ffffff, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Markdown styling */
+        .markdown-rendered h1, .markdown-rendered h2, .markdown-rendered h3 {
+            margin: 4px 0;
+            color: #f3e8ff;
+        }
+        .markdown-rendered code {
+            background: rgba(255,255,255,0.12);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+        .markdown-rendered ul {
+            padding-left: 20px;
+            margin: 4px 0;
+        }
+
         * { box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
@@ -670,6 +893,8 @@
         <nav class="sidebar-nav">
             <a href="{% url 'welcome' %}" class="nav-item">🏠 {{ t.welcome_intro|default:"Welcome Page" }}</a>
             <a href="?view=list" class="nav-item {% if active_view == 'list' %}active{% endif %}">📋 {{ t.my_tasks|default:"My Tasks" }}</a>
+            <a href="?view=timeline" class="nav-item {% if active_view == 'timeline' %}active{% endif %}">📅 {{ t.timeline|default:"Timeline Gantt" }}</a>
+            <a href="?view=habits" class="nav-item {% if active_view == 'habits' %}active{% endif %}">🔥 {{ t.habits|default:"Habits & Streaks" }}</a>
             <a href="?view=kanban" class="nav-item {% if active_view == 'kanban' %}active{% endif %}">📊 {{ t.kanban|default:"Kanban Board" }}</a>
             <a href="?view=calendar" class="nav-item {% if active_view == 'calendar' %}active{% endif %}">📅 {{ t.calendar|default:"Calendar" }}</a>
             <a href="?view=matrix" class="nav-item {% if active_view == 'matrix' %}active{% endif %}">🎯 {{ t.eisenhower|default:"Eisenhower Matrix" }}</a>
@@ -680,7 +905,37 @@
             <a href="?view=social" class="nav-item {% if active_view == 'social' %}active{% endif %}">👥 {{ t.social|default:"Social Hub" }}</a>
             <a href="?view=events" class="nav-item {% if active_view == 'events' %}active{% endif %}">📅 {{ t.collab_events|default:"Collab Events" }}</a>
         </nav>
+        <div style="margin-top:1.25rem; border-top:1px solid var(--sidebar-border); padding-top:0.75rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:0 4px;">
+                <span style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700;">📁 {{ t.projects|default:"Projects" }}</span>
+                <button type="button" onclick="openNewProjectModal()" class="btn-ui" style="padding:2px 7px; font-size:0.75rem; border-radius:6px;" title="New Project">+</button>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:3px; max-height:160px; overflow-y:auto;">
+                <a href="?view=list" class="nav-item {% if not current_project %}active{% endif %}" style="padding:6px 8px; font-size:0.8rem;">
+                    <span>📁 Tutti i progetti</span>
+                </a>
+                {% for p in projects %}
+                    <div style="display:flex; align-items:center; justify-content:space-between; border-radius:8px; {% if current_project == p.id|stringformat:'i' %}background:var(--sidebar-active-bg);{% endif %}">
+                        <a href="?view=list&project={{ p.id }}" class="nav-item {% if current_project == p.id|stringformat:'i' %}active{% endif %}" style="padding:6px 8px; font-size:0.8rem; flex:1; text-decoration:none; color:inherit;">
+                            <span>{{ p.icon }} {{ p.name }}</span>
+                            <span class="badge-pill" style="font-size:0.65rem; padding:1px 5px; border-color:{{ p.color }}; color:{{ p.color }};">{{ p.todos.count }}</span>
+                        </a>
+                        <form method="post" action="{% url 'project_delete' p.id %}" style="margin:0; padding-right:6px;" onsubmit="return confirm('Eliminare questo progetto?');">
+                            {% csrf_token %}
+                            <button type="submit" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.85rem;" title="Elimina progetto">✕</button>
+                        </form>
+                    </div>
+                {% empty %}
+                    <div style="font-size:0.75rem; color:var(--text-muted); padding:4px 8px;">Nessun progetto</div>
+                {% endfor %}
+            </div>
+        </div>
         <div class="sidebar-footer">
+            <div style="display:flex; gap:5px; margin-bottom:6px;">
+                <button class="btn-ui" onclick="openStudioModal()" style="flex:1; justify-content:center; font-size:0.78rem;" title="Theme & Sound Studio">🎨 Studio</button>
+                <button class="btn-ui" onclick="openStandupModal()" style="flex:1; justify-content:center; font-size:0.78rem;" title="Daily Standup AI">📋 Standup</button>
+                <button class="btn-ui" onclick="openZenMode()" style="padding:7px 10px;" title="Zen Focus Mode">🧘</button>
+            </div>
             <div style="display:flex; gap:6px;">
                 <button class="btn-ui" id="themeBtn" style="flex:1; justify-content:center;">🌓 Theme</button>
                 <button class="btn-ui" id="soundToggleBtn" onclick="toggleSound()" style="padding:7px 10px;" title="Toggle Audio Chimes">🔊</button>
@@ -708,7 +963,124 @@
             {% endfor %}
         {% endif %}
 
-        {% if active_view == 'kanban' %}
+        {% if active_view == 'timeline' %}
+            <!-- TIMELINE GANTT VIEW -->
+            <div class="main-header">
+                <div>
+                    <h1 style="margin:0; font-size:1.6rem;">📅 {{ t.timeline|default:"Timeline Gantt View" }}</h1>
+                    <p style="margin:4px 0 0; color:var(--text-muted); font-size:0.9rem;">Visualizza le scadenze e pianifica i carichi di lavoro su una timeline interattiva a 14 giorni.</p>
+                </div>
+                <a href="?view=list" class="btn-ui">← {{ t.my_tasks|default:"Back to List" }}</a>
+            </div>
+
+            <div class="timeline-wrapper">
+                <div class="timeline-header-grid">
+                    <div style="text-align:left; font-weight:700; color:var(--text-main); padding:6px 8px;">Compito & Progetto</div>
+                    {% for day in timeline_days %}
+                        <div class="timeline-header-cell {% if day.is_today %}today{% endif %}">
+                            <div>{{ day.weekday }}</div>
+                            <div style="font-size:0.95rem; font-weight:700;">{{ day.day_num }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div style="display:flex; flex-direction:column;">
+                    {% for item in timeline_tasks %}
+                        <div class="timeline-row-item">
+                            <div style="display:flex; flex-direction:column; gap:2px; padding-right:12px;">
+                                <strong style="font-size:0.88rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ item.todo.title }}</strong>
+                                <div style="display:flex; gap:4px; align-items:center;">
+                                    {% if item.todo.project %}
+                                        <span class="badge-pill" style="font-size:0.65rem; padding:1px 5px; border-color:{{ item.todo.project.color }}; color:{{ item.todo.project.color }};">{{ item.todo.project.icon }} {{ item.todo.project.name }}</span>
+                                    {% endif %}
+                                    <span class="badge-pill" style="font-size:0.65rem; padding:1px 5px;">{{ item.todo.priority|title }}</span>
+                                    {% if item.todo.estimated_minutes %}<span class="badge-pill" style="font-size:0.65rem; padding:1px 5px;">⏱️ {{ item.todo.formatted_duration }}</span>{% endif %}
+                                </div>
+                            </div>
+                            <div style="grid-column: {{ item.offset|add:2 }} / span 2;">
+                                <div class="timeline-bar-pill" onclick="openZenForTask('{{ item.todo.title|escapejs }}', '{{ item.todo.description|escapejs }}', {{ item.todo.id }})" style="background:{% if item.is_overdue %}rgba(244,63,94,0.3); border:1px solid #f43f5e; color:#fecdd3;{% elif item.is_today %}rgba(168,85,247,0.3); border:1px solid #a855f7; color:#f3e8ff;{% else %}rgba(56,189,248,0.25); border:1px solid #38bdf8; color:#e0f2fe;{% endif %}" title="{{ item.todo.title }} (Scadenza: {{ item.todo.due_date|date:'d M' }})">
+                                    {% if item.is_overdue %}⚠️{% elif item.is_today %}🔥{% else %}📌{% endif %} {{ item.todo.title }}
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div style="text-align:center; padding:3rem 1rem; color:var(--text-muted);">
+                            <div style="font-size:2.5rem; margin-bottom:8px;">📅</div>
+                            <h3>Nessun compito con scadenza nella finestra attuale</h3>
+                            <p style="margin:0; font-size:0.9rem;">Assegna una data di scadenza ai tuoi compiti per vederli scorrere lungo la timeline Gantt.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        {% elif active_view == 'habits' %}
+            <!-- HABITS TRACKER VIEW -->
+            <div class="main-header">
+                <div>
+                    <h1 style="margin:0; font-size:1.6rem;">🔥 {{ t.habits|default:"Habits & Streaks Tracker" }}</h1>
+                    <p style="margin:4px 0 0; color:var(--text-muted); font-size:0.9rem;">Costruisci costanza quotidiana, tieni accesa la fiamma della serie e analizza gli ultimi 30 giorni.</p>
+                </div>
+                <a href="?view=list" class="btn-ui">← {{ t.my_tasks|default:"Back to List" }}</a>
+            </div>
+
+            <!-- New Habit Form -->
+            <div class="panel-card" style="margin-bottom:1.5rem;">
+                <form method="post" action="{% url 'habit_add' %}" style="display:flex; gap:8px;">
+                    {% csrf_token %}
+                    <input name="name" placeholder="Aggiungi una nuova abitudine (es. Meditazione 10m, Lettura 20 pagine, Esercizio fisico...)" required style="flex:1; padding:10px 14px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.95rem;">
+                    <button type="submit" class="btn-ui btn-primary" style="padding:10px 18px;">Crea Abitudine +</button>
+                </form>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                {% for item in habits_data %}
+                    <div class="habit-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <div>
+                                <strong style="font-size:1.1rem; color:var(--text-main);">{{ item.habit.name }}</strong>
+                                <div style="display:flex; gap:8px; align-items:center; margin-top:4px;">
+                                    <span class="badge-pill" style="background:rgba(249,115,22,0.18); border:1px solid rgba(249,115,22,0.35); color:#fdba74; font-weight:700;">
+                                        🔥 Serie: {{ item.habit.streak_count }} giorn{{ item.habit.streak_count|pluralize:"o,i" }}
+                                    </span>
+                                    <span class="badge-pill" style="font-size:0.75rem;">
+                                        Tasso 30gg: {{ item.completion_rate }}% ({{ item.completed_30 }}/30)
+                                    </span>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <form method="post" action="{% url 'habit_toggle' item.habit.pk %}" style="margin:0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-ui {% if item.is_done_today %}btn-primary{% endif %}" onclick="playChimeSound()" style="padding:6px 14px; font-weight:600;">
+                                        {% if item.is_done_today %}✓ Completato Oggi{% else %}○ Segna per Oggi{% endif %}
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'habit_delete' item.habit.pk %}" style="margin:0;" onsubmit="return confirm('Eliminare questa abitudine?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-ui" style="color:var(--priority-high); padding:6px 10px;" title="Elimina abitudine">✕</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- 30-Day Contribution Heat Map -->
+                        <div>
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; font-weight:600;">Ultimi 30 giorni di costanza:</div>
+                            <div class="habit-heat-grid">
+                                {% for day in item.history %}
+                                    <div class="habit-cell {% if day.done %}done{% endif %} {% if day.is_today %}today-ring{% endif %}" title="{{ day.date }}: {% if day.done %}Completato ✓{% else %}Non completato{% endif %}"></div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="panel-card" style="text-align:center; padding:3rem 1rem; color:var(--text-muted);">
+                        <div style="font-size:2.5rem; margin-bottom:8px;">🔥</div>
+                        <h3>Nessuna abitudine registrata</h3>
+                        <p style="margin:0; font-size:0.9rem;">Crea la tua prima abitudine qui sopra per iniziare a tracciare la tua costanza quotidiana.</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+        {% elif active_view == 'kanban' %}
             <!-- KANBAN BOARD VIEW -->
             <div class="main-header">
                 <div>
@@ -1327,6 +1699,12 @@
                         <button type="submit" class="btn-ui btn-primary">{{ t.add_task|default:"Add Task" }}</button>
                     </div>
                     <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                        <select name="project" style="padding:6px 10px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main); font-size:0.85rem;">
+                            <option value="">📁 Progetto...</option>
+                            {% for p in projects %}
+                                <option value="{{ p.id }}" {% if current_project == p.id|stringformat:'i' %}selected{% endif %}>{{ p.icon }} {{ p.name }}</option>
+                            {% endfor %}
+                        </select>
                         <input name="tags" id="taskTagsInput" placeholder="Tags (e.g. #design, #bug)" style="flex:1; min-width:180px; padding:6px 10px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main); font-size:0.85rem;">
                         <select name="recurrence" style="padding:6px 10px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-page); color:var(--text-main); font-size:0.85rem;">
                             <option value="none" selected>🔁 Once</option>
@@ -1412,11 +1790,17 @@
                         </form>
                         <div style="flex:1;">
                             <span class="task-title">{{ todo.title }}</span>
-                            {% if todo.description %}<div style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">{{ todo.description }}</div>{% endif %}
+                            {% if todo.description %}
+                                <div class="markdown-rendered" style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">{{ todo.description }}</div>
+                            {% endif %}
                             <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; align-items:center;">
                                 {% if todo.is_favorite %}<span class="badge-pill" style="background:#fef9c3; color:#a16207;">★ Starred</span>{% endif %}
                                 {% if todo.is_pinned %}<span class="badge-pill" style="background:#fef08a; color:#854d0e;">📌 {{ t.pinned|default:"Pinned" }}</span>{% endif %}
-                                {% if todo.category %}<span class="badge-pill">📁 {{ todo.category }}</span>{% endif %}
+                                {% if todo.project %}
+                                    <span class="badge-pill" style="border-color:{{ todo.project.color }}; color:{{ todo.project.color }}; font-weight:700;">{{ todo.project.icon }} {{ todo.project.name }}</span>
+                                {% elif todo.category %}
+                                    <span class="badge-pill">📁 {{ todo.category }}</span>
+                                {% endif %}
                                 {% for tg in todo.tag_list %}
                                     <a href="?view=list&tag={{ tg }}" class="badge-pill" style="background:rgba(59,130,246,0.08); color:var(--primary); text-decoration:none;">#{{ tg }}</a>
                                 {% endfor %}
@@ -1425,7 +1809,11 @@
                                         ⏰ {{ todo.relative_deadline_display }}
                                     </span>
                                 {% endif %}
-                                {% if todo.estimated_minutes %}<span class="badge-pill">⏱️ {{ todo.formatted_duration }}</span>{% endif %}
+                                {% if todo.actual_minutes or todo.estimated_minutes %}
+                                    <span class="badge-pill" style="background:rgba(147,51,234,0.18); border:1px solid rgba(168,85,247,0.3); font-weight:600;">
+                                        ⏱️ Eff: <strong id="actual-time-{{ todo.id }}">{% if todo.actual_minutes %}{{ todo.formatted_actual_duration }}{% else %}0m{% endif %}</strong> / Est: {% if todo.estimated_minutes %}{{ todo.formatted_duration }}{% else %}—{% endif %}
+                                    </span>
+                                {% endif %}
                                 {% if todo.due_date %}<span class="badge-pill">📅 {{ todo.due_date|date:"M j" }}</span>{% endif %}
                                 {% if todo.recurrence != 'none' %}<span class="badge-pill">🔁 {{ todo.recurrence|title }}</span>{% endif %}
                                 {% if todo.energy_level %}<span class="badge-pill">⚡ {{ todo.energy_level|title }}</span>{% endif %}
@@ -1456,7 +1844,7 @@
                                     </div>
                                     {% if user.is_authenticated %}
                                         <form method="post" action="{% url 'task_comment_add' todo.pk %}" style="display:flex; gap:6px;">
-                                            {% csrf_token %}
+                                             {% csrf_token %}
                                             <input name="text" placeholder="{{ t.add_comment|default:'Write a comment...' }}" required style="flex:1; padding:4px 8px; font-size:0.8rem; border:1px solid var(--border-color); border-radius:4px; background:var(--card-bg); color:var(--text-main);">
                                             <button type="submit" class="btn-ui btn-primary" style="padding:2px 8px; font-size:0.75rem;">Post</button>
                                         </form>
@@ -1489,12 +1877,27 @@
                             </div>
                         </div>
 
+                        <!-- Live Stopwatch & Zen Quick Buttons -->
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <button type="button" class="btn-ui" id="timer-btn-{{ todo.id }}" onclick="toggleTaskTimer({{ todo.id }}, '{{ todo.title|escapejs }}')" style="padding:3px 8px; font-size:0.76rem; border-radius:8px;" title="Avvia/Pausa Cronometro Tempo Effettivo">
+                                ▶️ <span id="timer-val-{{ todo.id }}">00:00</span>
+                            </button>
+                            <button type="button" class="btn-ui" onclick="openZenForTask('{{ todo.title|escapejs }}', '{{ todo.description|escapejs }}', {{ todo.id }})" style="padding:3px 8px; font-size:0.76rem; border-radius:8px;" title="Modalità Zen">🧘</button>
+                        </div>
+
                         <!-- Bubble Dropdown Menu -->
                         <div class="bubble-dropdown">
                             <button type="button" class="bubble-btn" onclick="toggleBubbleDropdown(this)" title="Task Actions">⋯</button>
                             <div class="bubble-menu">
-                                <button type="button" class="bubble-item" onclick="openEditModal({{ todo.id }}, '{{ todo.title|escapejs }}', '{{ todo.category|escapejs }}', '{{ todo.tags|escapejs }}', '{{ todo.priority }}', '{{ todo.energy_level }}', '{{ todo.recurrence }}', '{{ todo.due_date|date:"Y-m-d"|default:"" }}', '{{ todo.estimated_minutes|default:0 }}', {{ todo.is_pinned|yesno:"true,false" }}, '{{ todo.description|escapejs }}')">
+                                <button type="button" class="bubble-item" onclick="openEditModal({{ todo.id }}, '{{ todo.title|escapejs }}', '{{ todo.category|escapejs }}', '{{ todo.tags|escapejs }}', '{{ todo.priority }}', '{{ todo.energy_level }}', '{{ todo.recurrence }}', '{{ todo.due_date|date:"Y-m-d"|default:"" }}', '{{ todo.estimated_minutes|default:0 }}', {{ todo.is_pinned|yesno:"true,false" }}, '{{ todo.description|escapejs }}', '{{ todo.project_id|default:"" }}', {{ todo.actual_minutes|default:0 }})">
                                     ✏️ {{ t.edit|default:"Edit" }}
+                                </button>
+                                <form method="post" action="{% url 'todo_smart_breakdown' todo.pk %}" style="margin:0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="bubble-item">🪄 AI Sotto-task</button>
+                                </form>
+                                <button type="button" class="bubble-item" onclick="openZenForTask('{{ todo.title|escapejs }}', '{{ todo.description|escapejs }}', {{ todo.id }})">
+                                    🧘 {{ t.zen_focus|default:"Zen Focus Mode" }}
                                 </button>
                                 <form method="post" action="{% url 'todo_favorite' todo.pk %}" style="margin:0;">
                                     {% csrf_token %}
@@ -1615,22 +2018,42 @@
                         </div>
                     </div>
                     <div>
+                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Progetto / Workspace</label>
+                        <select name="project" id="editProject" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem;">
+                            <option value="">-- Nessun Progetto --</option>
+                            {% for p in projects %}
+                                <option value="{{ p.id }}">{{ p.icon }} {{ p.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
                         <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Tags</label>
                         <input type="text" name="tags" id="editTags" placeholder="e.g. #work #urgent" style="width:100%; padding:8px 12px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem;">
                     </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.5rem;">
                         <div>
                             <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Due Date</label>
                             <input type="date" name="due_date" id="editDueDate" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem;">
                         </div>
                         <div>
-                            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Est. Minutes</label>
+                            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Est. Minuti</label>
                             <input type="number" name="estimated_minutes" id="editMinutes" min="0" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem;">
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Effettivo Min.</label>
+                            <input type="number" name="actual_minutes" id="editActualMinutes" min="0" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem;">
                         </div>
                     </div>
                     <div>
-                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Description / Notes</label>
-                        <textarea name="description" id="editDescription" style="width:100%; min-height:60px; padding:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem;"></textarea>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Descrizione / Note (Markdown)</label>
+                            <div style="display:flex; gap:4px;">
+                                <button type="button" class="btn-ui" id="btnEditTabWrite" onclick="switchEditTab('write')" style="padding:2px 8px; font-size:0.75rem;">Scrivi</button>
+                                <button type="button" class="btn-ui" id="btnEditTabPreview" onclick="switchEditTab('preview')" style="padding:2px 8px; font-size:0.75rem;">Anteprima</button>
+                            </div>
+                        </div>
+                        <textarea name="description" id="editDescription" oninput="renderLiveEditMarkdown()" style="width:100%; min-height:80px; padding:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem; font-family:monospace;"></textarea>
+                        <div id="editMarkdownPreview" class="markdown-rendered" style="display:none; width:100%; min-height:80px; padding:8px 12px; border:1px solid var(--border-color); border-radius:8px; background:rgba(0,0,0,0.3); color:var(--text-main); font-size:0.9rem;"></div>
                     </div>
                     <div>
                         <label style="font-size:0.85rem; display:flex; align-items:center; gap:6px; cursor:pointer;">
@@ -1640,6 +2063,198 @@
                     <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:0.5rem;">
                         <button type="button" class="btn-ui" onclick="closeEditModal()">Cancel</button>
                         <button type="submit" class="btn-ui btn-primary">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Project Modal -->
+    <div class="modal-overlay" id="projectModal">
+        <div class="modal-card" style="max-width:440px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="margin:0; font-size:1.15rem; font-weight:700;">📁 Nuovo Progetto / Workspace</h3>
+                <button type="button" class="btn-ui" onclick="closeNewProjectModal()" style="border-radius:999px; width:30px; height:30px; padding:0; justify-content:center;">✕</button>
+            </div>
+            <form method="post" action="{% url 'project_add' %}">
+                {% csrf_token %}
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Nome Progetto</label>
+                        <input name="name" placeholder="Es. Sviluppo App, Marketing Q4, Esami..." required style="width:100%; padding:8px 12px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem;">
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                        <div>
+                            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Icona</label>
+                            <select name="icon" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem;">
+                                <option value="📁">📁 Cartella</option>
+                                <option value="🚀">🚀 Lancio</option>
+                                <option value="💻">💻 Codice</option>
+                                <option value="🎨">🎨 Design</option>
+                                <option value="📚">📚 Studio</option>
+                                <option value="🏆">🏆 Obiettivo</option>
+                                <option value="⚡">⚡ Sprint</option>
+                                <option value="🌟">🌟 Speciale</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Colore Badge</label>
+                            <select name="color" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:0.9rem;">
+                                <option value="#a855f7" selected>🟣 Viola Quantum</option>
+                                <option value="#3b82f6">🔵 Blu Cyber</option>
+                                <option value="#10b981">🟢 Verde Matrix</option>
+                                <option value="#f97316">🟠 Arancio Solar</option>
+                                <option value="#ec4899">🌸 Rosa Neon</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:0.5rem;">
+                        <button type="button" class="btn-ui" onclick="closeNewProjectModal()">Annulla</button>
+                        <button type="submit" class="btn-ui btn-primary">Crea Progetto</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Theme & Sound Studio Modal -->
+    <div class="modal-overlay" id="studioModal">
+        <div class="modal-card" style="max-width:520px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="margin:0; font-size:1.2rem; font-weight:700;">🎨 Studio Temi & Suoni</h3>
+                <button type="button" class="btn-ui" onclick="closeStudioModal()" style="border-radius:999px; width:30px; height:30px; padding:0; justify-content:center;">✕</button>
+            </div>
+
+            <div style="margin-bottom:1.5rem;">
+                <h4 style="margin:0 0 8px; font-size:0.92rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;">Tavolozze Scure (Dark Palettes)</h4>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <button type="button" class="btn-ui" onclick="setPalette('violet')" style="padding:10px; text-align:left; justify-content:flex-start; border-left:4px solid #a855f7;">
+                        <div>
+                            <div style="font-weight:700; color:#c084fc;">🔮 Obsidian Violet</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">Viola Cosmico & Nero Ossidiana</div>
+                        </div>
+                    </button>
+                    <button type="button" class="btn-ui" onclick="setPalette('cyberpunk')" style="padding:10px; text-align:left; justify-content:flex-start; border-left:4px solid #10b981;">
+                        <div>
+                            <div style="font-weight:700; color:#34d399;">🟩 Cyberpunk Matrix</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">Verde Neon & Pitch Black</div>
+                        </div>
+                    </button>
+                    <button type="button" class="btn-ui" onclick="setPalette('emerald')" style="padding:10px; text-align:left; justify-content:flex-start; border-left:4px solid #14b8a6;">
+                        <div>
+                            <div style="font-weight:700; color:#2dd4bf;">🌌 Emerald Galaxy</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">Smeraldo & Deep Navy Teal</div>
+                        </div>
+                    </button>
+                    <button type="button" class="btn-ui" onclick="setPalette('solar')" style="padding:10px; text-align:left; justify-content:flex-start; border-left:4px solid #f97316;">
+                        <div>
+                            <div style="font-weight:700; color:#fb923c;">🔥 Solar Flare</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">Ambra Magma & Carbone</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 8px; font-size:0.92rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;">Pacchetti Audio (Web Audio Synthesizer)</h4>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page);">
+                        <div>
+                            <strong style="font-size:0.9rem;">🔔 Modern Chime</strong>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">Accordo puro a onde sinusoidali (Default)</div>
+                        </div>
+                        <div style="display:flex; gap:6px;">
+                            <button type="button" class="btn-ui" onclick="playSoundPreview('chime')" style="padding:4px 8px; font-size:0.78rem;">🔊 Ascolta</button>
+                            <button type="button" class="btn-ui btn-primary" id="btn-sound-chime" onclick="setSoundPack('chime')" style="padding:4px 10px; font-size:0.78rem;">Seleziona</button>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page);">
+                        <div>
+                            <strong style="font-size:0.9rem;">👾 Arcade 8-Bit</strong>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">Bip retrò ed effetti sonori in stile chiptune</div>
+                        </div>
+                        <div style="display:flex; gap:6px;">
+                            <button type="button" class="btn-ui" onclick="playSoundPreview('arcade')" style="padding:4px 8px; font-size:0.78rem;">🔊 Ascolta</button>
+                            <button type="button" class="btn-ui" id="btn-sound-arcade" onclick="setSoundPack('arcade')" style="padding:4px 10px; font-size:0.78rem;">Seleziona</button>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page);">
+                        <div>
+                            <strong style="font-size:0.9rem;">🧘 Zen Bell</strong>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">Tono profondo e risonante per la concentrazione</div>
+                        </div>
+                        <div style="display:flex; gap:6px;">
+                            <button type="button" class="btn-ui" onclick="playSoundPreview('zen')" style="padding:4px 8px; font-size:0.78rem;">🔊 Ascolta</button>
+                            <button type="button" class="btn-ui" id="btn-sound-zen" onclick="setSoundPack('zen')" style="padding:4px 10px; font-size:0.78rem;">Seleziona</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Standup Summary Modal -->
+    <div class="modal-overlay" id="standupModal">
+        <div class="modal-card" style="max-width:560px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="margin:0; font-size:1.2rem; font-weight:700;">📋 Riepilogo Standup Giornaliero (AI)</h3>
+                <button type="button" class="btn-ui" onclick="closeStandupModal()" style="border-radius:999px; width:30px; height:30px; padding:0; justify-content:center;">✕</button>
+            </div>
+
+            <div id="standupTextContainer" style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:10px; padding:1rem; font-size:0.88rem; max-height:360px; overflow-y:auto; line-height:1.6;">
+                <div style="text-align:center; padding:1.5rem; color:var(--text-muted);">
+                    <div style="font-size:1.5rem; margin-bottom:6px;">⚡</div>
+                    Caricamento riepilogo in tempo reale...
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
+                <span id="standupCopyStatus" style="font-size:0.8rem; color:#10b981; font-weight:600; display:none;">✓ Copiato negli appunti!</span>
+                <div style="display:flex; gap:8px; margin-left:auto;">
+                    <button type="button" class="btn-ui" onclick="closeStandupModal()">Chiudi</button>
+                    <button type="button" class="btn-ui btn-primary" onclick="copyStandupSummary()">📋 Copia Standup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zen Focus Mode Fullscreen Overlay -->
+    <div class="zen-overlay" id="zenOverlay">
+        <div class="zen-breathing-ring"></div>
+        <div style="position:relative; z-index:2; max-width:680px; width:100%; display:flex; flex-direction:column; align-items:center;">
+            <div style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.15em; color:#c084fc; font-weight:700; margin-bottom:0.75rem;">🧘 Modalità Zen & Concentrazione</div>
+            <h1 id="zenTaskTitle" style="font-size:2.2rem; font-weight:800; margin:0 0 1rem; line-height:1.2;">Nessun compito selezionato</h1>
+            <div id="zenTaskDescription" class="markdown-rendered" style="font-size:1.05rem; color:#d8b4fe; max-width:550px; margin-bottom:1.5rem; line-height:1.5;">Respira profondamente e dedicati completamente a questa singola attività.</div>
+
+            <div class="zen-timer-digits" id="zenTimerDisplay">25:00</div>
+
+            <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:center;">
+                <button type="button" class="btn-ui btn-primary" id="zenTimerToggleBtn" onclick="toggleZenTimer()" style="padding:12px 28px; font-size:1.1rem; border-radius:999px;">▶️ Avvia</button>
+                <button type="button" class="btn-ui" onclick="resetZenTimer()" style="padding:12px 20px; font-size:1rem; border-radius:999px;">Reset</button>
+                <button type="button" class="btn-ui" id="zenCompleteBtn" onclick="completeZenTask()" style="padding:12px 24px; font-size:1rem; border-radius:999px; background:rgba(16,185,129,0.2); border:1px solid #10b981; color:#a7f3d0;">✓ Completa Compito</button>
+                <button type="button" class="btn-ui" onclick="closeZenMode()" style="padding:12px 20px; font-size:1rem; border-radius:999px;">✕ Esci (Esc)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time Log Confirmation Modal -->
+    <div class="modal-overlay" id="timeLogModal">
+        <div class="modal-card" style="max-width:420px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3 style="margin:0; font-size:1.15rem; font-weight:700;">⏱️ Registra Tempo Effettivo</h3>
+                <button type="button" class="btn-ui" onclick="closeTimeLogModal()" style="border-radius:999px; width:30px; height:30px; padding:0; justify-content:center;">✕</button>
+            </div>
+            <form id="timeLogForm" method="post" action="">
+                {% csrf_token %}
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <p style="margin:0; font-size:0.9rem;" id="timeLogPromptText">Registrare il tempo trascorso su questo compito?</p>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Minuti da aggiungere:</label>
+                        <input type="number" name="minutes" id="timeLogMinutesInput" min="1" required style="width:100%; padding:8px 12px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-page); color:var(--text-main); font-size:1rem; font-weight:700;">
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:0.5rem;">
+                        <button type="button" class="btn-ui" onclick="closeTimeLogModal()">Annulla</button>
+                        <button type="submit" class="btn-ui btn-primary">Salva nel Database</button>
                     </div>
                 </div>
             </form>
@@ -1729,7 +2344,7 @@
         // Edit Modal
         const editModal = document.getElementById('editModal');
         const editForm = document.getElementById('editForm');
-        function openEditModal(id, title, category, tags, priority, energy, recurrence, dueDate, minutes, isPinned, description) {
+        function openEditModal(id, title, category, tags, priority, energy, recurrence, dueDate, minutes, isPinned, description, projectId, actualMinutes) {
             editForm.action = `/${id}/edit/`;
             document.getElementById('editTitle').value = title;
             document.getElementById('editCategory').value = category;
@@ -1739,13 +2354,379 @@
             if (document.getElementById('editRecurrence')) document.getElementById('editRecurrence').value = recurrence || 'none';
             document.getElementById('editDueDate').value = dueDate;
             document.getElementById('editMinutes').value = minutes;
+            if (document.getElementById('editActualMinutes')) document.getElementById('editActualMinutes').value = actualMinutes || 0;
+            if (document.getElementById('editProject')) document.getElementById('editProject').value = projectId || '';
             document.getElementById('editPinned').checked = isPinned;
             document.getElementById('editDescription').value = description;
+            switchEditTab('write');
             editModal.classList.add('active');
         }
 
         function closeEditModal() {
             editModal.classList.remove('active');
+        }
+
+        // Markdown Rich Notes Engine
+        function simpleMarkdownParse(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+                .replace(/`([^`]+)`/gim, '<code>$1</code>')
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" target="_blank" style="color:var(--primary); text-decoration:underline;">$1</a>')
+                .replace(/^\- (.*$)/gim, '<li>$1</li>')
+                .replace(/\n/gim, '<br>');
+        }
+
+        function renderLiveEditMarkdown() {
+            const raw = document.getElementById('editDescription').value;
+            const preview = document.getElementById('editMarkdownPreview');
+            if (preview) preview.innerHTML = simpleMarkdownParse(raw);
+        }
+
+        function switchEditTab(tab) {
+            const desc = document.getElementById('editDescription');
+            const preview = document.getElementById('editMarkdownPreview');
+            const btnWrite = document.getElementById('btnEditTabWrite');
+            const btnPreview = document.getElementById('btnEditTabPreview');
+            if (!desc || !preview) return;
+            if (tab === 'preview') {
+                renderLiveEditMarkdown();
+                desc.style.display = 'none';
+                preview.style.display = 'block';
+                if (btnPreview) btnPreview.classList.add('btn-primary');
+                if (btnWrite) btnWrite.classList.remove('btn-primary');
+            } else {
+                desc.style.display = 'block';
+                preview.style.display = 'none';
+                if (btnWrite) btnWrite.classList.add('btn-primary');
+                if (btnPreview) btnPreview.classList.remove('btn-primary');
+            }
+        }
+
+        // Initial markdown rendering for tasks
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.markdown-rendered').forEach(el => {
+                if (el.id !== 'editMarkdownPreview' && el.id !== 'zenTaskDescription') {
+                    el.innerHTML = simpleMarkdownParse(el.innerText);
+                }
+            });
+        });
+
+        // Theme Studio Palettes
+        const savedPalette = localStorage.getItem('taskflow_palette') || 'violet';
+        if (savedPalette && savedPalette !== 'violet') {
+            document.documentElement.setAttribute('data-palette', savedPalette);
+        }
+
+        function setPalette(paletteName) {
+            if (paletteName === 'violet') {
+                document.documentElement.removeAttribute('data-palette');
+            } else {
+                document.documentElement.setAttribute('data-palette', paletteName);
+            }
+            localStorage.setItem('taskflow_palette', paletteName);
+            playSoundPreview(currentSoundPack);
+        }
+
+        // Sound Pack Studio
+        let currentSoundPack = localStorage.getItem('taskflow_sound_pack') || 'chime';
+        function updateSoundPackUI() {
+            ['chime', 'arcade', 'zen'].forEach(p => {
+                const btn = document.getElementById(`btn-sound-${p}`);
+                if (btn) {
+                    if (p === currentSoundPack) {
+                        btn.classList.add('btn-primary');
+                        btn.innerText = 'Attivo ✓';
+                    } else {
+                        btn.classList.remove('btn-primary');
+                        btn.innerText = 'Seleziona';
+                    }
+                }
+            });
+        }
+        setTimeout(updateSoundPackUI, 50);
+
+        function setSoundPack(pack) {
+            currentSoundPack = pack;
+            localStorage.setItem('taskflow_sound_pack', pack);
+            updateSoundPackUI();
+            playSoundPreview(pack);
+        }
+
+        function playSoundPreview(pack) {
+            if (!soundEnabled) return;
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                if (pack === 'arcade') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(330, ctx.currentTime);
+                    osc.frequency.setValueAtTime(440, ctx.currentTime + 0.08);
+                    osc.frequency.setValueAtTime(660, ctx.currentTime + 0.16);
+                    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.3);
+                } else if (pack === 'zen') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(261.63, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 1.2);
+                } else {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.35);
+                }
+            } catch (err) {}
+        }
+
+        function playChimeSound() {
+            playSoundPreview(currentSoundPack);
+        }
+
+        // Project Modal
+        const projectModal = document.getElementById('projectModal');
+        function openNewProjectModal() {
+            if (projectModal) projectModal.classList.add('active');
+        }
+        function closeNewProjectModal() {
+            if (projectModal) projectModal.classList.remove('active');
+        }
+
+        // Studio Modal
+        const studioModal = document.getElementById('studioModal');
+        function openStudioModal() {
+            if (studioModal) studioModal.classList.add('active');
+        }
+        function closeStudioModal() {
+            if (studioModal) studioModal.classList.remove('active');
+        }
+
+        // Standup Modal & Copy
+        const standupModal = document.getElementById('standupModal');
+        function escapeHtmlText(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+        function openStandupModal() {
+            if (standupModal) standupModal.classList.add('active');
+            const container = document.getElementById('standupTextContainer');
+            if (!container) return;
+            container.innerHTML = '<div style="text-align:center; padding:1.5rem; color:var(--text-muted);"><div style="font-size:1.5rem; margin-bottom:6px;">⚡</div>Caricamento riepilogo in tempo reale...</div>';
+
+            fetch('/api/todos/')
+                .then(res => res.json())
+                .then(todos => {
+                    const completed = todos.filter(t => t.done || t.status === 'done');
+                    const inProgress = todos.filter(t => !t.done && (t.status === 'in_progress' || t.status === 'review'));
+                    const pendingUrgent = todos.filter(t => !t.done && (t.priority === 'urgent' || t.priority === 'high'));
+
+                    let html = '';
+                    html += '<div style="margin-bottom:12px;"><strong style="color:var(--accent-emerald, #10b981);">✅ Completato di recente (' + completed.length + ')</strong><ul style="margin:6px 0 0 1.2rem; padding:0;">';
+                    if (completed.length === 0) {
+                        html += '<li style="color:var(--text-muted);">Nessun task completato di recente.</li>';
+                    } else {
+                        completed.slice(0, 5).forEach(t => {
+                            html += '<li>' + escapeHtmlText(t.title) + '</li>';
+                        });
+                    }
+                    html += '</ul></div>';
+
+                    html += '<div style="margin-bottom:12px;"><strong style="color:var(--accent-cyan, #06b6d4);">🚀 In Lavorazione Oggi (' + inProgress.length + ')</strong><ul style="margin:6px 0 0 1.2rem; padding:0;">';
+                    if (inProgress.length === 0) {
+                        html += '<li style="color:var(--text-muted);">Nessun task contrassegnato in corso.</li>';
+                    } else {
+                        inProgress.slice(0, 5).forEach(t => {
+                            html += '<li>' + escapeHtmlText(t.title) + '</li>';
+                        });
+                    }
+                    html += '</ul></div>';
+
+                    html += '<div><strong style="color:#ef4444;">⚠️ Focus Critico / Urgenze (' + pendingUrgent.length + ')</strong><ul style="margin:6px 0 0 1.2rem; padding:0;">';
+                    if (pendingUrgent.length === 0) {
+                        html += '<li style="color:var(--text-muted);">Nessun blocco o urgenza aperta.</li>';
+                    } else {
+                        pendingUrgent.slice(0, 5).forEach(t => {
+                            html += '<li>' + escapeHtmlText(t.title) + (t.due_date ? ' (scad: ' + escapeHtmlText(t.due_date) + ')' : '') + '</li>';
+                        });
+                    }
+                    html += '</ul></div>';
+
+                    container.innerHTML = html;
+                })
+                .catch(err => {
+                    container.innerHTML = '<div style="color:#ef4444; padding:1rem; text-align:center;">Errore nel recupero dei task per lo standup.</div>';
+                });
+        }
+        function closeStandupModal() {
+            if (standupModal) standupModal.classList.remove('active');
+        }
+        function copyStandupSummary() {
+            const el = document.getElementById('standupTextContainer');
+            if (!el) return;
+            navigator.clipboard.writeText(el.innerText).then(() => {
+                const st = document.getElementById('standupCopyStatus');
+                if (st) {
+                    st.style.display = 'inline';
+                    setTimeout(() => { st.style.display = 'none'; }, 2500);
+                }
+            });
+        }
+
+        // Live Stopwatch / Time Tracker
+        let activeStopwatchTaskId = null;
+        let activeStopwatchInterval = null;
+        let activeStopwatchSeconds = 0;
+
+        function toggleTaskTimer(taskId, title) {
+            if (activeStopwatchTaskId === taskId) {
+                clearInterval(activeStopwatchInterval);
+                const elapsedMinutes = Math.max(1, Math.round(activeStopwatchSeconds / 60));
+                activeStopwatchTaskId = null;
+                const btn = document.getElementById(`timer-btn-${taskId}`);
+                if (btn) btn.classList.remove('btn-primary');
+                openTimeLogModal(taskId, title, elapsedMinutes);
+            } else {
+                if (activeStopwatchInterval) clearInterval(activeStopwatchInterval);
+                if (activeStopwatchTaskId) {
+                    const oldBtn = document.getElementById(`timer-btn-${activeStopwatchTaskId}`);
+                    if (oldBtn) oldBtn.classList.remove('btn-primary');
+                }
+                activeStopwatchTaskId = taskId;
+                activeStopwatchSeconds = 0;
+                const btn = document.getElementById(`timer-btn-${taskId}`);
+                if (btn) btn.classList.add('btn-primary');
+                activeStopwatchInterval = setInterval(() => {
+                    activeStopwatchSeconds++;
+                    const m = Math.floor(activeStopwatchSeconds / 60);
+                    const s = activeStopwatchSeconds % 60;
+                    const display = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+                    const lbl = document.getElementById(`timer-val-${taskId}`);
+                    if (lbl) lbl.innerText = display;
+                }, 1000);
+            }
+        }
+
+        const timeLogModal = document.getElementById('timeLogModal');
+        function openTimeLogModal(taskId, title, minutes) {
+            const form = document.getElementById('timeLogForm');
+            const promptText = document.getElementById('timeLogPromptText');
+            const minInput = document.getElementById('timeLogMinutesInput');
+            if (form) form.action = `/${taskId}/time-log/`;
+            if (promptText) promptText.innerText = `Registrare ${minutes} minuti effettivi per "${title}"?`;
+            if (minInput) minInput.value = minutes;
+            if (timeLogModal) timeLogModal.classList.add('active');
+        }
+        function closeTimeLogModal() {
+            if (timeLogModal) timeLogModal.classList.remove('active');
+        }
+
+        // Zen Focus Mode
+        const zenOverlay = document.getElementById('zenOverlay');
+        let zenTaskId = null;
+        let zenTimerSeconds = 25 * 60;
+        let zenTimerInterval = null;
+
+        function openZenForTask(title, description, taskId) {
+            zenTaskId = taskId;
+            const titleEl = document.getElementById('zenTaskTitle');
+            if (titleEl) titleEl.innerText = title || 'Compito Focus';
+            const descEl = document.getElementById('zenTaskDescription');
+            if (descEl) descEl.innerHTML = description ? simpleMarkdownParse(description) : 'Concentrati esclusivamente su questo compito senza distrazioni.';
+            resetZenTimer();
+            if (zenOverlay) zenOverlay.classList.add('active');
+        }
+
+        function openZenMode() {
+            openZenForTask('Deep Work Session', 'Concentrati sulle tue priorità di oggi. Respira ed entra nel flusso.', null);
+        }
+
+        function closeZenMode() {
+            if (zenTimerInterval) clearInterval(zenTimerInterval);
+            zenTimerInterval = null;
+            if (zenOverlay) zenOverlay.classList.remove('active');
+        }
+
+        function toggleZenTimer() {
+            const btn = document.getElementById('zenTimerToggleBtn');
+            if (zenTimerInterval) {
+                clearInterval(zenTimerInterval);
+                zenTimerInterval = null;
+                btn.innerText = '▶️ Riprendi';
+            } else {
+                btn.innerText = '⏸️ Pausa';
+                zenTimerInterval = setInterval(() => {
+                    if (zenTimerSeconds > 0) {
+                        zenTimerSeconds--;
+                        updateZenTimerDisplay();
+                    } else {
+                        clearInterval(zenTimerInterval);
+                        zenTimerInterval = null;
+                        btn.innerText = '▶️ Riavvia';
+                        playLevelUpSound();
+                        alert('Sessione Zen completata! Ottimo lavoro.');
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetZenTimer() {
+            if (zenTimerInterval) clearInterval(zenTimerInterval);
+            zenTimerInterval = null;
+            zenTimerSeconds = 25 * 60;
+            updateZenTimerDisplay();
+            const btn = document.getElementById('zenTimerToggleBtn');
+            if (btn) btn.innerText = '▶️ Avvia';
+        }
+
+        function updateZenTimerDisplay() {
+            const m = Math.floor(zenTimerSeconds / 60);
+            const s = zenTimerSeconds % 60;
+            const display = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+            const el = document.getElementById('zenTimerDisplay');
+            if (el) el.innerText = display;
+        }
+
+        function completeZenTask() {
+            if (zenTaskId) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/${zenTaskId}/toggle/`;
+                const csrf = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+                form.innerHTML = `<input type="hidden" name="csrfmiddlewaretoken" value="${csrf}">`;
+                document.body.appendChild(form);
+                form.submit();
+            } else {
+                closeZenMode();
+            }
         }
 
         // Notification Center Dropdown
@@ -2012,6 +2993,11 @@
             } else if (e.key === 'Escape') {
                 closeShortcutsModal();
                 closeEditModal();
+                closeZenMode();
+                closeNewProjectModal();
+                closeStudioModal();
+                closeStandupModal();
+                closeTimeLogModal();
                 document.querySelectorAll('.bubble-dropdown').forEach(d => d.classList.remove('active'));
                 document.querySelectorAll('.notif-dropdown').forEach(d => d.classList.remove('active'));
             } else if (e.key === 'n' || e.key === 'N') {
@@ -2029,6 +3015,12 @@
                 }
             } else if (e.key === 'c' || e.key === 'C') {
                 window.location.href = '?view=calendar';
+            } else if (e.key === 'g' || e.key === 'G') {
+                window.location.href = '?view=timeline';
+            } else if (e.key === 'h' || e.key === 'H') {
+                window.location.href = '?view=habits';
+            } else if (e.key === 'z' || e.key === 'Z') {
+                openZenMode();
             } else if (e.key === 'k' || e.key === 'K') {
                 window.location.href = '?view=kanban';
             } else if (e.key === 'm' || e.key === 'M') {

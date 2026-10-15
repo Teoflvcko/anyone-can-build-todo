@@ -15,7 +15,10 @@ from django.views.decorators.http import require_POST
 
 from .models import (
     CollaborationEvent,
+    Habit,
+    HabitLog,
     Notification,
+    Project,
     SocialActivity,
     SubTask,
     TaskComment,
@@ -74,6 +77,14 @@ TRANSLATIONS = {
         "not_urgent_important": "📅 Important, Not Urgent (Schedule)",
         "urgent_not_important": "⚡ Urgent, Not Important (Delegate)",
         "not_urgent_not_important": "🌱 Neither (Eliminate)",
+        "timeline": "Timeline Gantt",
+        "habits": "Habits & Streaks",
+        "zen_focus": "Zen Focus Mode",
+        "theme_studio": "Theme & Sound Studio",
+        "projects": "Projects",
+        "smart_helper": "AI Task Helper",
+        "standup_summary": "Daily Standup Summary",
+        "actual_time": "Actual Time",
     },
     "it": {
         "brand": "TaskFlow Quantum",
@@ -124,6 +135,14 @@ TRANSLATIONS = {
         "not_urgent_important": "📅 Importante, Non Urgente (Pianifica)",
         "urgent_not_important": "⚡ Urgente, Non Importante (Delega)",
         "not_urgent_not_important": "🌱 Né Urgente né Importante (Elimina)",
+        "timeline": "Timeline Gantt",
+        "habits": "Abitudini & Costanza",
+        "zen_focus": "Modalità Zen",
+        "theme_studio": "Studio Temi & Suoni",
+        "projects": "Progetti",
+        "smart_helper": "Assistente AI",
+        "standup_summary": "Riepilogo Standup Giornaliero",
+        "actual_time": "Tempo Effettivo",
     },
 }
 
@@ -262,6 +281,11 @@ def todo_list(request):
     priority_filter = request.GET.get("priority", "").strip()
     if priority_filter in ["low", "medium", "high"]:
         todos = todos.filter(priority=priority_filter)
+
+    # Project filter
+    project_filter = request.GET.get("project", "").strip()
+    if project_filter and project_filter.isdigit():
+        todos = todos.filter(project_id=int(project_filter))
 
     # Sorting
     sort_by = request.GET.get("sort", "default")
@@ -455,7 +479,78 @@ def todo_list(request):
         "participants"
     ).select_related("organizer")[:25]
 
+    # Projects
+    projects = Project.objects.all()
+
+    # Timeline Gantt View computation (14-day rolling window)
+    timeline_start = today - timedelta(days=2)
+    timeline_days = [
+        {
+            "date": timeline_start + timedelta(days=i),
+            "date_str": (timeline_start + timedelta(days=i)).strftime("%Y-%m-%d"),
+            "day_num": (timeline_start + timedelta(days=i)).day,
+            "weekday": (timeline_start + timedelta(days=i)).strftime("%a"),
+            "is_today": (timeline_start + timedelta(days=i)) == today,
+        }
+        for i in range(14)
+    ]
+    timeline_tasks = []
+    for t_item in all_user_todos.filter(done=False):
+        if t_item.due_date:
+            offset = (t_item.due_date - timeline_start).days
+            clamped_offset = max(0, min(13, offset))
+            timeline_tasks.append(
+                {
+                    "todo": t_item,
+                    "offset": clamped_offset,
+                    "is_overdue": t_item.due_date < today,
+                    "is_today": t_item.due_date == today,
+                    "in_window": 0 <= offset <= 13,
+                }
+            )
+
+    # Habits Tracker & 30-Day Contribution Heat Map
+    habits_list = []
+    past_30_days = [today - timedelta(days=i) for i in reversed(range(30))]
+    all_habits = Habit.objects.prefetch_related("logs").all()
+    for h in all_habits:
+        completed_dates = set(h.logs.values_list("date", flat=True))
+        history = [
+            {
+                "date": d.strftime("%Y-%m-%d"),
+                "day_num": d.day,
+                "done": d in completed_dates,
+                "is_today": d == today,
+            }
+            for d in past_30_days
+        ]
+        completed_past_30 = sum(1 for d in history if d["done"])
+        habits_list.append(
+            {
+                "habit": h,
+                "history": history,
+                "completed_30": completed_past_30,
+                "completion_rate": int((completed_past_30 / 30) * 100),
+                "is_done_today": today in completed_dates,
+            }
+        )
+
+    # Standup Summary data
+    standup_completed = all_user_todos.filter(done=True, updated_at__date=today)[:10]
+    standup_in_progress = all_user_todos.filter(status="in_progress", done=False)[:10]
+    standup_critical = all_user_todos.filter(
+        Q(due_date__lt=today) | Q(priority="high"), done=False
+    )[:10]
+
     context = {
+        "projects": projects,
+        "current_project": project_filter,
+        "timeline_days": timeline_days,
+        "timeline_tasks": timeline_tasks,
+        "habits_data": habits_list,
+        "standup_completed": standup_completed,
+        "standup_in_progress": standup_in_progress,
+        "standup_critical": standup_critical,
         "todos": todos,
         "active_view": active_view,
         "lang_code": lang_code,
@@ -541,12 +636,18 @@ def todo_add(request):
     except ValueError:
         estimated_minutes = 0
 
+    project_id = request.POST.get("project", "").strip()
+    project = None
+    if project_id and project_id.isdigit():
+        project = Project.objects.filter(pk=int(project_id)).first()
+
     if title:
         user = request.user if request.user.is_authenticated else None
         Todo.objects.create(
             user=user,
             title=title,
             category=category,
+            project=project,
             tags=tags,
             priority=priority,
             energy_level=energy_level,
@@ -592,6 +693,19 @@ def todo_edit(request, pk):
     description = request.POST.get("description", "").strip()
     estimated_minutes_str = request.POST.get("estimated_minutes", "0").strip()
     is_pinned = request.POST.get("is_pinned") == "on"
+
+    project_id = request.POST.get("project", "").strip()
+    if project_id and project_id.isdigit():
+        todo.project = Project.objects.filter(pk=int(project_id)).first()
+    elif "project" in request.POST:
+        todo.project = None
+
+    actual_minutes_str = request.POST.get("actual_minutes")
+    if actual_minutes_str is not None:
+        try:
+            todo.actual_minutes = max(0, int(actual_minutes_str))
+        except ValueError:
+            pass
 
     if priority in ["low", "medium", "high"]:
         todo.priority = priority
@@ -896,6 +1010,176 @@ def subtask_delete(request, pk):
     subtask.delete()
     messages.success(request, "Subtask removed.")
     return redirect("todo_list")
+
+
+@require_POST
+def todo_time_log(request, pk):
+    """Log actual time spent on a task."""
+    todo = get_object_or_404(Todo, pk=pk)
+    try:
+        if request.content_type == "application/json":
+            data = json.loads(request.body)
+            minutes = int(data.get("minutes", 0))
+        else:
+            minutes = int(request.POST.get("minutes", 0))
+    except (ValueError, TypeError, json.JSONDecodeError):
+        minutes = 0
+
+    if minutes > 0:
+        todo.actual_minutes += minutes
+        todo.save(update_fields=["actual_minutes", "updated_at"])
+
+    if (
+        request.headers.get("x-requested-with") == "XMLHttpRequest"
+        or request.content_type == "application/json"
+    ):
+        return JsonResponse(
+            {
+                "status": "ok",
+                "actual_minutes": todo.actual_minutes,
+                "formatted_actual": todo.formatted_actual_duration,
+            }
+        )
+
+    messages.success(request, f"Registrati {minutes}m su '{todo.title}'.")
+    return redirect(request.POST.get("next") or reverse("todo_list"))
+
+
+@require_POST
+def todo_smart_breakdown(request, pk):
+    """Generate intelligent subtasks for a task using contextual heuristics."""
+    todo = get_object_or_404(Todo, pk=pk)
+    title_lower = todo.title.lower()
+
+    if any(k in title_lower for k in ["prep", "stud", "esame", "exam", "corso"]):
+        generated_steps = [
+            "Raccogli appunti e materiale di studio",
+            "Crea schema riassuntivo dei concetti chiave",
+            "Esegui esercizi pratici e simulazione",
+            "Ripasso finale e verifica dubbi",
+        ]
+    elif any(
+        k in title_lower
+        for k in ["progetto", "project", "app", "sito", "code", "svilupp"]
+    ):
+        generated_steps = [
+            "Definisci requisiti e architettura iniziale",
+            "Implementa logica principale e modelli dati",
+            "Disegna e rifinisci interfaccia utente",
+            "Test funzionali, rifinitura e rilascio",
+        ]
+    elif any(k in title_lower for k in ["viaggio", "trip", "vacanza", "volo", "hotel"]):
+        generated_steps = [
+            "Verifica documenti e prenotazioni",
+            "Prepara valigia e lista accessori essenziali",
+            "Pianifica itinerario e spostamenti",
+            "Conferma check-in e orari di partenza",
+        ]
+    elif any(k in title_lower for k in ["puliz", "clean", "casa", "ordin"]):
+        generated_steps = [
+            "Riordina oggetti fuori posto nelle stanze",
+            "Pulisci e igienizza le superfici principali",
+            "Aspira e lava i pavimenti",
+            "Porta fuori spazzatura e differenziata",
+        ]
+    elif any(k in title_lower for k in ["spesa", "buy", "compra", "market", "negozio"]):
+        generated_steps = [
+            "Controlla dispensa e frigorifero",
+            "Scrivi lista ingredienti per categoria",
+            "Acquista prodotti freschi e alimentari",
+            "Riponi e organizza la dispensa",
+        ]
+    else:
+        generated_steps = [
+            f"Fase 1: Analisi e preparazione per {todo.title[:30]}",
+            "Fase 2: Esecuzione delle attività principali",
+            "Fase 3: Revisione dettagli e controllo qualità",
+            "Fase 4: Conclusione e archiviazione finale",
+        ]
+
+    for step in generated_steps:
+        SubTask.objects.create(todo=todo, title=step, done=False)
+
+    messages.success(
+        request, f"Generati {len(generated_steps)} sotto-obiettivi con Assistente AI!"
+    )
+    return redirect(request.POST.get("next") or reverse("todo_list"))
+
+
+@require_POST
+def project_add(request):
+    """Create a new project workspace."""
+    name = request.POST.get("name", "").strip()
+    icon = request.POST.get("icon", "📁").strip() or "📁"
+    color = request.POST.get("color", "#a855f7").strip() or "#a855f7"
+    if name:
+        user = request.user if request.user.is_authenticated else None
+        Project.objects.create(user=user, name=name, icon=icon, color=color)
+        messages.success(request, f"Progetto '{name}' creato con successo!")
+    return redirect(request.POST.get("next") or reverse("todo_list"))
+
+
+@require_POST
+def project_delete(request, pk):
+    """Delete a project workspace."""
+    project = get_object_or_404(Project, pk=pk)
+    name = project.name
+    project.delete()
+    messages.success(request, f"Progetto '{name}' eliminato.")
+    return redirect(reverse("todo_list"))
+
+
+@require_POST
+def habit_add(request):
+    """Create a new habit."""
+    name = request.POST.get("name", "").strip()
+    if name:
+        user = request.user if request.user.is_authenticated else None
+        Habit.objects.create(user=user, name=name)
+        messages.success(request, f"Abitudine '{name}' creata!")
+    return redirect(reverse("todo_list") + "?view=habits")
+
+
+@require_POST
+def habit_toggle(request, pk):
+    """Toggle a habit completion for today and update streak."""
+    habit = get_object_or_404(Habit, pk=pk)
+    today = timezone.localdate()
+    yesterday = today - timedelta(days=1)
+
+    log = HabitLog.objects.filter(habit=habit, date=today).first()
+    if log:
+        log.delete()
+        prev_log = HabitLog.objects.filter(habit=habit).order_by("-date").first()
+        habit.last_completed_date = prev_log.date if prev_log else None
+        habit.streak_count = max(0, habit.streak_count - 1)
+        habit.save()
+        messages.info(request, f"Abitudine '{habit.name}' annullata per oggi.")
+    else:
+        HabitLog.objects.create(habit=habit, date=today)
+        if habit.last_completed_date == yesterday:
+            habit.streak_count += 1
+        elif habit.last_completed_date == today:
+            pass
+        else:
+            habit.streak_count = 1
+        habit.last_completed_date = today
+        habit.save()
+        messages.success(
+            request,
+            f"🔥 Obiettivo '{habit.name}' completato! Streak: {habit.streak_count} giorni!",
+        )
+    return redirect(request.POST.get("next") or (reverse("todo_list") + "?view=habits"))
+
+
+@require_POST
+def habit_delete(request, pk):
+    """Delete a habit."""
+    habit = get_object_or_404(Habit, pk=pk)
+    name = habit.name
+    habit.delete()
+    messages.success(request, f"Abitudine '{name}' rimossa.")
+    return redirect(reverse("todo_list") + "?view=habits")
 
 
 @require_POST
