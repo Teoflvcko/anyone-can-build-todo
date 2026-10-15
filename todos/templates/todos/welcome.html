@@ -470,12 +470,27 @@
                 <a href="{% url 'set_language' 'en' %}" class="lang-pill {% if lang_code == 'en' %}active{% endif %}">🇬🇧 EN</a>
                 <a href="{% url 'set_language' 'it' %}" class="lang-pill {% if lang_code == 'it' %}active{% endif %}">🇮🇹 IT</a>
                 {% if user.is_authenticated %}
-                    <span style="font-size:0.85rem; color:var(--text-muted); margin-right:4px;">@{{ user.username }}</span>
+                    <span style="font-size:0.85rem; color:var(--accent-cyan); display:flex; align-items:center; gap:6px;">
+                        <span>👤</span> @{{ user.username }}
+                    </span>
+                    <form method="post" action="{% url 'logout' %}" style="margin:0; display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="lang-pill" style="cursor:pointer;" title="Esci dall'account">Esci</button>
+                    </form>
+                    <a href="{% url 'todo_list' %}" class="btn-launch-header">
+                        <span>{{ t.start_app|default:"Start Application" }}</span>
+                        <span>→</span>
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="lang-pill" style="color:#fff; border-color:#a855f7;">Accedi</a>
+                    <a href="{% url 'signup' %}" class="btn-launch-header" style="background:linear-gradient(135deg, #10b981, #059669); box-shadow:0 4px 18px rgba(16, 185, 129, 0.35);">
+                        <span>Registrati</span>
+                    </a>
+                    <a href="{% url 'todo_list' %}" class="btn-launch-header">
+                        <span>{{ t.start_app|default:"Start Application" }}</span>
+                        <span>→</span>
+                    </a>
                 {% endif %}
-                <a href="{% url 'todo_list' %}" class="btn-launch-header">
-                    <span>{{ t.start_app|default:"Start Application" }}</span>
-                    <span>→</span>
-                </a>
             </div>
         </header>
 

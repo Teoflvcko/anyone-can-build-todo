@@ -1543,6 +1543,32 @@ def todo_export_ical(request):
     return response
 
 
+def finance_export_csv(request):
+    """Export all user transactions to a downloadable CSV file."""
+    user = request.user if request.user.is_authenticated else None
+    transactions = Transaction.objects.all()
+    if user:
+        transactions = transactions.filter(user=user)
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="transazioni_finanze.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(["ID", "Data", "Descrizione", "Categoria", "Tipo", "Importo (EUR)"])
+    for t in transactions:
+        writer.writerow(
+            [
+                t.id,
+                t.date.strftime("%Y-%m-%d"),
+                t.title,
+                t.category,
+                t.transaction_type,
+                f"{t.amount:.2f}",
+            ]
+        )
+    return response
+
+
 @require_POST
 def todo_import_json(request):
     """Import tasks from an uploaded JSON file."""

@@ -854,3 +854,25 @@ class TodoTests(TestCase):
             content_type="application/json",
         )
         self.assertEqual(res_empty.status_code, 400)
+
+    def test_finance_export_csv(self):
+        Transaction.objects.create(
+            title="Cena Ristorante Test",
+            amount=35.50,
+            transaction_type="expense",
+            category="food",
+        )
+        res = self.client.get(reverse("finance_export_csv"))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res["Content-Type"], "text/csv")
+        self.assertIn("attachment; filename=", res["Content-Disposition"])
+        self.assertIn("Cena Ristorante Test", res.content.decode("utf-8"))
+
+    def test_auth_pages_render(self):
+        login_res = self.client.get(reverse("login"))
+        self.assertEqual(login_res.status_code, 200)
+        self.assertTemplateUsed(login_res, "registration/login.html")
+
+        signup_res = self.client.get(reverse("signup"))
+        self.assertEqual(signup_res.status_code, 200)
+        self.assertTemplateUsed(signup_res, "registration/signup.html")

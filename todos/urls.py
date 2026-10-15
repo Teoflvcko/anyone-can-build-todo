@@ -68,6 +68,11 @@ urlpatterns = [
         views.savings_delete,
         name="savings_delete",
     ),
+    path(
+        "finance/export/csv/",
+        views.finance_export_csv,
+        name="finance_export_csv",
+    ),
     # Journal & Mood
     path("journal/entry/add/", views.journal_add, name="journal_add"),
     path(
